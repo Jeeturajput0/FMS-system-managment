@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import logo from '../../assist/logo.png';
 import { apiFetch } from '../utils/api';
+import { assetUrl } from '../utils/api';
 const stats = [
   { label: 'Franchises', value: '42+', icon: Building2 },
   { label: 'Active Students', value: '14.2K', icon: Users },
@@ -182,7 +183,7 @@ const LandingPage = () => {
             <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Live catalog</p><h2 className="mt-2 text-3xl font-black text-white">Explore current courses</h2></div>
             <button onClick={() => navigate('/courses')} className="text-sm font-bold text-orange-300 hover:text-white">View all</button>
           </div>
-          {courses.length === 0 ? <p className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-400">No published courses are available yet.</p> : <div className="grid gap-5 md:grid-cols-3">{courses.slice(0, 3).map((course) => <article key={course._id || course.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5"><div className="mb-4 flex h-32 items-center justify-center rounded-xl bg-orange-500/10 text-orange-300"><BookOpen className="h-10 w-10" /></div><h3 className="text-lg font-bold text-white">{course.title}</h3><p className="mt-2 line-clamp-2 text-sm text-slate-400">{course.shortDescription || course.description}</p><div className="mt-4 flex items-center justify-between text-xs text-slate-300"><span>{course.duration?.value} {course.duration?.unit}</span><span className="font-bold text-orange-300">₹{Number(course.courseFee || 0).toLocaleString('en-IN')}</span></div></article>)}</div>}
+          {courses.length === 0 ? <p className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-400">No published courses are available yet.</p> : <div className="grid gap-5 md:grid-cols-3">{courses.slice(0, 3).map((course) => <article key={course._id || course.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5"><div className="mb-4 flex h-32 items-center justify-center overflow-hidden rounded-xl bg-orange-500/10 text-orange-300">{(course.images?.[0] || course.thumbnail) ? <img src={assetUrl(course.images?.[0] || course.thumbnail)} alt={course.title} className="h-full w-full object-cover" /> : <BookOpen className="h-10 w-10" />}</div><h3 className="text-lg font-bold text-white">{course.title}</h3><p className="mt-2 line-clamp-2 text-sm text-slate-400">{course.shortDescription || course.description}</p><div className="mt-4 flex items-center justify-between text-xs text-slate-300"><span>{course.duration?.value} {course.duration?.unit}</span><span className="font-bold text-orange-300">₹{Number(course.courseFee || 0).toLocaleString('en-IN')}</span></div></article>)}</div>}
         </section>
 
         <section className="grid gap-6 pb-20 md:grid-cols-3">

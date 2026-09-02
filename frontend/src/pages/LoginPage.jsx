@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Lock, Mail, AlertCircle, ArrowRight, CheckCircle2, UserPlus } from 'lucide-react';
+import { Sparkles, Lock, Mail, AlertCircle, ArrowRight, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { apiFetch } from '../utils/api';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@aischolar.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState('');
@@ -39,14 +39,6 @@ export const LoginPage = () => {
     }
   };
 
-  const handleDirectAccess = () => {
-    setEmail('admin@aischolar.com');
-    setPassword('admin123');
-    localStorage.setItem('ai_scholars_token', 'demo-admin-token');
-    localStorage.setItem('ai_scholars_user', JSON.stringify({ name: 'Super Admin', email: 'admin@aischolar.com', role: 'SUPER_ADMIN' }));
-    navigate('/admin/dashboard');
-  };
-
   return (
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4 font-sans text-slate-100 relative overflow-hidden">
       {/* Background Orbs */}
@@ -76,18 +68,6 @@ export const LoginPage = () => {
         </div>
 
         {/* Demo Credentials Alert Box */}
-        <div className="mb-6 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 font-bold text-orange-400">
-            <CheckCircle2 className="w-4 h-4" /> Demo Access Credentials:
-          </div>
-          <div className="flex justify-between items-center text-slate-300 font-mono text-[11px] pt-1">
-            <span>Email: <strong className="text-white">admin@aischolar.com</strong></span>
-          </div>
-          <div className="flex justify-between items-center text-slate-300 font-mono text-[11px]">
-            <span>Password: <strong className="text-white">admin123</strong></span>
-          </div>
-        </div>
-
         {/* Inline Error Message */}
         {error && (
           <motion.div
@@ -186,13 +166,6 @@ export const LoginPage = () => {
             <span>{isRegister ? 'Switch to Login' : 'Register New Admin'}</span>
           </button>
 
-          <button
-            onClick={handleDirectAccess}
-            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-orange-400" />
-            <span>Direct Access (1-Click Instant Demo)</span>
-          </button>
         </div>
       </motion.div>
     </div>

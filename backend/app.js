@@ -23,7 +23,7 @@ app.use(
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/upload", express.static(path.join(__dirname, "upload")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);

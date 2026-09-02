@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Save } from 'lucide-react';
 import { apiFetch, apiUpload } from '../utils/api';
 
-const emptyForm = { title: '', description: '', category: 'AI & Software Engineering', level: 'Beginner', duration: 4, durationUnit: 'months', courseFee: 30000, registrationFee: 1000, certificateFee: 3000, thumbnail: null };
+const emptyForm = { title: '', description: '', category: 'AI & Software Engineering', level: 'Beginner', duration: 4, durationUnit: 'months', courseFee: 30000, registrationFee: 1000, certificateFee: 3000, images: [] };
 
 export const CourseAdd = () => {
   const { id } = useParams();
@@ -15,7 +15,7 @@ export const CourseAdd = () => {
 
   useEffect(() => {
     if (!id) return;
-    apiFetch(`/api/courses/${id}`).then(({ data }) => setForm({ ...emptyForm, ...data, duration: data.duration?.value || 4, durationUnit: data.duration?.unit || 'months', thumbnail: null })).catch((err) => setError(err.message)).finally(() => setLoading(false));
+    apiFetch(`/api/courses/${id}`).then(({ data }) => setForm({ ...emptyForm, ...data, duration: data.duration?.value || 4, durationUnit: data.duration?.unit || 'months', images: [] })).catch((err) => setError(err.message)).finally(() => setLoading(false));
   }, [id]);
 
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
@@ -35,7 +35,7 @@ export const CourseAdd = () => {
       body.append('courseFee', String(form.courseFee));
       body.append('registrationFee', String(form.registrationFee));
       body.append('certificateFee', String(form.certificateFee));
-      if (form.thumbnail) body.append('thumbnail', form.thumbnail);
+      form.images.forEach((image) => body.append('images', image));
       await apiUpload(id ? `/api/courses/${id}` : '/api/courses', body, id ? 'PUT' : 'POST');
       navigate('/admin/courses');
     } catch (err) {
@@ -63,7 +63,7 @@ export const CourseAdd = () => {
           <label className="text-sm font-semibold text-slate-700">Course fee<input type="number" min="0" required value={form.courseFee} onChange={(e) => update('courseFee', e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 p-3 font-normal outline-none focus:border-orange-500" /></label>
           <label className="text-sm font-semibold text-slate-700">Registration fee<input type="number" min="0" value={form.registrationFee} onChange={(e) => update('registrationFee', e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 p-3 font-normal outline-none focus:border-orange-500" /></label>
           <label className="text-sm font-semibold text-slate-700">Certificate fee<input type="number" min="0" value={form.certificateFee} onChange={(e) => update('certificateFee', e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 p-3 font-normal outline-none focus:border-orange-500" /></label>
-          <label className="sm:col-span-2 text-sm font-semibold text-slate-700">Course thumbnail<input type="file" accept="image/*" onChange={(e) => update('thumbnail', e.target.files?.[0] || null)} className="mt-1 w-full rounded-xl border border-slate-200 p-3 font-normal" /></label>
+          <label className="sm:col-span-2 text-sm font-semibold text-slate-700">Course images<input type="file" accept="image/*" multiple onChange={(e) => update('images', Array.from(e.target.files || []))} className="mt-1 w-full rounded-xl border border-slate-200 p-3 font-normal" /><span className="mt-1 block text-xs font-normal text-slate-500">Select up to 10 images.</span></label>
           <button disabled={saving} className="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving...' : id ? 'Update Course' : 'Save Course'}</button>
         </form>
       </div>

@@ -1,6 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const buildUrl = (path) => `${API_BASE_URL}${path}`;
+export const assetUrl = (path) => path ? (path.startsWith('http') ? path : `${API_BASE_URL}${path}`) : '';
 
 export const apiFetch = async (path, options = {}) => {
   const token = localStorage.getItem('ai_scholars_token');

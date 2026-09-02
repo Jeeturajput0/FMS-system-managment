@@ -66,6 +66,11 @@ const courseSchema = new mongoose.Schema(
       default: "",
     },
 
+    images: {
+      type: [String],
+      default: [],
+    },
+
     level: {
       type: String,
       enum: ["Beginner", "Intermediate", "Advanced", "All Levels"],
@@ -145,7 +150,7 @@ const courseSchema = new mongoose.Schema(
 );
 
 // Generate slug automatically
-courseSchema.pre("save", function (next) {
+courseSchema.pre("save", function () {
   if (this.isModified("title")) {
     this.slug = this.title
       .toLowerCase()
@@ -153,8 +158,6 @@ courseSchema.pre("save", function (next) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
   }
-
-  next();
 });
 
 const Course = mongoose.model("Course", courseSchema);

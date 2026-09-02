@@ -16,7 +16,7 @@ import {
   Clock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiFetch, apiUpload } from "../utils/api";
+import { apiFetch, apiUpload, assetUrl } from "../utils/api";
 
 export const CourseCatalog = () => {
   const { courses, addCourse, replaceCourses } = useData();
@@ -54,6 +54,7 @@ export const CourseCatalog = () => {
             level: course.level || 'Beginner',
             status: course.status || 'Published',
             enrolledStudents: course.enrolledStudents || 0,
+            image: course.images?.[0] || course.thumbnail || '',
           }));
 
           if (normalized.length) {
@@ -236,8 +237,8 @@ export const CourseCatalog = () => {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 font-bold flex items-center justify-center shrink-0">
-                          <BookOpen className="w-4 h-4" />
+                        <div className="w-14 h-10 overflow-hidden rounded-xl bg-amber-100 text-amber-700 font-bold flex items-center justify-center shrink-0">
+                          {c.image ? <img src={assetUrl(c.image)} alt={c.title} className="h-full w-full object-cover" /> : <BookOpen className="w-4 h-4" />}
                         </div>
                         <div>
                           <p className="font-bold text-slate-900 text-sm">
