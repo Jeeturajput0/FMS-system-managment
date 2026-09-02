@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -14,14 +14,19 @@ import {
   Sparkles,
   LogOut,
   ChevronRight,
-  X
+  X,
+  ChevronDown,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import logo from '../../assist/logo.png';
+
 const navItems = [
   { name: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Franchises', path: '/admin/franchises', icon: Building2 },
-  { name: 'Courses', path: '/admin/courses', icon: BookOpen },
+  { name: 'Courses', path: '/admin/courses', icon: BookOpen, children: [
+      { name: 'Catalog', path: '/admin/courses' },
+      { name: 'Modules', path: '/admin/courses/modules' },
+    ]},
   { name: 'Students', path: '/admin/students', icon: Users },
   { name: 'Fees', path: '/admin/fees', icon: CreditCard },
   { name: 'Certificates', path: '/admin/certificates', icon: Award },
@@ -35,6 +40,14 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const { notifications } = useData();
   const user = JSON.parse(localStorage.getItem('ai_scholars_user') || 'null');
   const unreadCount = notifications.filter(n => !n.read).length;
+  const [coursesOpen, setCoursesOpen] = useState(false);
+
+  useEffect(() => {
+    const isCoursesPath = location.pathname.startsWith('/admin/courses') || location.pathname.startsWith('/admin/course-add');
+    if (isCoursesPath) {
+      setCoursesOpen(true);
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -78,6 +91,56 @@ export const Sidebar = ({ isOpen, onClose }) => {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path || (item.path !== '/admin/dashboard' && location.pathname.startsWith(item.path));
+
+            if (item.children) {
+              const isGroupActive = location.pathname.startsWith('/admin/courses') || location.pathname.startsWith('/admin/course-add');
+
+              return (
+                <div key={item.name} className="space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCoursesOpen((prev) => !prev)}
+                    className={`flex w-full items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                      isGroupActive
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/20 font-semibold'
+                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={`w-5 h-5 transition-transform group-hover:scale-110 ${
+                          isGroupActive ? 'text-white' : 'text-slate-400 group-hover:text-orange-400'
+                        }`}
+                      />
+                      <span>{item.name}</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {coursesOpen && (
+                    <div className="ml-5 space-y-1 border-l border-slate-700 pl-3">
+                      {item.children.map((child) => {
+                        const childActive = location.pathname === child.path;
+                        return (
+                          <NavLink
+                            key={child.path}
+                            to={child.path}
+                            onClick={onClose}
+                            className={`block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                              childActive
+                                ? 'bg-slate-800 text-amber-300'
+                                : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+                            }`}
+                          >
+                            {child.name}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
 
             return (
               <NavLink

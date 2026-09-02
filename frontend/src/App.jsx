@@ -13,6 +13,7 @@ import { StudentDetail } from "./pages/StudentDetail";
 import { FeesOverview } from "./pages/FeesOverview";
 import { AdminPlaceholderPage } from "./pages/AdminPlaceholderPage";
 import { CourseAdd } from "./pages/CourseAdd";
+import CourseModules from "./pages/CourseModule";
 
 const ProtectedAdminRoute = () => {
   const location = useLocation();
@@ -43,6 +44,7 @@ function App() {
           <Route path="franchises/:id" element={<FranchiseDetail />} />
           <Route path="courses" element={<CourseCatalog />} />
           <Route path="course-add" element={<CourseAdd />} />
+          <Route path="courses/modules" element={<CourseModules />} />
           <Route path="courses/:id/edit" element={<CourseAdd />} />
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="students" element={<StudentDirectory />} />
