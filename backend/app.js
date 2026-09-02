@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.routes.js";
 import courseRoutes from "./routes/course.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import moduleRoutes from "./routes/module.routes.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/upload", express.static(path.join(__dirname, "upload")));
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/modules", moduleRoutes);
 
 app.get("/", (req, res) => {
   res.json({

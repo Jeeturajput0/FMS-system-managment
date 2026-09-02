@@ -24,7 +24,7 @@ const navItems = [
   { name: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Franchises', path: '/admin/franchises', icon: Building2 },
   { name: 'Courses', path: '/admin/courses', icon: BookOpen, children: [
-      { name: 'Catalog', path: '/admin/courses' },
+      { name: 'Course', path: '/admin/courses' },
       { name: 'Modules', path: '/admin/courses/modules' },
     ]},
   { name: 'Students', path: '/admin/students', icon: Users },
