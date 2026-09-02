@@ -203,3 +203,68 @@ export const deleteModule = async (req, res) => {
     });
   }
 };
+
+export const toggleModulePublish = async (req, res) => {
+  try {
+    const module = await Module.findById(req.params.id);
+
+    if (!module) {
+      return res.status(404).json({
+        success: false,
+        message: "Module not found",
+      });
+    }
+
+    module.isPublished = !module.isPublished;
+    await module.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Module ${module.isPublished ? "published" : "drafted"} successfully`,
+      data: module,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update module publish status",
+      error: error.message,
+    });
+  }
+};
+
+export const reorderModule = async (req, res) => {
+  try {
+    const { order } = req.body;
+
+    if (typeof order !== "number" || order < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid order number is required",
+      });
+    }
+
+    const module = await Module.findById(req.params.id);
+
+    if (!module) {
+      return res.status(404).json({
+        success: false,
+        message: "Module not found",
+      });
+    }
+
+    module.order = order;
+    await module.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Module reordered successfully",
+      data: module,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reorder module",
+      error: error.message,
+    });
+  }
+};

@@ -42,7 +42,7 @@ router.get("/:id", protect, getModuleById);
 router.post(
   "/",
   protect,
-  authorize("SUPER_ADMIN", "AI_SCHOLAR_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN"),
   createModule,
 );
 
@@ -53,7 +53,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("SUPER_ADMIN", "AI_SCHOLAR_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN"),
   updateModule,
 );
 
@@ -64,7 +64,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("SUPER_ADMIN", "AI_SCHOLAR_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN"),
   deleteModule,
 );
 
@@ -75,7 +75,7 @@ router.delete(
 router.patch(
   "/:id/publish",
   protect,
-  authorize("SUPER_ADMIN", "AI_SCHOLAR_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN"),
   toggleModulePublish,
 );
 
@@ -86,7 +86,7 @@ router.patch(
 router.patch(
   "/:id/order",
   protect,
-  authorize("SUPER_ADMIN", "AI_SCHOLAR_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN"),
   reorderModule,
 );
 
