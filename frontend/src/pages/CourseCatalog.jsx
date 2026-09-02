@@ -206,7 +206,6 @@ export const CourseCatalog = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-semibold text-[10px] border-b border-slate-100">
               <tr>
-                <th className="py-4 px-4">ID</th>
                 <th className="py-4 px-4">Course Title</th>
                 <th className="py-4 px-4">Category</th>
                 <th className="py-4 px-4">Duration</th>
@@ -232,9 +231,7 @@ export const CourseCatalog = () => {
                     key={c.id}
                     className="hover:bg-slate-50/80 transition-colors"
                   >
-                    <td className="py-4 px-4 font-mono font-bold text-orange-600">
-                      {c.id}
-                    </td>
+                    
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-14 h-10 overflow-hidden rounded-xl bg-amber-100 text-amber-700 font-bold flex items-center justify-center shrink-0">
