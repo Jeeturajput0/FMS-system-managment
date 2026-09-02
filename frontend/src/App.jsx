@@ -1,6 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
-import Home from "./pages/Home";
 import { AdminLayout } from "./components/AdminLayout";
 import { DashboardOverview } from "./pages/DashboardOverview";
 import { CourseCatalog } from "./pages/CourseCatalog";
@@ -13,6 +12,7 @@ import { StudentDirectory } from "./pages/StudentDirectory";
 import { StudentDetail } from "./pages/StudentDetail";
 import { FeesOverview } from "./pages/FeesOverview";
 import { AdminPlaceholderPage } from "./pages/AdminPlaceholderPage";
+import { CourseAdd } from "./pages/CourseAdd";
 
 const ProtectedAdminRoute = () => {
   const location = useLocation();
@@ -31,7 +31,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/courses" element={<CourseCatalog />} />
         <Route path="/courses/:courseId" element={<CourseDetail />} />
         <Route path="/login" element={<LoginPage />} />
@@ -43,6 +42,8 @@ function App() {
           <Route path="franchises" element={<FranchiseList />} />
           <Route path="franchises/:id" element={<FranchiseDetail />} />
           <Route path="courses" element={<CourseCatalog />} />
+          <Route path="course-add" element={<CourseAdd />} />
+          <Route path="courses/:id/edit" element={<CourseAdd />} />
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="students" element={<StudentDirectory />} />
           <Route path="students/:id" element={<StudentDetail />} />

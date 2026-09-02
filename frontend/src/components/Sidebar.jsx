@@ -33,6 +33,7 @@ const navItems = [
 export const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { notifications } = useData();
+  const user = JSON.parse(localStorage.getItem('ai_scholars_user') || 'null');
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -122,13 +123,14 @@ export const Sidebar = ({ isOpen, onClose }) => {
                 className="w-9 h-9 rounded-full object-cover ring-2 ring-orange-500/50"
               />
               <div className="truncate">
-                <p className="text-sm font-semibold text-white truncate">Arjun Sharma</p>
-                <p className="text-[11px] font-medium text-amber-400 truncate">Super Admin HQ</p>
+                <p className="text-sm font-semibold text-white truncate">{user?.name || 'Admin'}</p>
+                <p className="text-[11px] font-medium text-amber-400 truncate">{user?.role || 'Admin'}</p>
               </div>
             </div>
             <NavLink
               to="/login"
               title="Logout"
+              onClick={() => { localStorage.removeItem('ai_scholars_token'); localStorage.removeItem('ai_scholars_user'); }}
               className="text-slate-400 hover:text-red-400 p-2 rounded-lg hover:bg-slate-800 transition-colors"
             >
               <LogOut className="w-4 h-4" />

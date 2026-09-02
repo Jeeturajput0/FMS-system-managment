@@ -33,7 +33,7 @@ export const DashboardOverview = () => {
 
   // Calculate high level metrics
   const totalFranchisesCount = franchises.length;
-  const totalStudentsCount = students.length * 240; // Scaled for realistic prototype view
+  const totalStudentsCount = students.length;
   const activeCoursesCount = courses.filter((c) => c.status === 'Published').length;
 
   return (
@@ -47,7 +47,7 @@ export const DashboardOverview = () => {
               <Sparkles className="w-3.5 h-3.5" /> AI Scholar Admin OS v3.4
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Good Morning, Arjun 👋
+              Welcome, {JSON.parse(localStorage.getItem('ai_scholars_user') || 'null')?.name || 'Admin'}
             </h2>
             <p className="text-sm text-slate-300 mt-1 max-w-xl">
               Here's what's happening across AI Scholar's nationwide franchise network & LMS platform today.
@@ -99,7 +99,7 @@ export const DashboardOverview = () => {
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <h3 className="text-3xl font-extrabold text-slate-900">1,427</h3>
+            <h3 className="text-3xl font-extrabold text-slate-900">{totalStudentsCount}</h3>
             <span className="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
               <TrendingUp className="w-3 h-3 mr-1" /> +18.4%
             </span>
@@ -118,7 +118,7 @@ export const DashboardOverview = () => {
           <div className="mt-4 flex items-baseline justify-between">
             <h3 className="text-3xl font-extrabold text-slate-900">{activeCoursesCount}</h3>
             <span className="inline-flex items-center text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
-              5 Total Catalog
+              {courses.length} Total Catalog
             </span>
           </div>
           <p className="text-[11px] text-slate-600 mt-2 font-medium">AI & Full Stack curriculum</p>
@@ -133,7 +133,7 @@ export const DashboardOverview = () => {
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <h3 className="text-3xl font-extrabold text-slate-900">₹83,70,000</h3>
+            <h3 className="text-3xl font-extrabold text-slate-900">₹0</h3>
             <span className="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
               <TrendingUp className="w-3 h-3 mr-1" /> +24.8%
             </span>

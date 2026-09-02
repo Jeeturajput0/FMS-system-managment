@@ -3,126 +3,85 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import Course from "../model/course.model.js";
+import { protect, authorize } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadDir = path.join(__dirname, "../uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
-    cb(null, uniqueName);
-  },
-});
-
+fs.mkdirSync(uploadDir, { recursive: true });
 const upload = multer({
-  storage,
+  storage: multer.diskStorage({
+    destination: (_req, _file, callback) => callback(null, uploadDir),
+    filename: (_req, file, callback) => callback(null, `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`),
+  }),
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-const courses = [
-  {
-    id: "CRS-201",
-    title: "Full Stack Web & AI Development",
-    category: "AI & Software Engineering",
-    description: "Master modern full-stack web development with AI integrations, frontend architecture, and backend APIs.",
-    shortDescription: "Frontend + backend + AI integration",
-    duration: { value: 4, unit: "months" },
-    courseFee: 30000,
-    registrationFee: 1000,
-    certificateFee: 3000,
-    level: "Intermediate",
-    status: "Published",
-    thumbnail: "",
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "CRS-202",
-    title: "Python for Artificial Intelligence & ML",
-    category: "AI & Data Science",
-    description: "Hands-on Python, machine learning pipelines, and practical AI model implementation.",
-    shortDescription: "Python for AI and ML",
-    duration: { value: 3, unit: "months" },
-    courseFee: 25000,
-    registrationFee: 1000,
-    certificateFee: 2500,
-    level: "Beginner",
-    status: "Published",
-    thumbnail: "",
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-router.get("/", (_req, res) => {
-  return res.json({
-    success: true,
-    data: courses,
-  });
+const parseBody = (body) => ({
+  title: body.title?.trim(),
+  description: body.description?.trim(),
+  shortDescription: body.shortDescription?.trim() || body.description?.trim(),
+  duration: typeof body.duration === "string" ? JSON.parse(body.duration) : body.duration,
+  courseFee: Number(body.courseFee),
+  registrationFee: Number(body.registrationFee || 0),
+  certificateFee: Number(body.certificateFee || 0),
+  category: body.category || "General",
+  level: body.level || "Beginner",
 });
 
-router.get("/:id", (req, res) => {
-  const course = courses.find((item) => item.id === req.params.id);
-
-  if (!course) {
-    return res.status(404).json({
-      success: false,
-      message: "Course not found",
-    });
+router.get("/", async (_req, res) => {
+  try {
+    const courses = await Course.find({ isActive: true }).sort({ createdAt: -1 });
+    return res.json({ success: true, data: courses, count: courses.length });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to fetch courses", error: error.message });
   }
-
-  return res.json({
-    success: true,
-    data: course,
-  });
 });
 
-router.post("/", upload.single("thumbnail"), (req, res) => {
-  const { title, category, description, shortDescription, duration, courseFee, registrationFee, certificateFee, level } = req.body;
-
-  if (!title || !description) {
-    return res.status(400).json({
-      success: false,
-      message: "Title and description are required",
-    });
+router.get("/:id", async (req, res) => {
+  try {
+    const course = await Course.findOne({ _id: req.params.id, isActive: true });
+    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    return res.json({ success: true, data: course });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: "Invalid course id" });
   }
+});
 
-  const parsedDuration = duration && typeof duration === "string" ? JSON.parse(duration) : { value: 1, unit: "months" };
+router.post("/", protect, authorize("SUPER_ADMIN", "ADMIN"), upload.single("thumbnail"), async (req, res) => {
+  try {
+    const data = parseBody(req.body);
+    if (!data.title || !data.description || !data.duration?.value || Number.isNaN(data.courseFee)) {
+      return res.status(400).json({ success: false, message: "Title, description, duration and course fee are required" });
+    }
+    const course = await Course.create({ ...data, thumbnail: req.file ? `/uploads/${req.file.filename}` : "", isPublished: true, createdBy: req.user._id });
+    return res.status(201).json({ success: true, data: course, message: "Course created successfully" });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || "Course creation failed" });
+  }
+});
 
-  const newCourse = {
-    id: `CRS-${Date.now()}`,
-    title,
-    category: category || "General",
-    description,
-    shortDescription: shortDescription || description,
-    duration: parsedDuration,
-    courseFee: Number(courseFee || 0),
-    registrationFee: Number(registrationFee || 0),
-    certificateFee: Number(certificateFee || 0),
-    level: level || "Beginner",
-    status: "Published",
-    thumbnail: req.file ? `/uploads/${req.file.filename}` : "",
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+router.put("/:id", protect, authorize("SUPER_ADMIN", "ADMIN"), upload.single("thumbnail"), async (req, res) => {
+  try {
+    const updates = parseBody(req.body);
+    if (req.file) updates.thumbnail = `/uploads/${req.file.filename}`;
+    const course = await Course.findOneAndUpdate({ _id: req.params.id, isActive: true }, { ...updates, updatedBy: req.user._id }, { new: true, runValidators: true });
+    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    return res.json({ success: true, data: course, message: "Course updated successfully" });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || "Course update failed" });
+  }
+});
 
-  courses.unshift(newCourse);
-
-  return res.status(201).json({
-    success: true,
-    message: "Course created successfully",
-    data: newCourse,
-  });
+router.delete("/:id", protect, authorize("SUPER_ADMIN", "ADMIN"), async (req, res) => {
+  try {
+    const course = await Course.findOneAndUpdate({ _id: req.params.id, isActive: true }, { isActive: false, updatedBy: req.user._id }, { new: true });
+    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    return res.json({ success: true, id: req.params.id, message: "Course deleted successfully" });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: "Invalid course id" });
+  }
 });
 
 export default router;

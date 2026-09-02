@@ -24,11 +24,11 @@ export const apiFetch = async (path, options = {}) => {
   return payload;
 };
 
-export const apiUpload = async (path, formData) => {
+export const apiUpload = async (path, formData, method = 'POST') => {
   const token = localStorage.getItem('ai_scholars_token');
 
   const response = await fetch(buildUrl(path), {
-    method: 'POST',
+    method,
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },

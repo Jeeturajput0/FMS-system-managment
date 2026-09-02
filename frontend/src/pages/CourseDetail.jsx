@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import {
@@ -17,13 +17,22 @@ import {
   Layers,
   Plus
 } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 export const CourseDetail = () => {
   const { id } = useParams();
-  const { courses, students } = useData();
+  const { students } = useData();
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const course = courses.find((c) => c.id === id) || courses[0];
-  const enrolledList = students.filter((s) => s.courseId === course.id || s.course === course.title);
+  useEffect(() => {
+    apiFetch(`/api/courses/${id}`).then((response) => setCourse(response.data)).catch(() => setCourse(null)).finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <p className="text-sm text-slate-600">Loading course...</p>;
+  if (!course) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">Course not found.</div>;
+
+  const enrolledList = students.filter((s) => s.courseId === (course.id || course._id) || s.course === course.title);
 
   const [activeTab, setActiveTab] = useState('Curriculum');
   const [expandedModules, setExpandedModules] = useState(['MOD-1', 'MOD-2', 'MOD-201']);

@@ -1,5 +1,6 @@
 import express from "express";
 import { protect, authorize } from "../middleware/auth.middleware.js";
+import Course from "../model/course.model.js";
 
 const router = express.Router();
 
@@ -7,7 +8,8 @@ router.get(
   "/dashboard",
   protect,
   authorize("SUPER_ADMIN", "ADMIN"),
-  (req, res) => {
+  async (req, res) => {
+    const courses = await Course.countDocuments({ isActive: true });
     res.json({
       success: true,
       message: "Admin dashboard access verified",
@@ -16,10 +18,10 @@ router.get(
         role: req.user.role,
       },
       stats: {
-        franchises: 42,
-        students: 1427,
-        courses: 18,
-        collections: "₹24.5L",
+        franchises: 0,
+        students: 0,
+        courses,
+        collections: "₹0",
       },
     });
   },

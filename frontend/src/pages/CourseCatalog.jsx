@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import {
   BookOpen,
@@ -20,6 +20,7 @@ import { apiFetch, apiUpload } from "../utils/api";
 
 export const CourseCatalog = () => {
   const { courses, addCourse, replaceCourses } = useData();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -43,7 +44,7 @@ export const CourseCatalog = () => {
         const response = await apiFetch('/api/courses');
         if (Array.isArray(response.data) && response.data.length) {
           const normalized = response.data.map((course) => ({
-            id: course.id,
+            id: course.id || course._id,
             title: course.title,
             category: course.category || 'General',
             duration: `${course.duration?.value || 1} ${course.duration?.unit || 'months'}`,
@@ -153,7 +154,7 @@ export const CourseCatalog = () => {
         </div>
 
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => navigate('/admin/course-add')}
           className="px-4 py-2.5 rounded-xl bg-linear-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -286,6 +287,23 @@ export const CourseCatalog = () => {
                         >
                           <Eye className="w-3.5 h-3.5" /> View
                         </Link>
+                        <Link
+                          to={`/admin/courses/${c.id}/edit`}
+                          className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors font-bold text-xs flex items-center gap-1"
+                        >
+                          <Edit className="w-3.5 h-3.5" /> Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`Delete ${c.title}?`)) return;
+                            await apiFetch(`/api/courses/${c.id}`, { method: 'DELETE' });
+                            replaceCourses(courses.filter((course) => course.id !== c.id));
+                          }}
+                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-bold text-xs flex items-center gap-1"
+                        >
+                          <X className="w-3.5 h-3.5" /> Delete
+                        </button>
                       </div>
                     </td>
                   </tr>

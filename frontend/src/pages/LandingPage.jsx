@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react';
 import logo from '../../assist/logo.png';
+import { apiFetch } from '../utils/api';
 const stats = [
   { label: 'Franchises', value: '42+', icon: Building2 },
   { label: 'Active Students', value: '14.2K', icon: Users },
@@ -38,10 +39,15 @@ const features = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    apiFetch('/api/courses').then((response) => setCourses(response.data || [])).catch(() => setCourses([]));
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.18),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.12),_transparent_30%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.12),transparent_30%)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-8 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.35)] backdrop-blur-sm">
@@ -84,7 +90,7 @@ const LandingPage = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate('/admin/dashboard')}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3.5 text-base font-bold text-white shadow-xl shadow-orange-500/30 transition hover:shadow-orange-500/40"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-orange-500 to-amber-500 px-6 py-3.5 text-base font-bold text-white shadow-xl shadow-orange-500/30 transition hover:shadow-orange-500/40"
               >
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
@@ -120,8 +126,8 @@ const LandingPage = () => {
             transition={{ duration: 0.6, delay: 0.12 }}
             className="relative"
           >
-            <div className="rounded-[32px] border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.7)] backdrop-blur-xl">
-              <div className="rounded-[24px] border border-slate-800 bg-slate-900/90 p-5">
+            <div className="rounded-4xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.7)] backdrop-blur-xl">
+              <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Performance</p>
@@ -144,7 +150,7 @@ const LandingPage = () => {
                   ))}
                 </div>
 
-                <div className="mt-6 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-950 to-slate-900 p-4">
+                <div className="mt-6 rounded-2xl border border-slate-800 bg-linear-to-r from-slate-950 to-slate-900 p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <p className="text-sm font-semibold text-slate-200">Operations Snapshot</p>
                     <span className="text-xs text-emerald-400">healthy</span>
@@ -158,7 +164,7 @@ const LandingPage = () => {
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400"
+                            className="h-full rounded-full bg-linear-to-r from-orange-500 to-amber-400"
                             style={{ width: `${value}%` }}
                           />
                         </div>
@@ -171,6 +177,14 @@ const LandingPage = () => {
           </motion.section>
         </main>
 
+        <section className="pb-20">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Live catalog</p><h2 className="mt-2 text-3xl font-black text-white">Explore current courses</h2></div>
+            <button onClick={() => navigate('/courses')} className="text-sm font-bold text-orange-300 hover:text-white">View all</button>
+          </div>
+          {courses.length === 0 ? <p className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-400">No published courses are available yet.</p> : <div className="grid gap-5 md:grid-cols-3">{courses.slice(0, 3).map((course) => <article key={course._id || course.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5"><div className="mb-4 flex h-32 items-center justify-center rounded-xl bg-orange-500/10 text-orange-300"><BookOpen className="h-10 w-10" /></div><h3 className="text-lg font-bold text-white">{course.title}</h3><p className="mt-2 line-clamp-2 text-sm text-slate-400">{course.shortDescription || course.description}</p><div className="mt-4 flex items-center justify-between text-xs text-slate-300"><span>{course.duration?.value} {course.duration?.unit}</span><span className="font-bold text-orange-300">₹{Number(course.courseFee || 0).toLocaleString('en-IN')}</span></div></article>)}</div>}
+        </section>
+
         <section className="grid gap-6 pb-20 md:grid-cols-3">
           {features.map(({ title, description, icon: Icon }, index) => (
             <motion.article
@@ -180,7 +194,7 @@ const LandingPage = () => {
               transition={{ duration: 0.45, delay: 0.15 + index * 0.1 }}
               className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/30"
             >
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/10 text-orange-300">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-orange-500/20 to-amber-500/10 text-orange-300">
                 <Icon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold text-white">{title}</h3>

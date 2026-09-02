@@ -1,25 +1,15 @@
 import React, { createContext, useContext, useState } from 'react';
-import {
-  initialFranchises,
-  initialCourses,
-  initialStudents,
-  initialPayments,
-  initialCertificates,
-  initialNotifications,
-  initialAdmins,
-  enrollmentChartData
-} from '../data/mockData';
-
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
-  const [franchises, setFranchises] = useState(initialFranchises);
-  const [courses, setCourses] = useState(initialCourses);
-  const [students, setStudents] = useState(initialStudents);
-  const [payments, setPayments] = useState(initialPayments);
-  const [certificates, setCertificates] = useState(initialCertificates);
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const [admins, setAdmins] = useState(initialAdmins);
+  const [franchises, setFranchises] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [certificates, setCertificates] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [admins, setAdmins] = useState([]);
+  const enrollmentChartData = [];
   const [toasts, setToasts] = useState([]);
 
   // Toast notification trigger

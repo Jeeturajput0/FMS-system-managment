@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 export const protect = async (req, res, next) => {
   try {
-    if (process.env.ALLOW_DEV_AUTH === "true" || !process.env.JWT_SECRET) {
+    if (process.env.ALLOW_DEV_AUTH === "true") {
       req.user = {
         _id: process.env.DEV_USER_ID || "dev-user-id",
         role: process.env.DEV_USER_ROLE || "SUPER_ADMIN",
@@ -26,7 +26,7 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "ai-scholars-dev-secret");
 
     req.user = {
       _id: decoded.id || decoded._id || "dev-user-id",
