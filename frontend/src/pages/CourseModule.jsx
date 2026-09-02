@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { BookOpen, CheckCircle2, Trash2, Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+
 
 export default function CourseModules() {
   const { courseId } = useParams();
-
+const navigate = useNavigate();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -96,7 +97,14 @@ export default function CourseModules() {
           Manage course modules and learning topics.
         </p>
       </div>
-
+<div><button
+  onClick={() =>
+    navigate(`/admin/courses/${courseId}/modules/add`)
+  }
+  className="px-4 py-2 bg-orange-500 text-white rounded-lg"
+>
+  + Add Module
+</button></div>
       {/* ================= COURSE INFO ================= */}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
