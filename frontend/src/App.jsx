@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import Home from "./pages/Home";
 import { AdminLayout } from "./components/AdminLayout";
@@ -14,6 +14,18 @@ import { StudentDetail } from "./pages/StudentDetail";
 import { FeesOverview } from "./pages/FeesOverview";
 import { AdminPlaceholderPage } from "./pages/AdminPlaceholderPage";
 
+const ProtectedAdminRoute = () => {
+  const location = useLocation();
+  const token = localStorage.getItem("ai_scholars_token");
+  const user = JSON.parse(localStorage.getItem("ai_scholars_user") || "null");
+
+  if (!token || !user || (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN")) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  return <AdminLayout />;
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -25,7 +37,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/landing" element={<LandingPage />} />
 
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<ProtectedAdminRoute />}>
           <Route index element={<DashboardOverview />} />
           <Route path="dashboard" element={<DashboardOverview />} />
           <Route path="franchises" element={<FranchiseList />} />

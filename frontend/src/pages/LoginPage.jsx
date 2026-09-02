@@ -1,33 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Lock, Mail, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Lock, Mail, AlertCircle, ArrowRight, CheckCircle2, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiFetch } from '../utils/api';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('admin@aischolar.com');
   const [password, setPassword] = useState('admin123');
+  const [name, setName] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      if (email.trim() === 'admin@aischolar.com' && password === 'admin123') {
-        navigate('/admin/dashboard');
-      } else {
-        setError('Invalid email or password. Use demo credentials below.');
-        setIsLoading(false);
-      }
-    }, 400);
+    try {
+      const path = isRegister ? '/api/auth/register' : '/api/auth/login';
+      const payload = isRegister
+        ? { name, email, password, role: 'SUPER_ADMIN' }
+        : { email, password };
+
+      const result = await apiFetch(path, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      localStorage.setItem('ai_scholars_token', result.token);
+      localStorage.setItem('ai_scholars_user', JSON.stringify(result.user));
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError(err.message || 'Unable to authenticate.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDirectAccess = () => {
     setEmail('admin@aischolar.com');
     setPassword('admin123');
+    localStorage.setItem('ai_scholars_token', 'demo-admin-token');
+    localStorage.setItem('ai_scholars_user', JSON.stringify({ name: 'Super Admin', email: 'admin@aischolar.com', role: 'SUPER_ADMIN' }));
     navigate('/admin/dashboard');
   };
 
@@ -45,7 +61,7 @@ export const LoginPage = () => {
       >
         {/* Brand */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
+          <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
@@ -55,8 +71,8 @@ export const LoginPage = () => {
         </div>
 
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-white">Super Admin Login</h3>
-          <p className="text-xs text-slate-400 mt-1">Sign in to access LMS & Franchise OS dashboard</p>
+          <h3 className="text-2xl font-bold text-white">{isRegister ? 'Create Admin Account' : 'Super Admin Login'}</h3>
+          <p className="text-xs text-slate-400 mt-1">{isRegister ? 'Register a new admin user' : 'Sign in to access LMS & Franchise OS dashboard'}</p>
         </div>
 
         {/* Demo Credentials Alert Box */}
@@ -86,6 +102,25 @@ export const LoginPage = () => {
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-4">
+          {isRegister && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+                Full Name
+              </label>
+              <div className="relative">
+                <UserPlus className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  required={isRegister}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter admin name"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-800/90 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500 transition-all"
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
               Email Address
@@ -123,13 +158,13 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 mt-2"
+            className="w-full py-3.5 px-4 rounded-xl bg-linear-to-r from-orange-500 to-amber-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 mt-2"
           >
             {isLoading ? (
-              <span>Authenticating...</span>
+              <span>{isRegister ? 'Creating account...' : 'Authenticating...'}</span>
             ) : (
               <>
-                <span>Sign In</span>
+                <span>{isRegister ? 'Register Admin' : 'Sign In'}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -141,14 +176,24 @@ export const LoginPage = () => {
           <span className="relative px-3 bg-slate-900 text-xs font-medium text-slate-500">OR</span>
         </div>
 
-        {/* Direct Access Quick Button */}
-        <button
-          onClick={handleDirectAccess}
-          className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-        >
-          <Sparkles className="w-4 h-4 text-orange-400" />
-          <span>Direct Access (1-Click Instant Demo)</span>
-        </button>
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setIsRegister((prev) => !prev)}
+            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4 text-orange-400" />
+            <span>{isRegister ? 'Switch to Login' : 'Register New Admin'}</span>
+          </button>
+
+          <button
+            onClick={handleDirectAccess}
+            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-orange-400" />
+            <span>Direct Access (1-Click Instant Demo)</span>
+          </button>
+        </div>
       </motion.div>
     </div>
   );

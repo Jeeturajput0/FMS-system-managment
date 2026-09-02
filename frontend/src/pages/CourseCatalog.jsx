@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useData } from '../context/DataContext';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useData } from "../context/DataContext";
 import {
   BookOpen,
   Plus,
@@ -13,39 +13,127 @@ import {
   Sparkles,
   Award,
   Layers,
-  Clock
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+  Clock,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { apiFetch, apiUpload } from "../utils/api";
 
 export const CourseCatalog = () => {
-  const { courses, addCourse } = useData();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const { courses, addCourse, replaceCourses } = useData();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    title: '',
-    category: 'AI & Software Engineering',
-    duration: '4 Months (16 Weeks)',
-    feePrice: '₹30,000',
+    title: "",
+    category: "AI & Software Engineering",
+    duration: "4 Months (16 Weeks)",
+    feePrice: "₹30,000",
     feePriceNum: 30000,
-    description: '',
-    level: 'Intermediate'
+    description: "",
+    level: "Intermediate",
+    thumbnail: null,
   });
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoading(true);
+        const response = await apiFetch('/api/courses');
+        if (Array.isArray(response.data) && response.data.length) {
+          const normalized = response.data.map((course) => ({
+            id: course.id,
+            title: course.title,
+            category: course.category || 'General',
+            duration: `${course.duration?.value || 1} ${course.duration?.unit || 'months'}`,
+            feePrice: `₹${Number(course.courseFee || 0).toLocaleString('en-IN')}`,
+            feePriceNum: Number(course.courseFee || 0),
+            description: course.description,
+            level: course.level || 'Beginner',
+            status: course.status || 'Published',
+            enrolledStudents: course.enrolledStudents || 0,
+          }));
+
+          if (normalized.length) {
+            replaceCourses(normalized);
+            localStorage.setItem('ai_scholars_courses', JSON.stringify(normalized));
+          }
+        }
+      } catch (err) {
+        console.warn('Course API unavailable, using local mock data.', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
 
   const filteredCourses = courses.filter((c) => {
     const matchesSearch =
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.category.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
+    const matchesStatus = statusFilter === "All" || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.title) {
-      addCourse(formData);
-      setFormData({ title: '', category: 'AI & Software Engineering', duration: '4 Months (16 Weeks)', feePrice: '₹30,000', feePriceNum: 30000, description: '', level: 'Intermediate' });
+    if (!formData.title) return;
+
+    try {
+      const body = new FormData();
+      body.append('title', formData.title);
+      body.append('category', formData.category);
+      body.append('description', formData.description);
+      body.append('shortDescription', formData.description);
+      body.append('level', formData.level);
+      body.append('courseFee', String(formData.feePriceNum || 0));
+      body.append('registrationFee', String(1000));
+      body.append('certificateFee', String(3000));
+      body.append('duration', JSON.stringify({ value: 4, unit: 'months' }));
+      if (formData.thumbnail) body.append('thumbnail', formData.thumbnail);
+
+      const response = await apiUpload('/api/courses', body);
+      addCourse({
+        id: response.data?.id || `CRS-${Date.now()}`,
+        title: response.data?.title || formData.title,
+        category: response.data?.category || formData.category,
+        duration: response.data?.duration ? `${response.data.duration.value} ${response.data.duration.unit}` : formData.duration,
+        feePrice: `₹${Number(response.data?.courseFee || formData.feePriceNum).toLocaleString('en-IN')}`,
+        feePriceNum: Number(response.data?.courseFee || formData.feePriceNum),
+        description: response.data?.description || formData.description,
+        level: response.data?.level || formData.level,
+        status: 'Published',
+        enrolledStudents: 0,
+      });
+
+      setFormData({
+        title: "",
+        category: "AI & Software Engineering",
+        duration: "4 Months (16 Weeks)",
+        feePrice: "₹30,000",
+        feePriceNum: 30000,
+        description: "",
+        level: "Intermediate",
+        thumbnail: null,
+      });
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('Course create failed', err);
+      addCourse({
+        id: `CRS-${Date.now()}`,
+        title: formData.title,
+        category: formData.category,
+        duration: formData.duration,
+        feePrice: formData.feePrice,
+        feePriceNum: formData.feePriceNum,
+        description: formData.description,
+        level: formData.level,
+        status: 'Published',
+        enrolledStudents: 0,
+      });
       setShowAddModal(false);
     }
   };
@@ -59,13 +147,14 @@ export const CourseCatalog = () => {
             Curriculum & Master Course Catalog
           </h2>
           <p className="text-xs text-slate-600 mt-1">
-            Manage master learning tracks, AI certifications, and course syllabus across franchises.
+            Manage master learning tracks, AI certifications, and course
+            syllabus across franchises.
           </p>
         </div>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          className="px-4 py-2.5 rounded-xl bg-linear-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>+ Create New Course</span>
@@ -103,6 +192,12 @@ export const CourseCatalog = () => {
         </div>
       </div>
 
+      {loading && (
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-3 text-xs font-semibold text-orange-700">
+          Syncing course data from backend...
+        </div>
+      )}
+
       {/* Course Catalog Table */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
@@ -122,22 +217,34 @@ export const CourseCatalog = () => {
             <tbody className="divide-y divide-slate-100 font-medium">
               {filteredCourses.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="py-8 text-center text-slate-600 text-xs">
+                  <td
+                    colSpan="8"
+                    className="py-8 text-center text-slate-600 text-xs"
+                  >
                     No courses found matching filter.
                   </td>
                 </tr>
               ) : (
                 filteredCourses.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-4 font-mono font-bold text-orange-600">{c.id}</td>
+                  <tr
+                    key={c.id}
+                    className="hover:bg-slate-50/80 transition-colors"
+                  >
+                    <td className="py-4 px-4 font-mono font-bold text-orange-600">
+                      {c.id}
+                    </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 font-bold flex items-center justify-center shrink-0">
                           <BookOpen className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 text-sm">{c.title}</p>
-                          <p className="text-[10px] text-slate-600">{c.level}</p>
+                          <p className="font-bold text-slate-900 text-sm">
+                            {c.title}
+                          </p>
+                          <p className="text-[10px] text-slate-600">
+                            {c.level}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -146,22 +253,28 @@ export const CourseCatalog = () => {
                         {c.category}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-slate-700 font-medium">{c.duration}</td>
+                    <td className="py-4 px-4 text-slate-700 font-medium">
+                      {c.duration}
+                    </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-1.5 font-bold text-slate-900">
                         <Users className="w-3.5 h-3.5 text-blue-500" />
                         <span>{c.enrolledStudents}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 font-extrabold text-slate-900">{c.feePrice}</td>
+                    <td className="py-4 px-4 font-extrabold text-slate-900">
+                      {c.feePrice}
+                    </td>
                     <td className="py-4 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        c.status === 'Published'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : c.status === 'Draft'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-slate-100 text-slate-600 border border-slate-200'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          c.status === "Published"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : c.status === "Draft"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                        }`}
+                      >
                         {c.status}
                       </span>
                     </td>
@@ -199,8 +312,12 @@ export const CourseCatalog = () => {
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base">Create Master Learning Track</h3>
-                    <p className="text-xs text-slate-600">Add course syllabus & certification track</p>
+                    <h3 className="font-bold text-slate-900 text-base">
+                      Create Master Learning Track
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Add course syllabus & certification track
+                    </p>
                   </div>
                 </div>
                 <button
@@ -213,27 +330,49 @@ export const CourseCatalog = () => {
 
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Course Title *</label>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Course Title *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Full Stack Web & AI Development"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Course Thumbnail</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.files?.[0] || null })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Category</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Category
+                    </label>
                     <select
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white"
                     >
-                      <option value="AI & Software Engineering">AI & Software Engineering</option>
-                      <option value="Artificial Intelligence">Artificial Intelligence</option>
+                      <option value="AI & Software Engineering">
+                        AI & Software Engineering
+                      </option>
+                      <option value="Artificial Intelligence">
+                        Artificial Intelligence
+                      </option>
                       <option value="Data Science">Data Science</option>
                       <option value="Cybersecurity">Cybersecurity</option>
                       <option value="Web Development">Web Development</option>
@@ -241,13 +380,17 @@ export const CourseCatalog = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Fee Price *</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Fee Price *
+                    </label>
                     <input
                       type="text"
                       required
                       placeholder="₹35,000"
                       value={formData.feePrice}
-                      onChange={(e) => setFormData({ ...formData, feePrice: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, feePrice: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white"
                     />
                   </div>
@@ -255,21 +398,29 @@ export const CourseCatalog = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Duration</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Duration
+                    </label>
                     <input
                       type="text"
                       placeholder="6 Months (24 Weeks)"
                       value={formData.duration}
-                      onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, duration: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Difficulty Level</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Difficulty Level
+                    </label>
                     <select
                       value={formData.level}
-                      onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, level: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white"
                     >
                       <option value="Beginner">Beginner</option>
@@ -280,12 +431,16 @@ export const CourseCatalog = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Description</label>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Description
+                  </label>
                   <textarea
                     rows="3"
                     placeholder="Comprehensive learning goals and syllabus summary..."
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white"
                   />
                 </div>

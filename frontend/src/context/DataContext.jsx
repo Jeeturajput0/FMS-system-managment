@@ -68,6 +68,10 @@ export const DataProvider = ({ children }) => {
     showToast(`Course "${newCourse.title}" created successfully!`);
   };
 
+  const replaceCourses = (nextCourses) => {
+    setCourses(nextCourses);
+  };
+
   // Student Actions
   const addStudent = (student) => {
     const newStudent = {
@@ -145,6 +149,7 @@ export const DataProvider = ({ children }) => {
         removeToast,
         addFranchise,
         addCourse,
+        replaceCourses,
         addStudent,
         addAdmin,
         issueCertificate,

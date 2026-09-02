@@ -11,7 +11,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
-
+import logo from '../../assist/logo.png';
 const stats = [
   { label: 'Franchises', value: '42+', icon: Building2 },
   { label: 'Active Students', value: '14.2K', icon: Users },
@@ -46,12 +46,8 @@ const LandingPage = () => {
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-8 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.35)] backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30">
-              <Sparkles className="h-5 w-5" />
-            </div>
             <div>
-              <p className="text-sm font-bold tracking-wide">AI Scholars</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">LMS & franchise OS</p>
+              <img src={logo} alt="" className='h-20 w-70' />
             </div>
           </div>
 

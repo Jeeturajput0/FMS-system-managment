@@ -17,7 +17,7 @@ import {
   X
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
-
+import logo from '../../assist/logo.png';
 const navItems = [
   { name: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Franchises', path: '/admin/franchises', icon: Building2 },
@@ -25,7 +25,6 @@ const navItems = [
   { name: 'Students', path: '/admin/students', icon: Users },
   { name: 'Fees', path: '/admin/fees', icon: CreditCard },
   { name: 'Certificates', path: '/admin/certificates', icon: Award },
-  { name: 'Notifications', path: '/admin/notifications', icon: Bell, badge: true },
   { name: 'Admins', path: '/admin/admins', icon: ShieldCheck },
   { name: 'Reports', path: '/admin/reports', icon: BarChart3 },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
@@ -52,23 +51,23 @@ export const Sidebar = ({ isOpen, onClose }) => {
         } border-r border-slate-800 shadow-2xl`}
       >
         {/* Brand Header */}
-        <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800/80">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20 font-bold text-lg">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="font-bold text-white tracking-wide text-base leading-tight">AI Scholars</h1>
-              <p className="text-[11px] font-medium text-orange-400 uppercase tracking-wider">LMS & Franchise OS</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+      {/* Brand Header */}
+<div className="h-20 px-5 flex items-center justify-between border-b border-slate-800/80">
+  <div className="flex items-center min-w-0">
+    <img
+      src={logo}
+      alt="AI Scholars"
+      className="h-12 w-auto max-w-[190px] object-contain"
+    />
+  </div>
+
+  <button
+    onClick={onClose}
+    className="lg:hidden ml-2 shrink-0 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+  >
+    <X className="w-5 h-5" />
+  </button>
+</div>
 
         {/* Navigation Menu */}
         <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700">
