@@ -3,43 +3,44 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import { AdminLayout } from "./components/AdminLayout";
 import { DashboardOverview } from "./pages/DashboardOverview";
-
-// Add these imports according to your actual file locations
-import CourseCatalog from "./pages/CourseCatalog";
-import CourseDetail from "./pages/CourseDetail";
-import LoginPage from "./pages/LoginPage";
+import { CourseCatalog } from "./pages/CourseCatalog";
+import { CourseDetail } from "./pages/CourseDetail";
+import { LoginPage } from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
-import ProfilePage from "./pages/ProfilePage";
+import { FranchiseList } from "./pages/FranchiseList";
+import { FranchiseDetail } from "./pages/FranchiseDetail";
+import { StudentDirectory } from "./pages/StudentDirectory";
+import { StudentDetail } from "./pages/StudentDetail";
+import { FeesOverview } from "./pages/FeesOverview";
+import { AdminPlaceholderPage } from "./pages/AdminPlaceholderPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/courses" element={<CourseCatalog />} />
         <Route path="/courses/:courseId" element={<CourseDetail />} />
-
         <Route path="/login" element={<LoginPage />} />
         <Route path="/landing" element={<LandingPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
 
-        {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
-
-          {/* /admin */}
           <Route index element={<DashboardOverview />} />
-
-          {/* /admin/dashboard */}
-          <Route
-            path="dashboard"
-            element={<DashboardOverview />}
-          />
-
+          <Route path="dashboard" element={<DashboardOverview />} />
+          <Route path="franchises" element={<FranchiseList />} />
+          <Route path="franchises/:id" element={<FranchiseDetail />} />
+          <Route path="courses" element={<CourseCatalog />} />
+          <Route path="courses/:id" element={<CourseDetail />} />
+          <Route path="students" element={<StudentDirectory />} />
+          <Route path="students/:id" element={<StudentDetail />} />
+          <Route path="fees" element={<FeesOverview />} />
+          <Route path="certificates" element={<AdminPlaceholderPage title="Certificates" />} />
+          <Route path="notifications" element={<AdminPlaceholderPage title="Notifications" />} />
+          <Route path="admins" element={<AdminPlaceholderPage title="Admins" />} />
+          <Route path="reports" element={<AdminPlaceholderPage title="Reports" />} />
+          <Route path="settings" element={<AdminPlaceholderPage title="Settings" />} />
         </Route>
-
       </Routes>
     </BrowserRouter>
   );
