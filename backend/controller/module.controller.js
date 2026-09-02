@@ -1,10 +1,6 @@
 import Module from "../model/module.model.js";
 import Course from "../model/course.model.js";
 
-// =========================
-// CREATE MODULE
-// POST /api/modules
-// =========================
 export const createModule = async (req, res) => {
   try {
     const {
@@ -69,11 +65,6 @@ export const createModule = async (req, res) => {
   }
 };
 
-
-// =========================
-// GET ALL MODULES
-// GET /api/modules
-// =========================
 export const getModules = async (req, res) => {
   try {
     const modules = await Module.find()
@@ -93,11 +84,6 @@ export const getModules = async (req, res) => {
   }
 };
 
-
-// =========================
-// GET MODULES BY COURSE
-// GET /api/modules/course/:courseId
-// =========================
 export const getModulesByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -123,11 +109,6 @@ export const getModulesByCourse = async (req, res) => {
   }
 };
 
-
-// =========================
-// GET SINGLE MODULE
-// GET /api/modules/:id
-// =========================
 export const getModuleById = async (req, res) => {
   try {
     const module = await Module.findById(req.params.id)
@@ -154,11 +135,6 @@ export const getModuleById = async (req, res) => {
   }
 };
 
-
-// =========================
-// UPDATE MODULE
-// PUT /api/modules/:id
-// =========================
 export const updateModule = async (req, res) => {
   try {
     const module = await Module.findByIdAndUpdate(
@@ -191,11 +167,6 @@ export const updateModule = async (req, res) => {
   }
 };
 
-
-// =========================
-// DELETE MODULE
-// DELETE /api/modules/:id
-// =========================
 export const deleteModule = async (req, res) => {
   try {
     const module = await Module.findById(req.params.id);
