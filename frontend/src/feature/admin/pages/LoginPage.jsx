@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, AlertCircle, ArrowRight, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
-import { apiFetch } from "../utils/api";
-import logo from "../../assist/logo.png";
+import { apiFetch } from "../../../utils/api";
+import logo from "../../../../assist/logo.png";
 
 export const LoginPage = () => {
   const navigate = useNavigate();

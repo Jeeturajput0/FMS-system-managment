@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { apiFetch } from "../utils/api";
+import { apiFetch } from "../../../utils/api";
 
 /* =========================================================
    API ENDPOINTS

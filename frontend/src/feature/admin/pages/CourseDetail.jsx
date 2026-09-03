@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useData } from '../context/DataContext';
+import { useData } from '../../../context/DataContext';
 import {
   BookOpen,
   ChevronLeft,
@@ -17,7 +17,7 @@ import {
   Layers,
   Plus
 } from 'lucide-react';
-import { apiFetch } from '../utils/api';
+import { apiFetch } from '../../../utils/api';
 
 export const CourseDetail = () => {
   const { id } = useParams();

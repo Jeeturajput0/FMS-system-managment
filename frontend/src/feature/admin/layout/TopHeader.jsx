@@ -11,7 +11,7 @@ import {
   LogOut,
   Sparkles
 } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useData } from '../../../context/DataContext';
 
 const titleMap = {
   '/admin/dashboard': 'Overview Dashboard',

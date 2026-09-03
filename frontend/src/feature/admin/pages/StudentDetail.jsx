@@ -8,7 +8,7 @@ import {
   Phone,
   UserRound,
 } from "lucide-react";
-import { useData } from "../context/DataContext";
+import { useData } from "../../../context/DataContext";
 
 export const StudentDetail = () => {
   const { id } = useParams();

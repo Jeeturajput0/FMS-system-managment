@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, BookOpen, Save } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { apiFetch, apiUpload } from "../utils/api";
+import { apiFetch, apiUpload } from "../../../utils/api";
 
 export const CourseAdd = () => {
   // =========================

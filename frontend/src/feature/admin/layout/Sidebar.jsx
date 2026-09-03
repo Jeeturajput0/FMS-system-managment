@@ -17,8 +17,8 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
-import { useData } from '../context/DataContext';
-import logo from '../../assist/logo.png';
+import { useData } from '../../../context/DataContext';
+import logo from '../../../../assist/logo.png';
 
 const navItems = [
   { name: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },

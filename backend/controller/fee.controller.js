@@ -9,7 +9,9 @@ export const getFees = async (req, res) => {
     const query = {};
     if (req.query.studentId) {
       if (!mongoose.Types.ObjectId.isValid(req.query.studentId)) {
-        return res.status(400).json({ success: false, message: "Invalid student ID" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid student ID" });
       }
       query.studentId = req.query.studentId;
     }
@@ -33,30 +35,52 @@ export const getFees = async (req, res) => {
 
     return res.json({ success: true, data: fees, payments });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Failed to fetch fees", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to fetch fees",
+        error: error.message,
+      });
   }
 };
 
 export const createPayment = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const { amount, feeType = "Course Fee", paymentMode = "Cash", note = "" } = req.body;
+    const {
+      amount,
+      feeType = "Course Fee",
+      paymentMode = "Cash",
+      note = "",
+    } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
-      return res.status(400).json({ success: false, message: "Invalid student ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid student ID" });
     }
     const paymentAmount = toNumber(amount);
     if (paymentAmount <= 0) {
-      return res.status(400).json({ success: false, message: "Payment amount must be greater than zero" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Payment amount must be greater than zero",
+        });
     }
 
     const fee = await Fee.findOne({ studentId });
     const student = await Student.findById(studentId);
     if (!fee || !student) {
-      return res.status(404).json({ success: false, message: "Student fee record not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Student fee record not found" });
     }
     if (paymentAmount > fee.totalPending) {
-      return res.status(400).json({ success: false, message: "Payment cannot exceed pending fee" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment cannot exceed pending fee" });
     }
 
     const payment = {
@@ -70,15 +94,33 @@ export const createPayment = async (req, res) => {
     fee.payments.push(payment);
     fee.totalPaid += paymentAmount;
     fee.totalPending = Math.max(fee.totalAmount - fee.totalPaid, 0);
-    fee.status = fee.totalPending === 0 ? "Paid" : fee.totalPaid > 0 ? "Partial" : "Pending";
+    fee.status =
+      fee.totalPending === 0
+        ? "Paid"
+        : fee.totalPaid > 0
+          ? "Partial"
+          : "Pending";
     await fee.save();
 
     student.totalPaid = fee.totalPaid;
     student.totalPending = fee.totalPending;
     await student.save();
 
-    return res.status(201).json({ success: true, message: "Payment recorded successfully", fee, payment: fee.payments.at(-1) });
+    return res
+      .status(201)
+      .json({
+        success: true,
+        message: "Payment recorded successfully",
+        fee,
+        payment: fee.payments.at(-1),
+      });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Failed to record payment", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to record payment",
+        error: error.message,
+      });
   }
 };

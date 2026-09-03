@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useData } from "../context/DataContext";
+import { useData } from "../../../context/DataContext";
 import {
   BookOpen,
   Plus,
@@ -16,7 +16,7 @@ import {
   Clock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiFetch, apiUpload, assetUrl } from "../utils/api";
+import { apiFetch, apiUpload, assetUrl } from "../../../utils/api";
 
 export const CourseCatalog = () => {
   const { courses, addCourse, replaceCourses } = useData();

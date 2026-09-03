@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowUpRight, CreditCard, IndianRupee, TrendingUp } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useData } from '../../../context/DataContext';
 
 export const FeesOverview = () => {
   const { students, payments, fees } = useData();

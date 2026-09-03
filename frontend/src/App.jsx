@@ -5,22 +5,22 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import { AdminLayout } from "../src/feature/admin/layout/AdminLayout";
 
-import { AdminLayout } from "./components/AdminLayout";
-import { DashboardOverview } from "./pages/DashboardOverview";
-import { CourseCatalog } from "./pages/CourseCatalog";
-import { CourseDetail } from "./pages/CourseDetail";
-import { LoginPage } from "./pages/LoginPage";
-import LandingPage from "./pages/LandingPage";
-import { FranchiseList } from "./pages/FranchiseList";
-import { FranchiseDetail } from "./pages/FranchiseDetail";
-import { StudentDirectory } from "./pages/StudentDirectory";
-import { StudentDetail } from "./pages/StudentDetail";
-import { FeesOverview } from "./pages/FeesOverview";
-import { AdminPlaceholderPage } from "./pages/AdminPlaceholderPage";
-import { CourseAdd } from "./pages/CourseAdd";
-import CourseModules from "./pages/CourseModule";
-import ModuleAdd from "./pages/ModuleAdd";
+import { DashboardOverview } from "./feature/admin/pages/DashboardOverview";
+import { CourseCatalog } from "./feature/admin/pages/CourseCatalog";
+import { CourseDetail } from "./feature/admin/pages/CourseDetail";
+import { LoginPage } from "./feature/admin/pages/LoginPage";
+import LandingPage from "./feature/admin/pages/LandingPage";
+import { FranchiseList } from "./feature/admin/pages/FranchiseList";
+import { FranchiseDetail } from "./feature/admin/pages/FranchiseDetail";
+import { StudentDirectory } from "./feature/admin/pages/StudentDirectory";
+import { StudentDetail } from "./feature/admin/pages/StudentDetail";
+import { FeesOverview } from "./feature/admin/pages/FeesOverview";
+import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
+import { CourseAdd } from "./feature/admin/pages/CourseAdd";
+import CourseModules from "./feature/admin/pages/CourseModule";
+import ModuleAdd from "./feature/admin/pages/ModuleAdd";
 
 const ProtectedAdminRoute = () => {
   const location = useLocation();

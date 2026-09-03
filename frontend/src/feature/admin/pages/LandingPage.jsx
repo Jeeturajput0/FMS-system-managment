@@ -11,8 +11,8 @@ import {
   Users,
 } from "lucide-react";
 
-import logo from "../../assist/logo.png";
-import { apiFetch, assetUrl } from "../utils/api";
+import logo from "../../../../assist/logo.png";
+import { apiFetch, assetUrl } from "../../../utils/api";
 
 const stats = [
   {
