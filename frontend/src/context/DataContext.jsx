@@ -7,7 +7,7 @@ const formatDuration = (duration) =>
     ? `${duration.value || 1} ${duration.unit || 'months'}`
     : duration || '1 month';
 
-const normalizeCoaching = (coaching) => ({
+export const normalizeCoaching = (coaching) => ({
   ...coaching,
   id: coaching._id || coaching.id,
   owner: coaching.ownerName || '',
@@ -129,6 +129,23 @@ export const DataProvider = ({ children }) => {
     return newFranchise;
   };
 
+  const updateFranchise = async (id, franchise) => {
+    const response = await apiFetch(`/api/coaching/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(franchise),
+    });
+    const updatedFranchise = normalizeCoaching(response.coaching);
+    setFranchises((prev) => prev.map((item) => item.id === id ? updatedFranchise : item));
+    showToast(`Franchise "${updatedFranchise.name}" updated successfully!`);
+    return updatedFranchise;
+  };
+
+  const deleteFranchise = async (id) => {
+    const response = await apiFetch(`/api/coaching/${id}`, { method: 'DELETE' });
+    setFranchises((prev) => prev.filter((item) => item.id !== id));
+    showToast(response.message || 'Franchise deactivated successfully!');
+  };
+
   // Course Actions
   const addCourse = (course) => {
     const newCourse = {
@@ -242,6 +259,8 @@ export const DataProvider = ({ children }) => {
         removeToast,
         addFranchise,
         createFranchise,
+        updateFranchise,
+        deleteFranchise,
         addCourse,
         replaceCourses,
         addStudent,

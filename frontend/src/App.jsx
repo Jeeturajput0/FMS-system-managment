@@ -14,6 +14,7 @@ import { LoginPage } from "./feature/admin/pages/LoginPage";
 import LandingPage from "./feature/admin/pages/LandingPage";
 import { FranchiseList } from "./feature/admin/pages/FranchiseList";
 import { FranchiseDetail } from "./feature/admin/pages/FranchiseDetail";
+import FranchiseForm from "./feature/admin/pages/FranchiseForm";
 import { StudentDirectory } from "./feature/admin/pages/StudentDirectory";
 import { StudentDetail } from "./feature/admin/pages/StudentDetail";
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
@@ -52,7 +53,9 @@ function App() {
           <Route index element={<DashboardOverview />} />
           <Route path="dashboard" element={<DashboardOverview />} />
           <Route path="franchises" element={<FranchiseList />} />
+          <Route path="franchises/add" element={<FranchiseForm />} />
           <Route path="franchises/:id" element={<FranchiseDetail />} />
+          <Route path="franchises/:id/edit" element={<FranchiseForm />} />
           <Route path="courses" element={<CourseCatalog />} />
           <Route path="course-add" element={<CourseAdd />} />
           <Route path="courses/modules" element={<CourseModules />} />

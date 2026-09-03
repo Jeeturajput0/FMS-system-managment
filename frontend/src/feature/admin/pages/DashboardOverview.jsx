@@ -62,7 +62,7 @@ export const DashboardOverview = () => {
               <BookOpen className="w-4 h-4 text-orange-400" /> Catalog
             </Link>
             <Link
-              to="/admin/franchises"
+              to="/admin/franchises/add"
               className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2"
             >
               <Plus className="w-4 h-4" /> Add Franchise
