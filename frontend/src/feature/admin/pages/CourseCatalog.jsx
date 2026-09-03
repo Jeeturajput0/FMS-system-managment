@@ -216,7 +216,7 @@ export const CourseCatalog = () => {
                 <th className="py-4 px-4">Course Title</th>
                 <th className="py-4 px-4">Category</th>
                 <th className="py-4 px-4">Duration</th>
-                <th className="py-4 px-4">Enrolled Students</th>
+                <th className="py-4 px-4">Choching</th>
                 <th className="py-4 px-4">Fee Price</th>
                 <th className="py-4 px-4">Status</th>
                 <th className="py-4 px-4 text-right">Actions</th>
