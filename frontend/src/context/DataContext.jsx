@@ -7,6 +7,25 @@ const formatDuration = (duration) =>
     ? `${duration.value || 1} ${duration.unit || 'months'}`
     : duration || '1 month';
 
+const normalizeCoaching = (coaching) => ({
+  ...coaching,
+  id: coaching._id || coaching.id,
+  owner: coaching.ownerName || '',
+  location: [coaching.city, coaching.state].filter(Boolean).join(', '),
+  established: coaching.joinedDate
+    ? new Date(coaching.joinedDate).toLocaleDateString('en-IN')
+    : '',
+  status: coaching.status
+    ? coaching.status[0].toUpperCase() + coaching.status.slice(1)
+    : 'Pending',
+  studentsCount: coaching.studentsCount || 0,
+  activeBatches: coaching.activeBatches || 0,
+  revenue: coaching.revenue || '₹0',
+  rating: coaching.rating || 0,
+  teachersCount: coaching.teachersCount || 0,
+  coursesOffered: coaching.coursesOffered || [],
+});
+
 const normalizeStudent = (student) => {
   const course = student.courseId && typeof student.courseId === 'object' ? student.courseId : null;
   const coaching = student.coachingId && typeof student.coachingId === 'object' ? student.coachingId : null;
@@ -42,10 +61,11 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const loadBackendData = async () => {
       try {
-        const [courseResponse, studentResponse, feeResponse] = await Promise.all([
+        const [courseResponse, studentResponse, feeResponse, coachingResponse] = await Promise.all([
           apiFetch('/api/courses'),
           apiFetch('/api/students?limit=1000'),
           apiFetch('/api/fees'),
+          apiFetch('/api/coaching'),
         ]);
         setCourses((courseResponse.data || []).map((course) => ({
           ...course,
@@ -58,6 +78,7 @@ export const DataProvider = ({ children }) => {
         setStudents((studentResponse.data || []).map(normalizeStudent));
         setFees(feeResponse.data || []);
         setPayments(feeResponse.payments || []);
+        setFranchises((coachingResponse.coachings || []).map(normalizeCoaching));
       } catch (error) {
         console.warn('Student and fee API unavailable, using local data.', error.message);
       }
@@ -95,6 +116,17 @@ export const DataProvider = ({ children }) => {
     };
     setFranchises((prev) => [newFranchise, ...prev]);
     showToast(`Franchise "${newFranchise.name}" added successfully!`);
+  };
+
+  const createFranchise = async (franchise) => {
+    const response = await apiFetch('/api/coaching', {
+      method: 'POST',
+      body: JSON.stringify(franchise),
+    });
+    const newFranchise = normalizeCoaching(response.coaching);
+    setFranchises((prev) => [newFranchise, ...prev]);
+    showToast(`Franchise "${newFranchise.name}" created successfully!`);
+    return newFranchise;
   };
 
   // Course Actions
@@ -209,6 +241,7 @@ export const DataProvider = ({ children }) => {
         showToast,
         removeToast,
         addFranchise,
+        createFranchise,
         addCourse,
         replaceCourses,
         addStudent,

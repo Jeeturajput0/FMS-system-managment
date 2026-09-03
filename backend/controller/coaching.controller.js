@@ -1,10 +1,12 @@
-const mongoose = require("mongoose");
-const Coaching = require("../models/coaching.model");
-const Course = require("../models/course.model");
+import mongoose from "mongoose";
+import Coaching from "../model/coaching.model.js";
 
-/* =========================================================
-   CREATE COACHING / FRANCHISE
-========================================================= */
+/*
+=========================================
+CREATE FRANCHISE
+POST /api/coaching
+=========================================
+*/
 
 const createCoaching = async (req, res) => {
   try {
@@ -12,181 +14,101 @@ const createCoaching = async (req, res) => {
       name,
       code,
       ownerName,
-      ownerEmail,
-      ownerPhone,
       email,
       phone,
-      alternatePhone,
       address,
       city,
       state,
       pincode,
-      country,
       logo,
-      website,
-      gstNumber,
-      panNumber,
-      documents,
-      agreementStartDate,
-      agreementEndDate,
-      notes,
+      status,
     } = req.body;
 
-    /* -----------------------------------------------------
-       VALIDATION
-    ----------------------------------------------------- */
-
-    if (!name) {
+    if (!name || !ownerName || !email || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Coaching name is required",
+        message: "Name, owner name, email and phone are required",
       });
     }
 
-    if (!ownerName) {
+    // Check duplicate email
+    const existingEmail = await Coaching.findOne({ email });
+
+    if (existingEmail) {
       return res.status(400).json({
         success: false,
-        message: "Owner name is required",
+        message: "Franchise with this email already exists",
       });
     }
 
-    if (!ownerPhone) {
-      return res.status(400).json({
-        success: false,
-        message: "Owner phone is required",
-      });
-    }
-
-    /* -----------------------------------------------------
-       DUPLICATE NAME
-    ----------------------------------------------------- */
-
-    const existingName = await Coaching.findOne({
-      name: {
-        $regex: `^${name.trim()}$`,
-        $options: "i",
-      },
-    });
-
-    if (existingName) {
-      return res.status(409).json({
-        success: false,
-        message: "A coaching/franchise with this name already exists",
-      });
-    }
-
-    /* -----------------------------------------------------
-       DUPLICATE CODE
-    ----------------------------------------------------- */
-
+    // Check duplicate code
     if (code) {
       const existingCode = await Coaching.findOne({
-        code: code.toUpperCase().trim(),
+        code: code.toUpperCase(),
       });
 
       if (existingCode) {
-        return res.status(409).json({
+        return res.status(400).json({
           success: false,
-          message: "Coaching code already exists",
+          message: "Franchise code already exists",
         });
       }
     }
 
-    /* -----------------------------------------------------
-       CREATE
-    ----------------------------------------------------- */
-
     const coaching = await Coaching.create({
-      name: name.trim(),
-      code: code ? code.toUpperCase().trim() : undefined,
-
-      ownerName: ownerName.trim(),
-
-      ownerEmail: ownerEmail?.trim().toLowerCase(),
-
-      ownerPhone: ownerPhone.trim(),
-
-      email: email?.trim().toLowerCase(),
-
-      phone: phone?.trim(),
-
-      alternatePhone: alternatePhone?.trim(),
-
-      address: address?.trim(),
-
-      city: city?.trim(),
-
-      state: state?.trim(),
-
-      pincode: pincode?.trim(),
-
-      country: country?.trim() || "India",
-
-      logo: logo || "",
-
-      website: website?.trim(),
-
-      gstNumber: gstNumber?.toUpperCase().trim(),
-
-      panNumber: panNumber?.toUpperCase().trim(),
-
-      documents: Array.isArray(documents) ? documents : [],
-
-      agreementStartDate,
-
-      agreementEndDate,
-
-      notes: notes?.trim(),
-
-      createdBy: req.user?._id,
+      name,
+      code,
+      ownerName,
+      email,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+      logo,
+      status: status || "pending",
+      ...(mongoose.isValidObjectId(req.user?._id)
+        ? { createdBy: req.user._id }
+        : {}),
     });
 
     return res.status(201).json({
       success: true,
-      message: "Coaching/franchise created successfully",
+      message: "Franchise created successfully",
       coaching,
     });
   } catch (error) {
-    console.error("CREATE COACHING ERROR:", error);
+    console.error("Create coaching error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to create coaching/franchise",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      message: "Failed to create franchise",
+      error: error.message,
     });
   }
 };
 
-/* =========================================================
-   GET ALL COACHINGS
-========================================================= */
+/*
+=========================================
+GET ALL FRANCHISES
+GET /api/coaching
+=========================================
+*/
 
 const getCoachings = async (req, res) => {
   try {
-    const { search, status, city, state, page = 1, limit = 20 } = req.query;
+    const { status, search, page = 1, limit = 20 } = req.query;
 
     const filter = {};
 
-    /* -----------------------------------------------------
-       SEARCH
-    ----------------------------------------------------- */
+    if (status && status !== "All") {
+      filter.status = status;
+    }
 
     if (search) {
       filter.$or = [
         {
           name: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-        {
-          coachingId: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-        {
-          code: {
             $regex: search,
             $options: "i",
           },
@@ -198,7 +120,19 @@ const getCoachings = async (req, res) => {
           },
         },
         {
-          ownerPhone: {
+          email: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          code: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          city: {
             $regex: search,
             $options: "i",
           },
@@ -206,49 +140,16 @@ const getCoachings = async (req, res) => {
       ];
     }
 
-    /* -----------------------------------------------------
-       FILTERS
-    ----------------------------------------------------- */
-
-    if (status && status !== "All") {
-      filter.status = status;
-    }
-
-    if (city) {
-      filter.city = {
-        $regex: city,
-        $options: "i",
-      };
-    }
-
-    if (state) {
-      filter.state = {
-        $regex: state,
-        $options: "i",
-      };
-    }
-
-    /* -----------------------------------------------------
-       PAGINATION
-    ----------------------------------------------------- */
-
-    const pageNumber = Math.max(Number(page), 1);
-
-    const limitNumber = Math.min(Math.max(Number(limit), 1), 100);
-
-    const skip = (pageNumber - 1) * limitNumber;
+    const skip = (Number(page) - 1) * Number(limit);
 
     const [coachings, total] = await Promise.all([
       Coaching.find(filter)
-        .populate("courses", "title slug courseFee duration level")
-        .populate("approvedBy", "name email role")
         .populate("createdBy", "name email role")
         .sort({
           createdAt: -1,
         })
         .skip(skip)
-        .limit(limitNumber)
-        .lean(),
+        .limit(Number(limit)),
 
       Coaching.countDocuments(filter),
     ]);
@@ -258,81 +159,40 @@ const getCoachings = async (req, res) => {
       coachings,
       pagination: {
         total,
-        page: pageNumber,
-        limit: limitNumber,
-        totalPages: Math.ceil(total / limitNumber),
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
       },
     });
   } catch (error) {
-    console.error("GET COACHINGS ERROR:", error);
+    console.error("Get coachings error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch coachings",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      message: "Failed to fetch franchises",
+      error: error.message,
     });
   }
 };
 
-/* =========================================================
-   GET ACTIVE COACHINGS
-========================================================= */
-
-const getActiveCoachings = async (req, res) => {
-  try {
-    const coachings = await Coaching.find({
-      isActive: true,
-      status: "active",
-    })
-      .select("coachingId name code city state logo status")
-      .sort({
-        name: 1,
-      })
-      .lean();
-
-    return res.status(200).json({
-      success: true,
-      coachings,
-    });
-  } catch (error) {
-    console.error("GET ACTIVE COACHINGS ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch active coachings",
-    });
-  }
-};
-
-/* =========================================================
-   GET COACHING BY ID
-========================================================= */
+/*
+=========================================
+GET SINGLE FRANCHISE
+GET /api/coaching/:id
+=========================================
+*/
 
 const getCoachingById = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id)
-      .populate(
-        "courses",
-        "title slug description courseFee duration level category isPublished",
-      )
-      .populate("approvedBy", "name email role")
-      .populate("createdBy", "name email role")
-      .populate("updatedBy", "name email role")
-      .populate("adminUserId", "name email role");
+    const coaching = await Coaching.findById(req.params.id).populate(
+      "createdBy",
+      "name email role",
+    );
 
     if (!coaching) {
       return res.status(404).json({
         success: false,
-        message: "Coaching/franchise not found",
+        message: "Franchise not found",
       });
     }
 
@@ -341,558 +201,222 @@ const getCoachingById = async (req, res) => {
       coaching,
     });
   } catch (error) {
-    console.error("GET COACHING ERROR:", error);
+    console.error("Get coaching error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch coaching",
+      message: "Failed to fetch franchise",
+      error: error.message,
     });
   }
 };
 
-/* =========================================================
-   UPDATE COACHING
-========================================================= */
+/*
+=========================================
+UPDATE FRANCHISE
+PUT /api/coaching/:id
+=========================================
+*/
 
 const updateCoaching = async (req, res) => {
   try {
-    const { id } = req.params;
+    const {
+      name,
+      code,
+      ownerName,
+      email,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+      logo,
+      status,
+    } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id);
+    const coaching = await Coaching.findById(req.params.id);
 
     if (!coaching) {
       return res.status(404).json({
         success: false,
-        message: "Coaching/franchise not found",
+        message: "Franchise not found",
       });
     }
 
-    const allowedFields = [
-      "name",
-      "code",
-      "ownerName",
-      "ownerEmail",
-      "ownerPhone",
-      "email",
-      "phone",
-      "alternatePhone",
-      "address",
-      "city",
-      "state",
-      "pincode",
-      "country",
-      "logo",
-      "website",
-      "gstNumber",
-      "panNumber",
-      "documents",
-      "agreementStartDate",
-      "agreementEndDate",
-      "notes",
-    ];
-
-    allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        coaching[field] = req.body[field];
-      }
-    });
-
-    if (req.body.code) {
-      const duplicate = await Coaching.findOne({
-        code: req.body.code.toUpperCase().trim(),
-
+    if (email && email !== coaching.email) {
+      const emailExists = await Coaching.findOne({
+        email,
         _id: {
-          $ne: id,
+          $ne: coaching._id,
         },
       });
 
-      if (duplicate) {
-        return res.status(409).json({
+      if (emailExists) {
+        return res.status(400).json({
           success: false,
-          message: "Coaching code already exists",
+          message: "Email already used by another franchise",
         });
       }
-
-      coaching.code = req.body.code.toUpperCase().trim();
     }
 
-    if (req.body.name) {
-      const duplicate = await Coaching.findOne({
-        name: {
-          $regex: `^${req.body.name.trim()}$`,
-          $options: "i",
-        },
+    if (code) {
+      const codeExists = await Coaching.findOne({
+        code: code.toUpperCase(),
         _id: {
-          $ne: id,
+          $ne: coaching._id,
         },
       });
 
-      if (duplicate) {
-        return res.status(409).json({
+      if (codeExists) {
+        return res.status(400).json({
           success: false,
-          message: "Another coaching with this name already exists",
+          message: "Franchise code already exists",
         });
       }
-
-      coaching.name = req.body.name.trim();
     }
 
-    coaching.updatedBy = req.user?._id;
+    coaching.name = name ?? coaching.name;
+
+    coaching.code = code?.toUpperCase() ?? coaching.code;
+
+    coaching.ownerName = ownerName ?? coaching.ownerName;
+
+    coaching.email = email?.toLowerCase() ?? coaching.email;
+
+    coaching.phone = phone ?? coaching.phone;
+
+    coaching.address = address ?? coaching.address;
+
+    coaching.city = city ?? coaching.city;
+
+    coaching.state = state ?? coaching.state;
+
+    coaching.pincode = pincode ?? coaching.pincode;
+
+    coaching.logo = logo ?? coaching.logo;
+
+    coaching.status = status ?? coaching.status;
+
+    if (mongoose.isValidObjectId(req.user?._id)) {
+      coaching.updatedBy = req.user._id;
+    }
 
     await coaching.save();
 
     return res.status(200).json({
       success: true,
-      message: "Coaching updated successfully",
+      message: "Franchise updated successfully",
       coaching,
     });
   } catch (error) {
-    console.error("UPDATE COACHING ERROR:", error);
+    console.error("Update coaching error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update coaching",
+      message: "Failed to update franchise",
+      error: error.message,
     });
   }
 };
 
-/* =========================================================
-   DELETE / DEACTIVATE COACHING
-========================================================= */
+/*
+=========================================
+DELETE FRANCHISE
+DELETE /api/coaching/:id
+=========================================
+*/
 
 const deleteCoaching = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id);
+    const coaching = await Coaching.findById(req.params.id);
 
     if (!coaching) {
       return res.status(404).json({
         success: false,
-        message: "Coaching/franchise not found",
+        message: "Franchise not found",
       });
     }
 
-    /*
-      Soft delete.
-      We don't physically remove the
-      franchise because students,
-      batches, payments etc. may refer
-      to it.
-    */
-
-    coaching.isActive = false;
+    // Soft delete
     coaching.status = "inactive";
-    coaching.updatedBy = req.user?._id;
+    if (mongoose.isValidObjectId(req.user?._id)) {
+      coaching.updatedBy = req.user._id;
+    }
 
     await coaching.save();
 
     return res.status(200).json({
       success: true,
-      message: "Coaching deactivated successfully",
+      message: "Franchise deactivated successfully",
     });
   } catch (error) {
-    console.error("DELETE COACHING ERROR:", error);
+    console.error("Delete coaching error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to deactivate coaching",
+      message: "Failed to delete franchise",
+      error: error.message,
     });
   }
 };
 
-/* =========================================================
-   APPROVE COACHING
-========================================================= */
+/*
+=========================================
+UPDATE STATUS
+PATCH /api/coaching/:id/status
+=========================================
+*/
 
-const approveCoaching = async (req, res) => {
+const updateCoachingStatus = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { status } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const allowedStatuses = ["pending", "active", "suspended", "inactive"];
+
+    if (!allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid coaching ID",
+        message: "Invalid status",
       });
     }
 
-    const coaching = await Coaching.findById(id);
+    const coaching = await Coaching.findById(req.params.id);
 
     if (!coaching) {
       return res.status(404).json({
         success: false,
-        message: "Coaching/franchise not found",
+        message: "Franchise not found",
       });
     }
 
-    coaching.approvalStatus = "approved";
-
-    coaching.status = "active";
-
-    coaching.isActive = true;
-
-    coaching.approvedAt = new Date();
-
-    coaching.approvedBy = req.user?._id;
-
-    coaching.rejectionReason = undefined;
-
-    coaching.updatedBy = req.user?._id;
+    coaching.status = status;
+    if (mongoose.isValidObjectId(req.user?._id)) {
+      coaching.updatedBy = req.user._id;
+    }
 
     await coaching.save();
 
     return res.status(200).json({
       success: true,
-      message: "Coaching approved successfully",
+      message: "Franchise status updated",
       coaching,
     });
   } catch (error) {
-    console.error("APPROVE COACHING ERROR:", error);
+    console.error("Status update error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to approve coaching",
+      message: "Failed to update status",
+      error: error.message,
     });
   }
 };
 
-/* =========================================================
-   REJECT COACHING
-========================================================= */
-
-const rejectCoaching = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const { rejectionReason } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id);
-
-    if (!coaching) {
-      return res.status(404).json({
-        success: false,
-        message: "Coaching/franchise not found",
-      });
-    }
-
-    coaching.approvalStatus = "rejected";
-
-    coaching.status = "rejected";
-
-    coaching.isActive = false;
-
-    coaching.rejectionReason = rejectionReason || "";
-
-    coaching.updatedBy = req.user?._id;
-
-    await coaching.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Coaching rejected successfully",
-      coaching,
-    });
-  } catch (error) {
-    console.error("REJECT COACHING ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to reject coaching",
-    });
-  }
-};
-
-/* =========================================================
-   SUSPEND COACHING
-========================================================= */
-
-const suspendCoaching = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id);
-
-    if (!coaching) {
-      return res.status(404).json({
-        success: false,
-        message: "Coaching/franchise not found",
-      });
-    }
-
-    coaching.status = "suspended";
-
-    coaching.isActive = false;
-
-    coaching.updatedBy = req.user?._id;
-
-    await coaching.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Coaching suspended successfully",
-      coaching,
-    });
-  } catch (error) {
-    console.error("SUSPEND COACHING ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to suspend coaching",
-    });
-  }
-};
-
-/* =========================================================
-   ACTIVATE COACHING
-========================================================= */
-
-const activateCoaching = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id);
-
-    if (!coaching) {
-      return res.status(404).json({
-        success: false,
-        message: "Coaching/franchise not found",
-      });
-    }
-
-    coaching.status = "active";
-
-    coaching.isActive = true;
-
-    coaching.approvalStatus = "approved";
-
-    coaching.updatedBy = req.user?._id;
-
-    await coaching.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Coaching activated successfully",
-      coaching,
-    });
-  } catch (error) {
-    console.error("ACTIVATE COACHING ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to activate coaching",
-    });
-  }
-};
-
-/* =========================================================
-   ASSIGN COURSE TO FRANCHISE
-========================================================= */
-
-const assignCourseToCoaching = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { courseId } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(courseId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid course ID",
-      });
-    }
-
-    const [coaching, course] = await Promise.all([
-      Coaching.findById(id),
-      Course.findById(courseId),
-    ]);
-
-    if (!coaching) {
-      return res.status(404).json({
-        success: false,
-        message: "Coaching/franchise not found",
-      });
-    }
-
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: "Course not found",
-      });
-    }
-
-    const alreadyAssigned = coaching.courses.some(
-      (existingCourseId) => existingCourseId.toString() === courseId.toString(),
-    );
-
-    if (alreadyAssigned) {
-      return res.status(400).json({
-        success: false,
-        message: "Course is already assigned to this coaching",
-      });
-    }
-
-    coaching.courses.push(course._id);
-
-    coaching.updatedBy = req.user?._id;
-
-    await coaching.save();
-
-    /*
-      Also update Course.availableForFranchises
-    */
-
-    const alreadyAvailable = course.availableForFranchises?.some(
-      (coachingId) => coachingId.toString() === id.toString(),
-    );
-
-    if (!alreadyAvailable) {
-      course.availableForFranchises = course.availableForFranchises || [];
-
-      course.availableForFranchises.push(coaching._id);
-
-      course.updatedBy = req.user?._id;
-
-      await course.save();
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Course assigned to coaching successfully",
-      coaching,
-    });
-  } catch (error) {
-    console.error("ASSIGN COURSE ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to assign course",
-    });
-  }
-};
-
-/* =========================================================
-   REMOVE COURSE FROM FRANCHISE
-========================================================= */
-
-const removeCourseFromCoaching = async (req, res) => {
-  try {
-    const { id, courseId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coaching ID",
-      });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(courseId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid course ID",
-      });
-    }
-
-    const coaching = await Coaching.findById(id);
-
-    if (!coaching) {
-      return res.status(404).json({
-        success: false,
-        message: "Coaching/franchise not found",
-      });
-    }
-
-    coaching.courses = coaching.courses.filter(
-      (existingCourseId) => existingCourseId.toString() !== courseId.toString(),
-    );
-
-    coaching.updatedBy = req.user?._id;
-
-    await coaching.save();
-
-    /*
-      Remove franchise from course availability
-    */
-
-    await Course.findByIdAndUpdate(courseId, {
-      $pull: {
-        availableForFranchises: coaching._id,
-      },
-      $set: {
-        updatedBy: req.user?._id,
-      },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Course removed from coaching successfully",
-      coaching,
-    });
-  } catch (error) {
-    console.error("REMOVE COURSE ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to remove course",
-    });
-  }
-};
-
-/* =========================================================
-   EXPORT
-========================================================= */
-
-module.exports = {
+export {
   createCoaching,
   getCoachings,
-  getActiveCoachings,
   getCoachingById,
   updateCoaching,
   deleteCoaching,
-  approveCoaching,
-  rejectCoaching,
-  suspendCoaching,
-  activateCoaching,
-  assignCourseToCoaching,
-  removeCourseFromCoaching,
+  updateCoachingStatus,
 };

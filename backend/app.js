@@ -10,6 +10,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import moduleRoutes from "./routes/module.routes.js";
 import Studentroutes from "./routes/student.routes.js";
 import feeRoutes from "./routes/fee.routes.js";
+import  router from "./routes/coaching.routes.js";
 
 dotenv.config();
 
@@ -32,8 +33,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/modules", moduleRoutes);
-app.use("/api/students",Studentroutes);
+app.use("/api/students", Studentroutes);
 app.use("/api/fees", feeRoutes);
+app.use("/api/coaching", router);
 
 app.get("/", (req, res) => {
   res.json({

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useData } from '../../../context/DataContext';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useData } from "../../../context/DataContext";
 import {
   Building2,
   Search,
@@ -15,42 +15,53 @@ import {
   Sparkles,
   Phone,
   Mail,
-  UserCheck
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+  UserCheck,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const FranchiseList = () => {
-  const { franchises, addFranchise } = useData();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const { franchises, createFranchise } = useData();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    owner: '',
-    email: '',
-    phone: '',
-    location: '',
-    address: ''
+    name: "",
+    code: "",
+    owner: "",
+    email: "",
+    phone: "",
+    location: "",
+    address: "",
   });
-
   const filteredFranchises = franchises.filter((f) => {
     const matchesSearch =
-      f.name.toLowerCase().includes(search.toLowerCase()) ||
-      f.owner.toLowerCase().includes(search.toLowerCase()) ||
-      f.location.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || f.status === statusFilter;
+      (f.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (f.owner || '').toLowerCase().includes(search.toLowerCase()) ||
+      (f.location || '').toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === "All" || f.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.name && formData.owner) {
-      addFranchise(formData);
-      setFormData({ name: '', code: '', owner: '', email: '', phone: '', location: '', address: '' });
-      setShowAddModal(false);
+      try {
+        await createFranchise({
+          name: formData.name,
+          code: formData.code,
+          ownerName: formData.owner,
+          email: formData.email,
+          phone: formData.phone,
+          city: formData.location,
+          address: formData.address,
+        });
+        setFormData({ name: "", code: "", owner: "", email: "", phone: "", location: "", address: "" });
+        setShowAddModal(false);
+      } catch (error) {
+        console.error("Franchise create failed", error);
+      }
     }
   };
 
@@ -59,8 +70,12 @@ export const FranchiseList = () => {
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Franchise Network</h2>
-          <p className="text-xs text-slate-600 mt-1">Manage AI Scholar authorized learning franchise centers</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            Franchise Network
+          </h2>
+          <p className="text-xs text-slate-600 mt-1">
+            Manage AI Scholar authorized learning franchise centers
+          </p>
         </div>
 
         <button
@@ -97,7 +112,7 @@ export const FranchiseList = () => {
           >
             <option value="All">All Statuses</option>
             <option value="Active">Active</option>
-            <option value="Pending Setup">Pending Setup</option>
+            <option value="Pending">Pending</option>
           </select>
         </div>
       </div>
@@ -121,22 +136,34 @@ export const FranchiseList = () => {
             <tbody className="divide-y divide-slate-100 font-medium">
               {filteredFranchises.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="py-8 text-center text-slate-600 text-xs">
+                  <td
+                    colSpan="8"
+                    className="py-8 text-center text-slate-600 text-xs"
+                  >
                     No franchises found matching criteria.
                   </td>
                 </tr>
               ) : (
                 filteredFranchises.map((f) => (
-                  <tr key={f.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-4 font-mono font-bold text-orange-600">{f.id}</td>
+                  <tr
+                    key={f.id}
+                    className="hover:bg-slate-50/80 transition-colors"
+                  >
+                    <td className="py-4 px-4 font-mono font-bold text-orange-600">
+                      {f.id}
+                    </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-700 font-bold flex items-center justify-center shrink-0">
                           <Building2 className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 text-sm">{f.name}</p>
-                          <p className="text-[10px] text-slate-600 font-mono">{f.code}</p>
+                          <p className="font-bold text-slate-900 text-sm">
+                            {f.name}
+                          </p>
+                          <p className="text-[10px] text-slate-600 font-mono">
+                            {f.code}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -156,13 +183,17 @@ export const FranchiseList = () => {
                         <span>{f.studentsCount}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 font-bold text-slate-900">{f.revenue}</td>
+                    <td className="py-4 px-4 font-bold text-slate-900">
+                      {f.revenue}
+                    </td>
                     <td className="py-4 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        f.status === 'Active'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          f.status === "Active"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}
+                      >
                         {f.status}
                       </span>
                     </td>
@@ -200,8 +231,12 @@ export const FranchiseList = () => {
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base">Add New Franchise Center</h3>
-                    <p className="text-xs text-slate-600">Register an authorized AI Scholar franchise</p>
+                    <h3 className="font-bold text-slate-900 text-base">
+                      Add New Franchise Center
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Register an authorized AI Scholar franchise
+                    </p>
                   </div>
                 </div>
                 <button
@@ -215,24 +250,32 @@ export const FranchiseList = () => {
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Franchise Name *</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Franchise Name *
+                    </label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. AI Scholar Agra"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Center Code *</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Center Code *
+                    </label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. AIS-AGR"
                       value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, code: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
@@ -240,24 +283,32 @@ export const FranchiseList = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Owner Full Name *</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Owner Full Name *
+                    </label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Dr. Rajesh Sharma"
                       value={formData.owner}
-                      onChange={(e) => setFormData({ ...formData, owner: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, owner: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Contact Email *</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Contact Email *
+                    </label>
                     <input
                       type="email"
                       required
                       placeholder="agra@aischolar.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
@@ -265,35 +316,48 @@ export const FranchiseList = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Phone Number</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Phone Number
+                    </label>
                     <input
                       type="text"
+                      required
                       placeholder="+91 98765 43210"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">City / Region *</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      City / Region *
+                    </label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Agra, UP"
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Full Physical Address</label>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Full Physical Address
+                  </label>
                   <textarea
                     rows="2"
                     placeholder="Full street address..."
                     value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
                   />
                 </div>
