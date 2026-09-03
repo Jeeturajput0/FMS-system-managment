@@ -7,6 +7,7 @@ export const apiFetch = async (path, options = {}) => {
   const token = localStorage.getItem('ai_scholars_token');
 
   const response = await fetch(buildUrl(path), {
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -24,6 +24,8 @@ export const CourseDetail = () => {
   const { students } = useData();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('Curriculum');
+  const [expandedModules, setExpandedModules] = useState(['MOD-1', 'MOD-2', 'MOD-201']);
 
   useEffect(() => {
     apiFetch(`/api/courses/${id}`).then((response) => setCourse(response.data)).catch(() => setCourse(null)).finally(() => setLoading(false));
@@ -33,9 +35,6 @@ export const CourseDetail = () => {
   if (!course) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">Course not found.</div>;
 
   const enrolledList = students.filter((s) => s.courseId === (course.id || course._id) || s.course === course.title);
-
-  const [activeTab, setActiveTab] = useState('Curriculum');
-  const [expandedModules, setExpandedModules] = useState(['MOD-1', 'MOD-2', 'MOD-201']);
 
   const toggleModule = (modId) => {
     setExpandedModules((prev) =>
@@ -91,7 +90,11 @@ export const CourseDetail = () => {
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-600">Duration</p>
-            <p className="text-sm font-bold text-slate-900">{course.duration}</p>
+            <p className="text-sm font-bold text-slate-900">
+              {course.duration && typeof course.duration === 'object'
+                ? `${course.duration.value || 1} ${course.duration.unit || 'months'}`
+                : course.duration || '1 month'}
+            </p>
           </div>
         </div>
       </div>

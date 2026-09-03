@@ -2,6 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiFetch } from '../utils/api';
 const DataContext = createContext();
 
+const formatDuration = (duration) =>
+  duration && typeof duration === 'object'
+    ? `${duration.value || 1} ${duration.unit || 'months'}`
+    : duration || '1 month';
+
 const normalizeStudent = (student) => {
   const course = student.courseId && typeof student.courseId === 'object' ? student.courseId : null;
   const coaching = student.coachingId && typeof student.coachingId === 'object' ? student.coachingId : null;
@@ -45,6 +50,7 @@ export const DataProvider = ({ children }) => {
         setCourses((courseResponse.data || []).map((course) => ({
           ...course,
           id: course._id || course.id,
+          durationText: formatDuration(course.duration),
           feePriceNum: Number(course.courseFee || 0),
           feePrice: `₹${Number(course.courseFee || 0).toLocaleString('en-IN')}`,
           status: course.isPublished ? 'Published' : 'Draft',

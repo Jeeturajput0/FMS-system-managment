@@ -47,7 +47,12 @@ export const CourseCatalog = () => {
             id: course.id || course._id,
             title: course.title,
             category: course.category || 'General',
-            duration: `${course.duration?.value || 1} ${course.duration?.unit || 'months'}`,
+            duration: course.duration && typeof course.duration === 'object'
+              ? `${course.duration.value || 1} ${course.duration.unit || 'months'}`
+              : course.duration || '1 month',
+            durationText: course.duration && typeof course.duration === 'object'
+              ? `${course.duration.value || 1} ${course.duration.unit || 'months'}`
+              : course.duration || '1 month',
             feePrice: `₹${Number(course.courseFee || 0).toLocaleString('en-IN')}`,
             feePriceNum: Number(course.courseFee || 0),
             description: course.description,
@@ -253,7 +258,7 @@ export const CourseCatalog = () => {
                       </span>
                     </td>
                     <td className="py-4 px-4 text-slate-700 font-medium">
-                      {c.duration}
+                      {c.durationText || c.duration || '1 month'}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-1.5 font-bold text-slate-900">

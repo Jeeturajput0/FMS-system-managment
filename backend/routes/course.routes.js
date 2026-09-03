@@ -8,6 +8,7 @@ import {
 } from "../controller/course.controller.js";
 import { protect, authorize } from "../middleware/auth.middleware.js";
 import { requireDatabase } from "../middleware/db.middleware.js";
+import { courseUpload } from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
@@ -18,12 +19,14 @@ router.post(
   "/",
   protect,
   authorize("SUPER_ADMIN", "ADMIN"),
+  courseUpload,
   createCourse,
 );
 router.put(
   "/:id",
   protect,
   authorize("SUPER_ADMIN", "ADMIN"),
+  courseUpload,
   updateCourse,
 );
 router.delete("/:id", protect, authorize("SUPER_ADMIN", "ADMIN"), deleteCourse);

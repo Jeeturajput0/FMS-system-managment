@@ -584,7 +584,9 @@ const LandingPage = () => {
                       "
                     >
                       <span>
-                        {course.duration?.value} {course.duration?.unit}
+                        {course.duration && typeof course.duration === "object"
+                          ? `${course.duration.value || 1} ${course.duration.unit || "months"}`
+                          : course.duration || "1 month"}
                       </span>
 
                       <span className="font-bold text-orange-300">
