@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Loader2, Pencil, Save } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2, Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
 const defaultFormData = {
   courseId: "",
+  courseIds: [],
   title: "",
   description: "",
   order: 1,
@@ -12,6 +13,8 @@ const defaultFormData = {
   durationUnit: "hours",
   isPublished: false,
 };
+
+const emptyTopic = () => ({ title: "", description: "", type: "Lesson", durationValue: 0, durationUnit: "minutes" });
 
 const ModuleAdd = () => {
   const { courseId: urlCourseId, id: moduleId } = useParams();
@@ -26,11 +29,13 @@ const ModuleAdd = () => {
   const [formData, setFormData] = useState({
     ...defaultFormData,
     courseId: urlCourseId || "",
+    courseIds: urlCourseId ? [urlCourseId] : [],
   });
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(Boolean(moduleId));
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [error, setError] = useState("");
+  const [topics, setTopics] = useState([]);
 
   const pageMeta = useMemo(() => {
     if (isViewMode) {
@@ -88,6 +93,7 @@ const ModuleAdd = () => {
 
         setFormData({
           courseId: module.courseId?._id || module.courseId || urlCourseId || "",
+          courseIds: [module.courseId?._id || module.courseId || urlCourseId || ""].filter(Boolean),
           title: module.title || "",
           description: module.description || "",
           order: module.order || 1,
@@ -95,6 +101,13 @@ const ModuleAdd = () => {
           durationUnit: module.duration?.unit || "hours",
           isPublished: Boolean(module.isPublished),
         });
+        setTopics((module.topics || []).map((topic) => ({
+          title: topic.title || "",
+          description: topic.description || "",
+          type: topic.type || "Lesson",
+          durationValue: topic.duration?.value || 0,
+          durationUnit: topic.duration?.unit || "minutes",
+        })));
       } catch (loadError) {
         console.error("LOAD MODULE:", loadError);
         setError(loadError.message);
@@ -115,6 +128,24 @@ const ModuleAdd = () => {
     }));
   };
 
+  const toggleCourse = (courseId) => {
+    if (isEditMode || isViewMode) {
+      setFormData((prev) => ({ ...prev, courseId }));
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      courseIds: prev.courseIds.includes(courseId)
+        ? prev.courseIds.filter((id) => id !== courseId)
+        : [...prev.courseIds, courseId],
+    }));
+  };
+
+  const updateTopic = (index, field, value) => {
+    setTopics((prev) => prev.map((topic, topicIndex) => topicIndex === index ? { ...topic, [field]: value } : topic));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -122,8 +153,9 @@ const ModuleAdd = () => {
 
     setError("");
 
-    if (!formData.courseId) {
-      setError("Please select a course.");
+    const selectedCourseIds = isCreateMode ? formData.courseIds : [formData.courseId];
+    if (selectedCourseIds.length === 0) {
+      setError("Please select at least one course.");
       return;
     }
 
@@ -136,7 +168,7 @@ const ModuleAdd = () => {
       setLoading(true);
 
       const payload = {
-        courseId: formData.courseId,
+        ...(isCreateMode ? { courseIds: selectedCourseIds } : { courseId: formData.courseId }),
         title: formData.title.trim(),
         description: formData.description.trim(),
         order: Number(formData.order),
@@ -144,6 +176,12 @@ const ModuleAdd = () => {
           value: Number(formData.durationValue),
           unit: formData.durationUnit,
         },
+        topics: topics.filter((topic) => topic.title.trim()).map((topic) => ({
+          title: topic.title.trim(),
+          description: topic.description.trim(),
+          type: topic.type,
+          duration: { value: Number(topic.durationValue), unit: topic.durationUnit },
+        })),
         isPublished: Boolean(formData.isPublished),
       };
 
@@ -162,7 +200,7 @@ const ModuleAdd = () => {
             : "Module created successfully"),
       );
 
-      navigate(`/admin/courses/${formData.courseId}/modules`);
+      navigate(`/admin/courses/${selectedCourseIds[0]}/modules`);
     } catch (submitError) {
       console.error("SAVE MODULE:", submitError);
       setError(submitError.message);
@@ -253,28 +291,14 @@ const ModuleAdd = () => {
 
           <div className="space-y-6 p-6">
             <div>
-              <label className="mb-2 block text-sm font-bold text-slate-700">
-                Course *
-              </label>
-              <select
-                name="courseId"
-                value={formData.courseId}
-                onChange={handleChange}
-                disabled={coursesLoading || readOnly}
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100 disabled:bg-slate-100"
-              >
-                <option value="">
-                  {coursesLoading ? "Loading courses..." : "Select Course"}
-                </option>
-                {courses.map((course) => (
-                  <option key={course._id} value={course._id}>
-                    {course.title}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1.5 text-xs text-slate-400">
-                Select the master course to which this module belongs.
-              </p>
+              <label className="mb-2 block text-sm font-bold text-slate-700">{isCreateMode ? "Courses *" : "Course *"}</label>
+              <div className="max-h-56 space-y-2 overflow-y-auto rounded-xl border border-slate-300 bg-white p-3">
+                {coursesLoading ? <p className="text-sm text-slate-500">Loading courses...</p> : courses.map((course) => {
+                  const selected = isCreateMode ? formData.courseIds.includes(course._id) : formData.courseId === course._id;
+                  return <label key={course._id} className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-slate-50"><input type={isCreateMode ? "checkbox" : "radio"} name="course" checked={selected} disabled={readOnly} onChange={() => toggleCourse(course._id)} className="h-4 w-4 accent-orange-500" /><span className="text-sm font-medium text-slate-700">{course.title}</span></label>;
+                })}
+              </div>
+              <p className="mt-1.5 text-xs text-slate-400">{isCreateMode ? "Select one or more courses. A module will be created for each selected course." : "A module belongs to one course; choose its assigned course."}</p>
             </div>
 
             <div>
@@ -357,6 +381,14 @@ const ModuleAdd = () => {
                   Example: 1, 2, 3...
                 </p>
               </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div><p className="text-sm font-bold text-slate-800">Topics</p><p className="mt-1 text-xs text-slate-500">Add multiple lessons, videos, PDFs, assignments or tests to this module.</p></div>
+                {!readOnly && <button type="button" onClick={() => setTopics((prev) => [...prev, emptyTopic()])} className="inline-flex items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600"><Plus className="h-3.5 w-3.5" /> Add Topic</button>}
+              </div>
+              {topics.length === 0 ? <p className="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-xs text-slate-500">No topics yet. For example: HTML Basics, HTML Tags, Forms, and Semantic HTML.</p> : <div className="space-y-3">{topics.map((topic, index) => <div key={index} className="rounded-xl border border-slate-200 bg-white p-4"><div className="mb-3 flex items-center justify-between"><p className="text-xs font-bold text-slate-700">Topic {index + 1}</p>{!readOnly && <button type="button" onClick={() => setTopics((prev) => prev.filter((_, topicIndex) => topicIndex !== index))} className="text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /></button>}</div><div className="grid gap-3 md:grid-cols-2"><input value={topic.title} readOnly={readOnly} onChange={(event) => updateTopic(index, "title", event.target.value)} placeholder="Topic title, e.g. HTML Tags" className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 read-only:bg-slate-50" /><select value={topic.type} disabled={readOnly} onChange={(event) => updateTopic(index, "type", event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500 disabled:bg-slate-50"><option>Lesson</option><option>Video</option><option>PDF</option><option>Assignment</option><option>Test</option></select><input value={topic.durationValue} readOnly={readOnly} type="number" min="0" onChange={(event) => updateTopic(index, "durationValue", event.target.value)} placeholder="Duration" className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 read-only:bg-slate-50" /><select value={topic.durationUnit} disabled={readOnly} onChange={(event) => updateTopic(index, "durationUnit", event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500 disabled:bg-slate-50"><option value="minutes">Minutes</option><option value="hours">Hours</option><option value="days">Days</option></select></div><textarea value={topic.description} readOnly={readOnly} onChange={(event) => updateTopic(index, "description", event.target.value)} rows="2" placeholder="Topic description (optional)" className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 read-only:bg-slate-50" /></div>)}</div>}
             </div>
 
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4">

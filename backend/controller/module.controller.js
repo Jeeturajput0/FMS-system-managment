@@ -1,5 +1,6 @@
 import Module from "../model/module.model.js";
 import Course from "../model/course.model.js";
+import Topic from "../model/topic.model.js";
 
 // ======================================================
 // CREATE MODULE
@@ -8,14 +9,16 @@ import Course from "../model/course.model.js";
 
 export const createModule = async (req, res) => {
   try {
-    const { courseId, title, description, order, duration, isPublished } =
-      req.body;
+    const { courseId, courseIds, title, description, order, duration, isPublished, topics } = req.body;
+    const selectedCourseIds = [...new Set(
+      (Array.isArray(courseIds) ? courseIds : [courseId]).filter(Boolean),
+    )];
 
     // ----------------------------------------------
     // Validation
     // ----------------------------------------------
 
-    if (!courseId) {
+    if (selectedCourseIds.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Course is required",
@@ -33,12 +36,12 @@ export const createModule = async (req, res) => {
     // Check Course
     // ----------------------------------------------
 
-    const course = await Course.findOne({
-      _id: courseId,
+    const courses = await Course.find({
+      _id: { $in: selectedCourseIds },
       isActive: true,
     });
 
-    if (!course) {
+    if (courses.length !== selectedCourseIds.length) {
       return res.status(404).json({
         success: false,
         message: "Course not found",
@@ -49,59 +52,49 @@ export const createModule = async (req, res) => {
     // Automatic Order
     // ----------------------------------------------
 
-    let moduleOrder = Number(order);
+    const modules = await Promise.all(selectedCourseIds.map(async (selectedCourseId) => {
+      let moduleOrder = Number(order);
+      if (!moduleOrder || moduleOrder < 1) {
+        const lastModule = await Module.findOne({ courseId: selectedCourseId, isActive: true }).sort({ order: -1 });
+        moduleOrder = lastModule ? lastModule.order + 1 : 1;
+      }
 
-    if (!moduleOrder || moduleOrder < 1) {
-      const lastModule = await Module.findOne({
-        courseId,
+      return Module.create({
+        courseId: selectedCourseId,
+        title: title.trim(),
+        description: description?.trim() || "",
+        order: moduleOrder,
+        duration: { value: Number(duration?.value || 0), unit: duration?.unit || "hours" },
+        isPublished: Boolean(isPublished),
         isActive: true,
-      }).sort({
-        order: -1,
+        createdBy: req.user._id,
       });
+    }));
 
-      moduleOrder = lastModule ? lastModule.order + 1 : 1;
+    await Promise.all(modules.map((module) => Course.findByIdAndUpdate(module.courseId, {
+      $addToSet: { modules: module._id },
+    })));
+
+    const topicData = Array.isArray(topics) ? topics.filter((topic) => topic?.title?.trim()) : [];
+    if (topicData.length) {
+      await Promise.all(modules.map(async (module) => {
+        const createdTopics = await Topic.create(topicData.map((topic, index) => ({
+          moduleId: module._id,
+          title: topic.title.trim(),
+          description: topic.description?.trim() || "",
+          type: topic.type || "Lesson",
+          duration: { value: Number(topic.duration?.value || 0), unit: topic.duration?.unit || "minutes" },
+          order: index + 1,
+        })));
+        module.topics = createdTopics.map((topic) => topic._id);
+        await module.save();
+      }));
     }
-
-    // ----------------------------------------------
-    // Create Module
-    // ----------------------------------------------
-
-    const module = await Module.create({
-      courseId,
-
-      title: title.trim(),
-
-      description: description?.trim() || "",
-
-      order: moduleOrder,
-
-      duration: {
-        value: Number(duration?.value || 0),
-
-        unit: duration?.unit || "hours",
-      },
-
-      isPublished: Boolean(isPublished),
-
-      isActive: true,
-
-      createdBy: req.user._id,
-    });
-
-    // ----------------------------------------------
-    // Add module to Course
-    // ----------------------------------------------
-
-    await Course.findByIdAndUpdate(courseId, {
-      $addToSet: {
-        modules: module._id,
-      },
-    });
 
     return res.status(201).json({
       success: true,
-      message: "Module created successfully",
-      data: module,
+      message: `${modules.length} module${modules.length === 1 ? "" : "s"} created successfully`,
+      data: modules,
     });
   } catch (error) {
     console.error("CREATE MODULE ERROR:", error);
@@ -236,7 +229,7 @@ export const getModuleById = async (req, res) => {
 
 export const updateModule = async (req, res) => {
   try {
-    const { courseId, title, description, order, duration, isPublished } =
+    const { courseId, title, description, order, duration, isPublished, topics } =
       req.body;
 
     if (!courseId) {
@@ -306,6 +299,20 @@ export const updateModule = async (req, res) => {
 
     if (typeof isPublished === "boolean") {
       module.isPublished = isPublished;
+    }
+
+    if (Array.isArray(topics)) {
+      await Topic.deleteMany({ moduleId: module._id });
+      const topicData = topics.filter((topic) => topic?.title?.trim());
+      const createdTopics = topicData.length ? await Topic.create(topicData.map((topic, index) => ({
+        moduleId: module._id,
+        title: topic.title.trim(),
+        description: topic.description?.trim() || "",
+        type: topic.type || "Lesson",
+        duration: { value: Number(topic.duration?.value || 0), unit: topic.duration?.unit || "minutes" },
+        order: index + 1,
+      }))) : [];
+      module.topics = createdTopics.map((topic) => topic._id);
     }
 
     module.updatedBy = req.user._id;
@@ -380,6 +387,7 @@ export const deleteModule = async (req, res) => {
         modules: module._id,
       },
     });
+    await Topic.deleteMany({ moduleId: module._id });
 
     return res.status(200).json({
       success: true,
