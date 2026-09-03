@@ -44,7 +44,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/courses" element={<CourseCatalog />} />
-        <Route path="/courses/:courseId" element={<CourseDetail />} />
+        <Route path="/courses/:id" element={<CourseDetail />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/landing" element={<LandingPage />} />
 
@@ -58,6 +58,7 @@ function App() {
           <Route path="courses/modules" element={<CourseModules />} />
           <Route path="courses/:courseId/modules" element={<CourseModules />} />
           <Route path="courses/modules/add" element={<ModuleAdd />} />
+          <Route path="courses/:courseId/modules/add" element={<ModuleAdd />} />
           <Route path="modules/:id" element={<ModuleAdd />} />
           <Route path="modules/:id/edit" element={<ModuleAdd />} />
           <Route path="courses/:id/edit" element={<CourseAdd />} />

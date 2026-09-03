@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../../context/DataContext";
 import {
   BookOpen,
@@ -21,6 +21,8 @@ import { apiFetch, apiUpload, assetUrl } from "../../../utils/api";
 export const CourseCatalog = () => {
   const { courses, addCourse, replaceCourses } = useData();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminView = location.pathname.startsWith('/admin/');
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -285,7 +287,7 @@ export const CourseCatalog = () => {
                     <td className="py-4 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          to={`/admin/courses/${c.id}`}
+                          to={isAdminView ? `/admin/courses/${c.id}` : `/courses/${c.id}`}
                           className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors font-bold text-xs flex items-center gap-1"
                         >
                           <Eye className="w-3.5 h-3.5" /> View

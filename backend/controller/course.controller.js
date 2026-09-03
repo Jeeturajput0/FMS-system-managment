@@ -28,20 +28,26 @@ export const listCourses = async (_req, res) => {
 };
 
 export const getCourse = async (req, res) => {
-  const course = await Course.findOne({ _id: req.params.id, isActive: true }).populate({
-    path:"modules",
-    match: { isActive: true },
-    options: { sort: { order: 1 } },
-    populate: {
-      path: "topics",
-    },
-});
- 
-  if (!course)
-    return res
-      .status(404)
-      .json({ success: false, message: "Course not found" });
-  return res.json({ success: true, data: course });
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    const course = await Course.findOne({ _id: req.params.id, isActive: true }).populate({
+      path: "modules",
+      match: { isActive: true },
+      options: { sort: { order: 1 } },
+      populate: { path: "title" },
+    });
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    return res.json({ success: true, data: course });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to get course" });
+  }
 };
 
 export const createCourse = async (req, res) => {

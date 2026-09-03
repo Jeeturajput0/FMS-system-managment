@@ -53,12 +53,7 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 1000,
       min: 0,
-    },modules: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Module",
-  },
-],
+    },
 
     certificateFee: {
       type: Number,
@@ -82,11 +77,7 @@ const courseSchema = new mongoose.Schema(
       default: "Beginner",
     },
 
-    category: {
-      type: String,
-      trim: true,
-      default: "",
-    },
+   
 
     modules: [
       {
@@ -151,7 +142,7 @@ const courseSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Generate slug automatically

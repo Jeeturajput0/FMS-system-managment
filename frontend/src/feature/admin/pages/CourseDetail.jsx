@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useData } from '../../../context/DataContext';
 import {
   BookOpen,
@@ -21,6 +21,8 @@ import { apiFetch } from '../../../utils/api';
 
 export const CourseDetail = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const isAdminView = location.pathname.startsWith('/admin/');
   const { students } = useData();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,10 +59,10 @@ export const CourseDetail = () => {
     <div className="space-y-6 pb-12">
       {/* Back Button */}
       <Link
-        to="/admin/courses"
+        to={isAdminView ? "/admin/courses" : "/courses"}
         className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-orange-600 transition-colors"
       >
-        <ChevronLeft className="w-4 h-4" /> Back to Master Catalog
+        <ChevronLeft className="w-4 h-4" /> Back to Courses
       </Link>
 
       {/* Header Banner */}
@@ -73,10 +75,10 @@ export const CourseDetail = () => {
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-extrabold text-slate-900">{course.title}</h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-800">
-                {course.id}
+                {course._id || course.id}
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                {course.status}
+                {course.isPublished ? 'Published' : 'Draft'}
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-1 font-medium">{course.description}</p>
@@ -86,7 +88,9 @@ export const CourseDetail = () => {
         <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 shrink-0">
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-600">Fee Price</p>
-            <p className="text-xl font-extrabold text-slate-900">{course.feePrice}</p>
+            <p className="text-xl font-extrabold text-slate-900">
+              {course.feePrice || `Rs. ${Number(course.courseFee || 0).toLocaleString('en-IN')}`}
+            </p>
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-600">Duration</p>
@@ -97,6 +101,23 @@ export const CourseDetail = () => {
             </p>
           </div>
         </div>
+
+        {isAdminView && (
+          <div className="flex items-center gap-2">
+            <Link
+              to={`/admin/courses/${course._id || course.id}/modules`}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+              <Layers className="w-4 h-4" /> Manage Modules
+            </Link>
+            <Link
+              to={`/admin/courses/${course._id || course.id}/modules/add`}
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+            >
+              <Plus className="w-4 h-4" /> Add Module
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -127,11 +148,12 @@ export const CourseDetail = () => {
           {course.modules && course.modules.length > 0 ? (
             <div className="space-y-4">
               {course.modules.map((module) => {
-                const isExpanded = expandedModules.includes(module.id);
+                const moduleId = module._id || module.id;
+                const isExpanded = expandedModules.includes(moduleId);
                 return (
-                  <div key={module.id} className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                  <div key={moduleId} className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
                     <button
-                      onClick={() => toggleModule(module.id)}
+                      onClick={() => toggleModule(moduleId)}
                       className="w-full p-4 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
@@ -149,7 +171,7 @@ export const CourseDetail = () => {
                     {isExpanded && (
                       <div className="p-4 divide-y divide-slate-100">
                         {module.topics?.map((topic) => (
-                          <div key={topic.id} className="py-3 flex items-center justify-between hover:bg-slate-50 px-3 rounded-xl transition-colors">
+                          <div key={topic._id || topic.id} className="py-3 flex items-center justify-between hover:bg-slate-50 px-3 rounded-xl transition-colors">
                             <div className="flex items-center gap-3">
                               {topic.type === 'Video' && <Video className="w-4 h-4 text-sky-500 shrink-0" />}
                               {topic.type === 'PDF' && <FileText className="w-4 h-4 text-amber-500 shrink-0" />}
@@ -203,11 +225,11 @@ export const CourseDetail = () => {
             </div>
             <div>
               <p className="text-slate-600 font-semibold">Syllabus Modules</p>
-              <p className="font-bold text-slate-900 mt-0.5">{course.modulesCount || 4} Core Modules</p>
+              <p className="font-bold text-slate-900 mt-0.5">{course.modules?.length || 0} Core Modules</p>
             </div>
             <div>
               <p className="text-slate-600 font-semibold">Active Enrolment</p>
-              <p className="font-bold text-slate-900 mt-0.5">{course.enrolledStudents} Students Nationwide</p>
+              <p className="font-bold text-slate-900 mt-0.5">{course.enrolledStudents || 0} Students Nationwide</p>
             </div>
           </div>
         </div>

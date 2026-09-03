@@ -118,10 +118,9 @@ export default function CourseModules() {
             navigate(
               courseId
                 ? `/admin/courses/${courseId}/modules/add`
-                : "/admin/courses",
+                : "/admin/courses/modules/add",
             )
           }
-          disabled={!courseId}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           <Plus className="h-4 w-4" />
