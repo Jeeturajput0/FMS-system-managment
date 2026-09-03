@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ArrowUpRight, CreditCard, IndianRupee, TrendingUp } from 'lucide-react';
 import { useData } from '../../../context/DataContext';
 
 export const FeesOverview = () => {
-  const { students, payments, fees } = useData();
+  const { students, payments, fees, franchises } = useData();
+  const [selectedFranchise, setSelectedFranchise] = useState('All');
 
-  const totalCollected = payments.reduce((sum, item) => sum + Number(String(item.amount).replace(/[^0-9]/g, '')) || 0, 0);
-  const pending = students.reduce((sum, student) => {
-    const pendingValue = Number(String(student.feesPending || '₹0').replace(/[^0-9]/g, '')) || 0;
-    return sum + pendingValue;
-  }, 0);
+  const visibleFees = useMemo(() => selectedFranchise === 'All'
+    ? fees
+    : fees.filter((fee) => fee.coachingId?._id === selectedFranchise), [fees, selectedFranchise]);
+  const visiblePayments = selectedFranchise === 'All'
+    ? payments
+    : payments.filter((payment) => payment.coachingId?._id === selectedFranchise || payment.coachingId === selectedFranchise);
+
+  const totalCollected = visiblePayments.reduce((sum, item) => sum + Number(String(item.amount).replace(/[^0-9]/g, '')) || 0, 0);
+  const visibleStudents = selectedFranchise === 'All'
+    ? students
+    : students.filter((student) => student.coachingId?._id === selectedFranchise || student.coachingId === selectedFranchise);
+  const pending = visibleFees.length
+    ? visibleFees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0)
+    : visibleStudents.reduce((sum, student) => sum + (Number(String(student.feesPending || '₹0').replace(/[^0-9]/g, '')) || 0), 0);
 
   return (
     <div className="space-y-6 pb-12">
@@ -42,6 +52,17 @@ export const FeesOverview = () => {
         </div>
       </div>
 
+      <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm font-extrabold text-slate-900">Franchise Fee Tracking</h3>
+          <p className="text-xs text-slate-500">See students, purchased courses and pending fees.</p>
+        </div>
+        <select value={selectedFranchise} onChange={(event) => setSelectedFranchise(event.target.value)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-orange-500">
+          <option value="All">All Franchises</option>
+          {franchises.map((franchise) => <option key={franchise.id} value={franchise.id}>{franchise.name}</option>)}
+        </select>
+      </div>
+
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-base font-extrabold text-slate-900">Recent Payment Receipts</h3>
@@ -62,7 +83,7 @@ export const FeesOverview = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {payments.slice(0, 6).map((payment) => (
+              {visiblePayments.slice(0, 6).map((payment) => (
                 <tr key={payment.receiptNo} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-mono font-bold text-orange-600">{payment.receiptNo}</td>
                   <td className="px-4 py-3 font-semibold text-slate-900">{payment.studentName}</td>
@@ -81,11 +102,12 @@ export const FeesOverview = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase">
-              <tr><th className="px-4 py-3">Student</th><th className="px-4 py-3">Course</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Paid</th><th className="px-4 py-3">Pending</th><th className="px-4 py-3">Status</th></tr>
+              <tr><th className="px-4 py-3">Student</th><th className="px-4 py-3">Franchise</th><th className="px-4 py-3">Course Purchased</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Paid</th><th className="px-4 py-3">Pending</th><th className="px-4 py-3">Status</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {fees.map((fee) => <tr key={fee._id}>
+              {visibleFees.map((fee) => <tr key={fee._id}>
                 <td className="px-4 py-3 font-semibold text-slate-900">{fee.studentId?.name}</td>
+                <td className="px-4 py-3 text-slate-700">{fee.coachingId?.name || '—'}</td>
                 <td className="px-4 py-3 text-slate-700">{fee.courseId?.title}</td>
                 <td className="px-4 py-3">₹{fee.totalAmount?.toLocaleString('en-IN')}</td>
                 <td className="px-4 py-3 font-bold text-emerald-700">₹{fee.totalPaid?.toLocaleString('en-IN')}</td>

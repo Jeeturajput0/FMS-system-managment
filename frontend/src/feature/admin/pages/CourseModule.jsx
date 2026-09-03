@@ -10,6 +10,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
 export default function CourseModules() {
@@ -107,7 +108,7 @@ export default function CourseModules() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Loader2 className="h-5 w-5 animate-spin" />
           Loading modules...
@@ -322,9 +323,12 @@ export default function CourseModules() {
                       className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600"
                     >
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                      <span className="truncate">
+                      <Link
+                        to={`/admin/topics/${topic._id}`}
+                        className="truncate font-semibold text-slate-700 hover:text-orange-600"
+                      >
                         {topic.title || topic.name || "Untitled topic"}
-                      </span>
+                      </Link>
                     </div>
                   ))}
                 </div>

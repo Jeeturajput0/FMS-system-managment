@@ -15,10 +15,19 @@ export const getFees = async (req, res) => {
       }
       query.studentId = req.query.studentId;
     }
+    if (req.query.coachingId) {
+      if (!mongoose.Types.ObjectId.isValid(req.query.coachingId)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid coaching ID" });
+      }
+      query.coachingId = req.query.coachingId;
+    }
 
     const fees = await Fee.find(query)
       .populate("studentId", "studentId name mobile email")
       .populate("courseId", "title")
+      .populate("coachingId", "name code")
       .sort({ updatedAt: -1 });
 
     const payments = fees.flatMap((fee) =>
@@ -26,6 +35,8 @@ export const getFees = async (req, res) => {
         ...payment.toObject(),
         studentId: fee.studentId?._id,
         studentName: fee.studentId?.name || "",
+        coachingId: fee.coachingId?._id,
+        coachingName: fee.coachingId?.name || "",
         courseId: fee.courseId?._id,
         course: fee.courseId?.title || "",
         amount: payment.amount,

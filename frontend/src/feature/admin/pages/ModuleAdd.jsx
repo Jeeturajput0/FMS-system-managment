@@ -176,12 +176,6 @@ const ModuleAdd = () => {
           value: Number(formData.durationValue),
           unit: formData.durationUnit,
         },
-        topics: topics.filter((topic) => topic.title.trim()).map((topic) => ({
-          title: topic.title.trim(),
-          description: topic.description.trim(),
-          type: topic.type,
-          duration: { value: Number(topic.durationValue), unit: topic.durationUnit },
-        })),
         isPublished: Boolean(formData.isPublished),
       };
 
@@ -383,13 +377,13 @@ const ModuleAdd = () => {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+            {false && <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div><p className="text-sm font-bold text-slate-800">Topics</p><p className="mt-1 text-xs text-slate-500">Add multiple lessons, videos, PDFs, assignments or tests to this module.</p></div>
                 {!readOnly && <button type="button" onClick={() => setTopics((prev) => [...prev, emptyTopic()])} className="inline-flex items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600"><Plus className="h-3.5 w-3.5" /> Add Topic</button>}
               </div>
               {topics.length === 0 ? <p className="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-xs text-slate-500">No topics yet. For example: HTML Basics, HTML Tags, Forms, and Semantic HTML.</p> : <div className="space-y-3">{topics.map((topic, index) => <div key={index} className="rounded-xl border border-slate-200 bg-white p-4"><div className="mb-3 flex items-center justify-between"><p className="text-xs font-bold text-slate-700">Topic {index + 1}</p>{!readOnly && <button type="button" onClick={() => setTopics((prev) => prev.filter((_, topicIndex) => topicIndex !== index))} className="text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /></button>}</div><div className="grid gap-3 md:grid-cols-2"><input value={topic.title} readOnly={readOnly} onChange={(event) => updateTopic(index, "title", event.target.value)} placeholder="Topic title, e.g. HTML Tags" className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 read-only:bg-slate-50" /><select value={topic.type} disabled={readOnly} onChange={(event) => updateTopic(index, "type", event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500 disabled:bg-slate-50"><option>Lesson</option><option>Video</option><option>PDF</option><option>Assignment</option><option>Test</option></select><input value={topic.durationValue} readOnly={readOnly} type="number" min="0" onChange={(event) => updateTopic(index, "durationValue", event.target.value)} placeholder="Duration" className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 read-only:bg-slate-50" /><select value={topic.durationUnit} disabled={readOnly} onChange={(event) => updateTopic(index, "durationUnit", event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500 disabled:bg-slate-50"><option value="minutes">Minutes</option><option value="hours">Hours</option><option value="days">Days</option></select></div><textarea value={topic.description} readOnly={readOnly} onChange={(event) => updateTopic(index, "description", event.target.value)} rows="2" placeholder="Topic description (optional)" className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 read-only:bg-slate-50" /></div>)}</div>}
-            </div>
+            </div>}
 
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div>

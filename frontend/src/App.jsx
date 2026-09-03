@@ -22,6 +22,8 @@ import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage
 import { CourseAdd } from "./feature/admin/pages/CourseAdd";
 import CourseModules from "./feature/admin/pages/CourseModule";
 import ModuleAdd from "./feature/admin/pages/ModuleAdd";
+import TopicView from "./feature/admin/pages/TopicView";
+import TopicAdd from "./feature/admin/pages/TopicAdd";
 
 const ProtectedAdminRoute = () => {
   const location = useLocation();
@@ -64,6 +66,8 @@ function App() {
           <Route path="courses/:courseId/modules/add" element={<ModuleAdd />} />
           <Route path="modules/:id" element={<ModuleAdd />} />
           <Route path="modules/:id/edit" element={<ModuleAdd />} />
+          <Route path="topics/:topicId" element={<TopicView />} />
+          <Route path="topics" element={<TopicAdd />} />
           <Route path="courses/:id/edit" element={<CourseAdd />} />
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="students" element={<StudentDirectory />} />

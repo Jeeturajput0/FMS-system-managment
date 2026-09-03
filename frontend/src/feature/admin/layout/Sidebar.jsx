@@ -26,6 +26,7 @@ const navItems = [
   { name: 'Courses', path: '/admin/courses', icon: BookOpen, children: [
       { name: 'Course', path: '/admin/courses' },
       { name: 'Modules', path: '/admin/courses/modules' },
+      { name: 'Topics', path: '/admin/topics' },
     ]},
   { name: 'Students', path: '/admin/students', icon: Users },
   { name: 'Fees', path: '/admin/fees', icon: CreditCard },
@@ -43,7 +44,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const [coursesOpen, setCoursesOpen] = useState(false);
 
   useEffect(() => {
-    const isCoursesPath = location.pathname.startsWith('/admin/courses') || location.pathname.startsWith('/admin/course-add');
+    const isCoursesPath = location.pathname.startsWith('/admin/courses') || location.pathname.startsWith('/admin/course-add') || location.pathname.startsWith('/admin/topics');
     if (isCoursesPath) {
       setCoursesOpen(true);
     }
