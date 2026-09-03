@@ -16,6 +16,8 @@ export default function CourseModules() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [modules, setModules] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState(courseId || "");
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,16 +27,17 @@ export default function CourseModules() {
       setLoading(true);
       setError("");
 
-      const endpoint = courseId
-        ? `/api/modules/course/${courseId}`
+      const activeCourseId = courseId || selectedCourseId;
+      const endpoint = activeCourseId
+        ? `/api/modules/course/${activeCourseId}`
         : "/api/modules";
 
       const data = await apiFetch(endpoint);
       setModules(data.data || []);
 
-      if (courseId) {
+      if (activeCourseId) {
         try {
-          const courseData = await apiFetch(`/api/courses/${courseId}`);
+          const courseData = await apiFetch(`/api/courses/${activeCourseId}`);
           setCourse(courseData.data);
         } catch {
           setCourse(null);
@@ -51,8 +54,23 @@ export default function CourseModules() {
   };
 
   useEffect(() => {
-    loadModules();
+    const loadCourses = async () => {
+      if (courseId) return;
+
+      try {
+        const data = await apiFetch("/api/courses");
+        setCourses(data.data || []);
+      } catch (loadError) {
+        setError(loadError.message);
+      }
+    };
+
+    loadCourses();
   }, [courseId]);
+
+  useEffect(() => {
+    loadModules();
+  }, [courseId, selectedCourseId]);
 
   const handleDelete = async (moduleId) => {
     const confirmed = window.confirm(
@@ -135,7 +153,8 @@ export default function CourseModules() {
       )}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
             <BookOpen className="h-6 w-6" />
           </div>
@@ -151,6 +170,22 @@ export default function CourseModules() {
               {modules.length} {modules.length === 1 ? "Module" : "Modules"}
             </p>
           </div>
+          </div>
+
+          {!courseId && (
+            <select
+              value={selectedCourseId}
+              onChange={(event) => setSelectedCourseId(event.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-orange-400 sm:w-64"
+            >
+              <option value="">All Courses</option>
+              {courses.map((item) => (
+                <option key={item._id} value={item._id}>
+                  {item.title}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -288,7 +323,7 @@ export default function CourseModules() {
                     >
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
                       <span className="truncate">
-                        {topic.title || topic.name || topic}
+                        {topic.title || topic.name || "Untitled topic"}
                       </span>
                     </div>
                   ))}
