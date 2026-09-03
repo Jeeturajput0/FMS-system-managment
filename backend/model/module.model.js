@@ -2,45 +2,31 @@ import mongoose from "mongoose";
 
 const moduleSchema = new mongoose.Schema(
   {
-    // Course reference
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
-      required: [true, "Course is required"],
+      required: true,
       index: true,
     },
 
-    // Module title
     title: {
       type: String,
-      required: [true, "Module title is required"],
+      required: true,
       trim: true,
-      minlength: [2, "Module title must be at least 2 characters"],
-      maxlength: [150, "Module title cannot exceed 150 characters"],
     },
 
-    // Module description
     description: {
       type: String,
-      trim: true,
       default: "",
+      trim: true,
     },
 
-    // Module order inside course
     order: {
       type: Number,
-      required: true,
-      min: 1,
       default: 1,
+      min: 1,
     },
 
-    // Optional module thumbnail
-    thumbnail: {
-      type: String,
-      default: "",
-    },
-
-    // Module duration
     duration: {
       value: {
         type: Number,
@@ -50,12 +36,11 @@ const moduleSchema = new mongoose.Schema(
 
       unit: {
         type: String,
-        enum: ["minutes", "hours", "days", "weeks"],
+        enum: ["minutes", "hours", "days"],
         default: "hours",
       },
     },
 
-    // Topics will be added later
     topics: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -63,23 +48,19 @@ const moduleSchema = new mongoose.Schema(
       },
     ],
 
-    // Active / inactive
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-
-    // Published / draft
     isPublished: {
       type: Boolean,
       default: false,
     },
 
-    // Created by AI Scholar admin
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
 
     updatedBy: {
@@ -92,36 +73,9 @@ const moduleSchema = new mongoose.Schema(
   }
 );
 
-/*
-|--------------------------------------------------------------------------
-| INDEX
-|--------------------------------------------------------------------------
-|
-| Same course ke modules ko order ke according quickly fetch karne ke liye
-|
-*/
-
 moduleSchema.index({
   courseId: 1,
   order: 1,
 });
 
-/*
-|--------------------------------------------------------------------------
-| PREVENT DUPLICATE MODULE TITLE INSIDE SAME COURSE
-|--------------------------------------------------------------------------
-*/
-
-moduleSchema.index(
-  {
-    courseId: 1,
-    title: 1,
-  },
-  {
-    unique: true,
-  }
-);
-
-const Module = mongoose.model("Module", moduleSchema);
-
-export default Module;
+export default mongoose.model("Module", moduleSchema);

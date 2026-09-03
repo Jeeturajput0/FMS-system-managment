@@ -53,7 +53,12 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 1000,
       min: 0,
-    },
+    },modules: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Module",
+  },
+],
 
     certificateFee: {
       type: Number,

@@ -1,131 +1,133 @@
 import React, { useEffect, useState } from "react";
-import { BookOpen, CheckCircle2, Trash2, Loader2 } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Trash2,
+  Loader2,
+  Pencil,
+  Eye,
+  EyeOff,
+  Plus,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { apiFetch } from "../../../utils/api";
 
 export default function CourseModules() {
   const { courseId } = useParams();
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [modules, setModules] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // =========================
-  // GET MODULES
-  // =========================
-  const getModules = async () => {
+  const loadModules = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `http://localhost:5000/api/modules/course/${courseId}`,
-      );
+      const endpoint = courseId
+        ? `/api/modules/course/${courseId}`
+        : "/api/modules";
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch modules");
-      }
-
+      const data = await apiFetch(endpoint);
       setModules(data.data || []);
-    } catch (error) {
-      console.log("Get Modules Error:", error);
-      setError(error.message);
+
+      if (courseId) {
+        try {
+          const courseData = await apiFetch(`/api/courses/${courseId}`);
+          setCourse(courseData.data);
+        } catch {
+          setCourse(null);
+        }
+      } else {
+        setCourse(null);
+      }
+    } catch (loadError) {
+      console.error("LOAD MODULES:", loadError);
+      setError(loadError.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // =========================
-  // DELETE MODULE
-  // =========================
-  const deleteModule = async (moduleId) => {
-    const confirmDelete = window.confirm(
+  useEffect(() => {
+    loadModules();
+  }, [courseId]);
+
+  const handleDelete = async (moduleId) => {
+    const confirmed = window.confirm(
       "Are you sure you want to delete this module?",
     );
 
-    if (!confirmDelete) return;
+    if (!confirmed) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/modules/${moduleId}`,
-        {
-          method: "DELETE",
-        },
-      );
+      await apiFetch(`/api/modules/${moduleId}`, {
+        method: "DELETE",
+      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to delete module");
-      }
-
-      // UI se remove
       setModules((prev) => prev.filter((item) => item._id !== moduleId));
-
       alert("Module deleted successfully");
-    } catch (error) {
-      console.log("Delete Module Error:", error);
-      alert(error.message);
+    } catch (deleteError) {
+      alert(deleteError.message);
     }
   };
 
-  // =========================
-  // PAGE LOAD
-  // =========================
-  useEffect(() => {
-    if (courseId) {
-      getModules();
+  const handlePublish = async (moduleId) => {
+    try {
+      const data = await apiFetch(`/api/modules/${moduleId}/publish`, {
+        method: "PATCH",
+      });
+
+      setModules((prev) =>
+        prev.map((item) => (item._id === moduleId ? data.data : item)),
+      );
+    } catch (publishError) {
+      alert(publishError.message);
     }
-  }, [courseId]);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          Loading modules...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* ================= HEADER ================= */}
-
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">
-          Courses / Modules
-        </p>
-
-        <h2 className="mt-2 text-2xl font-extrabold text-slate-900">
-          Course Modules
-        </h2>
-
-        <p className="mt-1 text-xs text-slate-600">
-          Manage course modules and learning topics.
-        </p>
-      </div>
-<div><button
-  onClick={() =>
-    navigate(`/admin/courses/${courseId}/modules/add`)
-  }
-  className="px-4 py-2 bg-orange-500 text-white rounded-lg"
->
-  + Add Module
-</button></div>
-      {/* ================= COURSE INFO ================= */}
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-            <BookOpen className="h-5 w-5" />
-          </div>
-
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-              Selected Course
-            </p>
-
-            <h3 className="text-sm font-bold text-slate-900">
-              Course ID: {courseId}
-            </h3>
-          </div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">
+            Courses / Modules
+          </p>
+          <h1 className="mt-2 text-2xl font-extrabold text-slate-900">
+            {courseId ? "Course Modules" : "All Modules"}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Manage modules, topics and learning structure.
+          </p>
         </div>
-      </div>
 
-      {/* ================= ERROR ================= */}
+        <button
+          onClick={() =>
+            navigate(
+              courseId
+                ? `/admin/courses/${courseId}/modules/add`
+                : "/admin/courses",
+            )
+          }
+          disabled={!courseId}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+        >
+          <Plus className="h-4 w-4" />
+          Add Module
+        </button>
+      </div>
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
@@ -133,112 +135,174 @@ const navigate = useNavigate();
         </div>
       )}
 
-      {/* ================= LOADING ================= */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+            <BookOpen className="h-6 w-6" />
+          </div>
 
-      {loading && (
-        <div className="flex justify-center py-16">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Loading modules...
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {courseId ? "Selected Course" : "Module Inventory"}
+            </p>
+            <h2 className="text-base font-bold text-slate-900">
+              {course?.title || "All Courses"}
+            </h2>
+            <p className="text-xs text-slate-400">
+              {modules.length} {modules.length === 1 ? "Module" : "Modules"}
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* ================= EMPTY ================= */}
-
-      {!loading && modules.length === 0 && !error && (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <BookOpen className="mx-auto h-10 w-10 text-slate-300" />
-
-          <h3 className="mt-4 text-sm font-bold text-slate-800">
+      {modules.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-14 text-center">
+          <BookOpen className="mx-auto h-12 w-12 text-slate-300" />
+          <h3 className="mt-4 text-base font-bold text-slate-800">
             No Modules Found
           </h3>
-
-          <p className="mt-1 text-xs text-slate-500">
-            This course doesn't have any modules yet.
+          <p className="mt-1 text-sm text-slate-500">
+            {courseId
+              ? "Start building this course by adding your first module."
+              : "Create a module from a course to start managing it here."}
           </p>
+
+          {courseId && (
+            <button
+              onClick={() => navigate(`/admin/courses/${courseId}/modules/add`)}
+              className="mt-5 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+            >
+              Create First Module
+            </button>
+          )}
         </div>
       )}
 
-      {/* ================= MODULE LIST ================= */}
-
-      {!loading && modules.length > 0 && (
-        <div className="space-y-4">
-          {modules.map((item, index) => (
-            <div
-              key={item._id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-amber-400/50"
-            >
-              {/* MODULE HEADER */}
-
-              <div className="flex flex-col gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-xs font-bold text-amber-800">
-                    {index + 1}
-                  </span>
-
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900">
-                      {item.title}
-                    </h4>
-
-                    <p className="text-[11px] text-slate-400">
-                      {item.duration?.value || 0}{" "}
-                      {item.duration?.unit || "hours"}
-                    </p>
-                  </div>
+      <div className="space-y-4">
+        {modules.map((module, index) => (
+          <div
+            key={module._id}
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-orange-200"
+          >
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-sm font-extrabold text-amber-700">
+                  {index + 1}
                 </div>
 
-                {/* DELETE */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {module.title}
+                  </h3>
+
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                    {!courseId && module.courseId?.title && (
+                      <span className="font-semibold text-slate-500">
+                        {module.courseId.title}
+                      </span>
+                    )}
+                    <span>Order: {module.order}</span>
+                    <span>|</span>
+                    <span>
+                      {module.duration?.value || 0} {module.duration?.unit || "hours"}
+                    </span>
+                    <span>|</span>
+                    <span
+                      className={
+                        module.isPublished
+                          ? "font-semibold text-emerald-600"
+                          : "font-semibold text-amber-600"
+                      }
+                    >
+                      {module.isPublished ? "Published" : "Draft"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => navigate(`/admin/modules/${module._id}`)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  View
+                </button>
 
                 <button
-                  type="button"
-                  onClick={() => deleteModule(item._id)}
-                  className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                  onClick={() => navigate(`/admin/modules/${module._id}/edit`)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => handlePublish(module._id)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  {module.isPublished ? (
+                    <>
+                      <EyeOff className="h-3.5 w-3.5" />
+                      Unpublish
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-3.5 w-3.5" />
+                      Publish
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => handleDelete(module._id)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Delete
                 </button>
               </div>
-
-              {/* DESCRIPTION */}
-
-              {item.description && (
-                <p className="mt-4 text-xs text-slate-600">
-                  {item.description}
-                </p>
-              )}
-
-              {/* TOPICS */}
-
-              <div className="mt-4">
-                <span className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Included Topics
-                </span>
-
-                {item.topics && item.topics.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {item.topics.map((topic, topicIndex) => (
-                      <div
-                        key={topic._id || topicIndex}
-                        className="flex items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600"
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-
-                        <span className="truncate">
-                          {topic.title || topic.name || topic}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400">No topics added yet.</p>
-                )}
-              </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            {module.description && (
+              <p className="mt-4 text-sm leading-6 text-slate-600">
+                {module.description}
+              </p>
+            )}
+
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Topics
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  {module.topics?.length || 0} topics
+                </span>
+              </div>
+
+              {module.topics?.length > 0 ? (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {module.topics.map((topic, topicIndex) => (
+                    <div
+                      key={topic._id || topicIndex}
+                      className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600"
+                    >
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <span className="truncate">
+                        {topic.title || topic.name || topic}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg bg-slate-50 p-4 text-xs text-slate-400">
+                  No topics added yet.
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

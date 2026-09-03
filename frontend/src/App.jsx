@@ -56,7 +56,10 @@ function App() {
           <Route path="courses" element={<CourseCatalog />} />
           <Route path="course-add" element={<CourseAdd />} />
           <Route path="courses/modules" element={<CourseModules />} />
-          <Route path="courses/:courseId/modules/add" element={<ModuleAdd />} />
+          <Route path="courses/:courseId/modules" element={<CourseModules />} />
+          <Route path="courses/modules/add" element={<ModuleAdd />} />
+          <Route path="modules/:id" element={<ModuleAdd />} />
+          <Route path="modules/:id/edit" element={<ModuleAdd />} />
           <Route path="courses/:id/edit" element={<CourseAdd />} />
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="students" element={<StudentDirectory />} />
