@@ -17,7 +17,7 @@ export const FranchiseStudents = () => {
         </div>
 
         <Link
-          to="/add"
+          to="/franchise/students/add"
           className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white"
         >
           + Add Student
