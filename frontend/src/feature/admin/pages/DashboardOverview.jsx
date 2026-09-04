@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../../../context/DataContext';
 import {
@@ -27,9 +27,17 @@ import {
   BarChart,
   Bar
 } from 'recharts';
+import { apiFetch } from '../../../utils/api';
 
 export const DashboardOverview = () => {
   const { franchises, courses, students, payments, enrollmentChartData } = useData();
+  const [portalOverview, setPortalOverview] = useState(null);
+
+  useEffect(() => {
+    apiFetch('/api/portal/admin-overview')
+      .then((response) => setPortalOverview(response.data))
+      .catch(() => setPortalOverview(null));
+  }, []);
 
   // Calculate high level metrics
   const totalFranchisesCount = franchises.length;
@@ -141,6 +149,26 @@ export const DashboardOverview = () => {
           <p className="text-[11px] text-slate-600 mt-2 font-medium">YTD Franchise & Course Collections</p>
         </div>
       </div>
+
+      <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Connected portal activity</h3>
+            <p className="mt-1 text-xs text-slate-500">Live users and operational records shared by Student, Teacher and Franchise dashboards.</p>
+          </div>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{portalOverview ? 'Live backend data' : 'Loading data'}</span>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {[
+            ['Students', portalOverview?.roleCounts?.STUDENT || 0, 'bg-blue-50 text-blue-700'],
+            ['Teachers', portalOverview?.roleCounts?.TEACHER || 0, 'bg-emerald-50 text-emerald-700'],
+            ['Franchises', portalOverview?.roleCounts?.FRANCHISE || 0, 'bg-orange-50 text-orange-700'],
+            ['Portal records', portalOverview?.students || 0, 'bg-violet-50 text-violet-700'],
+            ['Pending fees', `₹${Number(portalOverview?.pendingFees || 0).toLocaleString('en-IN')}`, 'bg-amber-50 text-amber-700'],
+          ].map(([label, value, style]) => <div key={label} className={`rounded-2xl p-4 ${style}`}><p className="text-xs font-bold uppercase tracking-wider opacity-75">{label}</p><p className="mt-2 text-2xl font-black">{value}</p></div>)}
+        </div>
+        {portalOverview?.recentStudents?.length > 0 && <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-y border-slate-100 text-[10px] uppercase tracking-wider text-slate-400"><tr><th className="px-3 py-3">Recent student</th><th className="px-3 py-3">Course</th><th className="px-3 py-3">Franchise</th><th className="px-3 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{portalOverview.recentStudents.map((student) => <tr key={student._id}><td className="px-3 py-3 font-bold text-slate-700">{student.name}</td><td className="px-3 py-3 text-slate-500">{student.courseId?.title || 'Not assigned'}</td><td className="px-3 py-3 text-slate-500">{student.coachingId?.name || 'Not assigned'}</td><td className="px-3 py-3 text-emerald-600">{student.status}</td></tr>)}</tbody></table></div>}
+      </section>
 
       {/* Analytics Chart & Franchise Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

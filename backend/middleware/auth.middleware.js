@@ -30,7 +30,9 @@ export const protect = async (req, res, next) => {
 
     req.user = {
       _id: decoded.id || decoded._id || "dev-user-id",
+      email: decoded.email,
       role: decoded.role || "SUPER_ADMIN",
+      coachingId: decoded.coachingId || null,
     };
 
     return next();

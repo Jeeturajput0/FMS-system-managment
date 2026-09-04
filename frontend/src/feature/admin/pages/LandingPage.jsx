@@ -108,29 +108,20 @@ const LandingPage = () => {
             />
           </div>
 
-          {/* Admin Login */}
-          <button
-            onClick={() => navigate("/login")}
-            className="
-              shrink-0
-              rounded-full
-              border
-              border-white/10
-              bg-slate-900/80
-              px-3
-              py-2
-              text-xs
-              font-semibold
-              text-slate-200
-              transition
-              hover:border-orange-400/60
-              hover:text-white
-              sm:px-4
-              sm:text-sm
-            "
-          >
-            Admin Login
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => navigate("/log")}
+              className="rounded-full border border-blue-300/30 bg-blue-500/15 px-3 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/25 sm:px-4 sm:text-sm"
+            >
+              Portal Login
+            </button>
+            <button
+              onClick={() => navigate("/login/admin")}
+              className="rounded-full border border-white/10 bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-orange-400/60 hover:text-white sm:px-4 sm:text-sm"
+            >
+              Admin Login
+            </button>
+          </div>
         </header>
 
         {/* ================= HERO SECTION ================= */}

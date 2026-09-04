@@ -8,5 +8,12 @@ router.use(requireDatabase);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/me", protect, getCurrentUser);
+router.get("/portal", protect, async (req, res) => {
+	res.json({
+		success: true,
+		portal: req.user.role,
+		message: `${req.user.role} portal access verified`,
+	});
+});
 
 export default router;

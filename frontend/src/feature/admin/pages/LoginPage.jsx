@@ -40,6 +40,10 @@ export const LoginPage = () => {
         body: JSON.stringify(payload),
       });
 
+      if (!isRegister && !["SUPER_ADMIN", "ADMIN"].includes(result.user.role)) {
+        throw new Error("This account belongs to a portal role. Use the normal login page.");
+      }
+
       localStorage.setItem("ai_scholars_token", result.token);
 
       localStorage.setItem("ai_scholars_user", JSON.stringify(result.user));

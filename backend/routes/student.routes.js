@@ -32,7 +32,7 @@ router.get("/:id", protect, getStudentById);
 router.post(
   "/",
   protect,
-  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN", "FRANCHISE", "TEACHER"),
   createStudent,
 );
 

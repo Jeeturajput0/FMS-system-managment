@@ -11,7 +11,8 @@ import moduleRoutes from "./routes/module.routes.js";
 import Studentroutes from "./routes/student.routes.js";
 import feeRoutes from "./routes/fee.routes.js";
 import topicRoutes from "./routes/topic.routes.js";
-import  router from "./routes/coaching.routes.js";
+import router from "./routes/coaching.routes.js";
+import portalRoutes from "./routes/portal.routes.js";
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use("/api/students", Studentroutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/coaching", router);
 app.use("/api/topics", topicRoutes);
+app.use("/api/portal", portalRoutes);
 
 app.get("/", (req, res) => {
   res.json({

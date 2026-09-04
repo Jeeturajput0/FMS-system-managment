@@ -8,18 +8,20 @@ const toPublicUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  coachingId: user.coachingId || null,
 });
 const createToken = (user) =>
   jwt.sign(
-    { id: user._id.toString(), email: user.email, role: user.role },
+    { id: user._id.toString(), email: user.email, role: user.role, coachingId: user.coachingId || null },
     secret(),
     { expiresIn: "7d" },
   );
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name?.trim() || !email?.trim() || !password || password.length < 6) {
+    const { name, email, password, role = "STUDENT", coachingId = null } = req.body;
+    const allowedRoles = ["SUPER_ADMIN", "ADMIN", "FRANCHISE", "TEACHER", "STUDENT"];
+    if (!name?.trim() || !email?.trim() || !password || password.length < 6 || !allowedRoles.includes(role)) {
       return res
         .status(400)
         .json({
@@ -37,7 +39,8 @@ export const registerUser = async (req, res) => {
       name: name.trim(),
       email: normalizedEmail,
       password: await bcrypt.hash(password, 12),
-      role: "ADMIN",
+      role,
+      coachingId,
     });
     return res
       .status(201)
