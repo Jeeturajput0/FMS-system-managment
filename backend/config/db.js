@@ -5,7 +5,7 @@ let isConnected = false;
 const connectDB = async () => {
   try {
     const connection = await mongoose.connect(
-      process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ai-scholar",
+      process.env.MONGO_URI ,
       {
         serverSelectionTimeoutMS: 3000,
         socketTimeoutMS: 3000,
