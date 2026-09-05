@@ -276,7 +276,7 @@ const FranchiseStudentAdd = () => {
 
               {courses.map((course) => (
                 <option key={course._id} value={course._id}>
-                  {course.title}
+                  {course.title} - {course.category || "General"}
                 </option>
               ))}
             </select>

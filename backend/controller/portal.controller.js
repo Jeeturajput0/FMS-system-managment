@@ -70,7 +70,14 @@ export const getPortalStudents = async (req, res) => {
 
 export const getPortalCourses = async (req, res) => {
   try {
-    const data = await Course.find({ isActive: true, ...(req.user.coachingId ? { availableForFranchises: req.user.coachingId } : {}) }).sort({ createdAt: -1 }).lean();
+    const data = await Course.find({
+      isActive: true,
+      $or: [
+        { isPublished: true },
+        { isPublished: { $exists: false } },
+        ...(req.user.coachingId ? [{ availableForFranchises: req.user.coachingId }] : []),
+      ],
+    }).sort({ category: 1, title: 1 }).lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load courses", error: error.message });
