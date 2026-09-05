@@ -1,7 +1,16 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 const buildUrl = (path) => `${API_BASE_URL}${path}`;
-export const assetUrl = (path) => path ? (path.startsWith('http') ? path : `${API_BASE_URL}${path}`) : '';
+export const assetUrl = (path) => {
+  if (!path) return '';
+  if (/^(https?:|data:)/i.test(path)) return path;
+  const normalizedPath = path.startsWith('/')
+    ? path
+    : path.includes('/')
+      ? `/${path}`
+      : `/upload/${path}`;
+  return `${API_BASE_URL}${normalizedPath}`;
+};
 
 export const apiFetch = async (path, options = {}) => {
   const token = localStorage.getItem('ai_scholars_token');

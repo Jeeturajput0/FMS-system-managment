@@ -36,6 +36,8 @@ export const CourseAdd = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [existingImage, setExistingImage] = useState("");
+  const [selectedPreviews, setSelectedPreviews] = useState([]);
 
   // =========================
   // INPUT CHANGE
@@ -48,6 +50,12 @@ export const CourseAdd = () => {
     }));
   };
 
+  useEffect(() => {
+    const previews = form.images.map((image) => URL.createObjectURL(image));
+    setSelectedPreviews(previews);
+    return () => previews.forEach((preview) => URL.revokeObjectURL(preview));
+  }, [form.images]);
+
   // =========================
   // GET COURSE FOR EDIT
   // =========================
@@ -59,6 +67,8 @@ export const CourseAdd = () => {
       const response = await apiFetch(`/api/courses/${id}`);
 
       const course = response.data;
+      const savedImage = Array.isArray(course.images) ? course.images[0] : course.images;
+      setExistingImage(course.thumbnail || savedImage || course.image || course.imageUrl || "");
 
       setForm({
         title: course.title || "",
@@ -539,6 +549,23 @@ export const CourseAdd = () => {
             <p className="mt-1 text-xs text-slate-500">
               You can select multiple images.
             </p>
+
+            {(selectedPreviews.length > 0 || (id && existingImage)) && (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {selectedPreviews.map((preview, index) => (
+                  <div key={preview} className="overflow-hidden rounded-xl border border-orange-200 bg-slate-50">
+                    <img src={preview} alt={`Selected course ${index + 1}`} className="h-28 w-full object-cover" />
+                    <p className="p-2 text-center text-[11px] font-bold text-orange-600">New image</p>
+                  </div>
+                ))}
+                {selectedPreviews.length === 0 && id && existingImage && (
+                  <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                    <img src={assetUrl(existingImage)} alt="Current course" className="h-28 w-full object-cover" />
+                    <p className="p-2 text-center text-[11px] font-bold text-slate-600">Current image</p>
+                  </div>
+                )}
+              </div>
+            )}
 
           </div>
 
