@@ -15,8 +15,6 @@ import LandingPage from "./feature/admin/pages/LandingPage";
 import { FranchiseList } from "./feature/admin/pages/FranchiseList";
 import { FranchiseDetail } from "./feature/admin/pages/FranchiseDetail";
 import FranchiseForm from "./feature/admin/pages/FranchiseForm";
-import { StudentDirectory } from "./feature/admin/pages/StudentDirectory";
-import { StudentDetail } from "./feature/admin/pages/StudentDetail";
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
 import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
 import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
@@ -26,31 +24,51 @@ import ModuleAdd from "./feature/admin/pages/ModuleAdd";
 import TopicView from "./feature/admin/pages/TopicView";
 import TopicAdd from "./feature/admin/pages/TopicAdd";
 import { PortalLoginPage } from "./feature/portal/PortalLoginPage";
-import { StudentLayout } from "./feature/student/layout/StudentLayout";
-import { TeacherLayout } from "./feature/teacher/layout/TeacherLayout";
-import { StudentDashboard } from "./feature/student/pages/StudentDashboard";
-import { TeacherDashboard } from "./feature/teacher/pages/TeacherDashboard";
-import {
-  StudentCourses as StudentCoursePage,
-  StudentFees as StudentFeePage,
-  StudentProfile as StudentProfilePage,
-  StudentPlaceholder as StudentModulePage,
-} from "./feature/student/pages/StudentSections";
-import {
-  TeacherCourses,
-  TeacherStudents,
-  TeacherPlaceholder,
-} from "./feature/teacher/pages/TeacherSections";
+
 import { FranchiseLayout } from "./feature/franchise/layout/FranchiseLayout";
 import { FranchiseStudents } from "./feature/franchise/pages/FranchiseStudents";
 import { FranchiseDashboard } from "./feature/franchise/pages/FranchiseDashboard";
 import { FranchiseCourses } from "./feature/franchise/pages/FranchiseCourses";
 import { FranchiseBatches } from "./feature/franchise/pages/FranchiseBatches";
 import FranchiseAttendance from "./feature/franchise/pages/FranchiseAttendance";
+import TeacherLayout from "./feature/teacher/layout/TeacherLayout";
+import TeacherDashboard from "./feature/teacher/pages/TeacherDashboard";
+import TeacherStudents from "./feature/teacher/pages/TeacherStudents";
+import TeacherCourses from "./feature/teacher/pages/TeacherCourses";
+import TeacherBatches from "./feature/teacher/pages/TeacherBatches";
+import TeacherAttendance from "./feature/teacher/pages/TeacherAttendance";
+import TeacherAssignments from "./feature/teacher/pages/TeacherAssignments";
+import TeacherExams from "./feature/teacher/pages/TeacherExams";
+import TeacherResults from "./feature/teacher/pages/TeacherResults";
+import TeacherProfile from "./feature/teacher/pages/TeacherProfile";
+import TeacherFees from "./feature/teacher/pages/TeacherFees";
 import FranchiseFees from "./feature/franchise/pages/FranchiseFees";
 import FranchiseSchedule from "./feature/franchise/pages/FranchiseSchedule";
 import FranchiseReports from "./feature/franchise/pages/FranchiseReports";
 import FranchiseStudentAdd from "./feature/franchise/pages/FranchiseStudentAdd";
+import StudentLayout from "./feature/student/layout/StudentLayout";
+import StudentDashboard from "./feature/student/pages/StudentDashboard";
+import StudentAssignments from "./feature/student/pages/StudentAssignments";
+import StudentTests from "./feature/student/pages/StudentTests";
+import StudentProgress from "./feature/student/pages/StudentProgress";
+import StudentFees from "./feature/student/pages/StudentFees";
+import StudentCourses from "./feature/student/pages/StudentCourses";
+import StudentModules from "./feature/student/pages/StudentModules";
+import StudentTopics from "./feature/student/pages/StudentTopics";
+import StudentStudyMaterial from "./feature/student/pages/StudentStudyMaterial";
+import StudentAttendance from "./feature/student/pages/StudentAttendance";
+import StudentPerformance from "./feature/student/pages/StudentPerformance";
+import StudentCourseDetail from "./feature/student/pages/StudentCourseDetail";
+import StudentPaymentHistory from "./feature/student/pages/StudentPaymentHistory";
+import StudentPendingFees from "./feature/student/pages/StudentPendingFees";
+import StudentCertificate from "./feature/student/pages/StudentCertificate";
+import StudentCertificateEligibility from "./feature/student/pages/StudentCertificateEligibility";
+import StudentTestAttempt from "./feature/student/pages/StudentTestAttempt";
+import StudentTestResults from "./feature/student/pages/StudentTestResults";
+import StudentAssignmentDetail from "./feature/student/pages/StudentAssignmentDetail";
+import StudentProfile from "./feature/student/pages/StudentProfile";
+import StudentSettings from "./feature/student/pages/StudentSettings";
+import StudentNotifications from "./feature/student/pages/StudentNotifications";
 
 const ProtectedAdminRoute = () => {
   const location = useLocation();
@@ -138,90 +156,53 @@ function App() {
             path="reports"
             element={<AdminPlaceholderPage title="Reports" />}
           />
-          <Route
-            path="settings"
-            element={<AdminProfilePage />}
-          />
-          <Route
-            path="profile"
-            element={<AdminProfilePage />}
-          />
+          <Route path="settings" element={<AdminProfilePage />} />
+          <Route path="profile" element={<AdminProfilePage />} />
         </Route>
 
-        <Route
-          path="/student"
-          element={<ProtectedPortalRoute role="STUDENT" />}
-        >
+        <Route path="/student" element={<ProtectedPortalRoute role="STUDENT" />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StudentDashboard />} />
-          <Route path="courses/*" element={<StudentCoursePage />} />
-          <Route
-            path="assignments/*"
-            element={<StudentModulePage title="Assignments" />}
-          />
-          <Route
-            path="tests/*"
-            element={<StudentModulePage title="Tests & Exams" />}
-          />
-          <Route
-            path="progress/*"
-            element={<StudentModulePage title="My Progress" />}
-          />
-          <Route path="fees/*" element={<StudentFeePage />} />
-          <Route
-            path="certificate/*"
-            element={<StudentModulePage title="Certificate" />}
-          />
-          <Route
-            path="notifications"
-            element={<StudentModulePage title="Notifications" />}
-          />
-          <Route path="profile" element={<StudentProfilePage />} />
-          <Route
-            path="settings"
-            element={<StudentModulePage title="Settings" />}
-          />
+          <Route path="courses" element={<StudentCourses />} />
+          <Route path="courses/modules" element={<StudentModules />} />
+          <Route path="courses/topics" element={<StudentTopics />} />
+          <Route path="courses/material" element={<StudentStudyMaterial />} />
+          <Route path="courses/:id" element={<StudentCourseDetail />} />
+          <Route path="assignments" element={<StudentAssignments />} />
+          <Route path="assignments/:id" element={<StudentAssignmentDetail />} />
+          <Route path="assignments/pending" element={<StudentAssignments />} />
+          <Route path="assignments/submitted" element={<StudentAssignments />} />
+          <Route path="tests" element={<StudentTests />} />
+          <Route path="tests/attempt" element={<StudentTestAttempt />} />
+          <Route path="tests/results" element={<StudentTestResults />} />
+          <Route path="progress" element={<StudentProgress />} />
+          <Route path="attendance" element={<StudentAttendance />} />
+          <Route path="performance" element={<StudentPerformance />} />
+          <Route path="fees" element={<StudentFees />} />
+          <Route path="fees/history" element={<StudentPaymentHistory />} />
+          <Route path="fees/pending" element={<StudentPendingFees />} />
+          <Route path="certificate/eligibility" element={<StudentCertificateEligibility />} />
+          <Route path="certificate" element={<StudentCertificate />} />
+          <Route path="certificate/verify" element={<StudentCertificate />} />
+          <Route path="notifications" element={<StudentNotifications />} />
+          <Route path="profile" element={<StudentProfile />} />
+          <Route path="settings" element={<StudentSettings />} />
         </Route>
-        <Route
-          path="/teacher"
-          element={<ProtectedPortalRoute role="TEACHER" />}
-        >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<TeacherDashboard />} />
-          <Route path="courses/*" element={<TeacherCourses />} />
-          <Route
-            path="batches/*"
-            element={<TeacherPlaceholder title="My Batches" />}
-          />
-          <Route path="students/*" element={<TeacherStudents />} />
-          <Route
-            path="attendance/*"
-            element={<TeacherPlaceholder title="Attendance" />}
-          />
-          <Route
-            path="assignments/*"
-            element={<TeacherPlaceholder title="Assignments" />}
-          />
-          <Route
-            path="tests/*"
-            element={<TeacherPlaceholder title="Tests" />}
-          />
-          <Route
-            path="performance/*"
-            element={<TeacherPlaceholder title="Performance" />}
-          />
-          <Route
-            path="announcements"
-            element={<TeacherPlaceholder title="Announcements" />}
-          />
-          <Route
-            path="profile"
-            element={<TeacherPlaceholder title="My Profile" />}
-          />
-          <Route
-            path="settings"
-            element={<TeacherPlaceholder title="Settings" />}
-          />
+      {/* =========================
+            TEACHER
+        ========================= */}
+
+        <Route path="/teacher" element={<TeacherLayout />}>
+          <Route index element={<TeacherDashboard />} />
+          <Route path="students" element={<TeacherStudents />} />
+          <Route path="courses" element={<TeacherCourses />} />
+          <Route path="batches" element={<TeacherBatches />} />
+          <Route path="attendance" element={<TeacherAttendance />} />
+          <Route path="assignments" element={<TeacherAssignments />} />
+          <Route path="exams" element={<TeacherExams />} />
+          <Route path="results" element={<TeacherResults />} />
+          <Route path="fees" element={<TeacherFees />} />
+          <Route path="profile" element={<TeacherProfile />} />
         </Route>
         <Route path="/franchise" element={<FranchiseLayout />}>
           <Route index element={<FranchiseDashboard />} />
