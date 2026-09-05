@@ -11,7 +11,7 @@ const roleOptions = [
 
 const routeFor = (role) =>
   ({
-    FRANCHISE: "/franchise/dashboard",
+    FRANCHISE: "/franchise",
     TEACHER: "/teacher/dashboard",
     STUDENT: "/student/dashboard",
   })[role] || "/log";
