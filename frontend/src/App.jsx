@@ -137,8 +137,8 @@ function App() {
           <Route path="topics" element={<TopicAdd />} />
           <Route path="courses/:id/edit" element={<CourseAdd />} />
           <Route path="courses/:id" element={<CourseDetail />} />
-          <Route path="students" element={<StudentDirectory />} />
-          <Route path="students/:id" element={<StudentDetail />} />
+          {/* <Route path="students" element={<StudentDirectory />} /> */}
+          {/* <Route path="students/:id" element={<StudentDetail />} /> */}
           <Route path="fees" element={<FeesOverview />} />
           <Route
             path="certificates"
@@ -160,7 +160,10 @@ function App() {
           <Route path="profile" element={<AdminProfilePage />} />
         </Route>
 
-        <Route path="/student" element={<ProtectedPortalRoute role="STUDENT" />}>
+        <Route
+          path="/student"
+          element={<ProtectedPortalRoute role="STUDENT" />}
+        >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="courses" element={<StudentCourses />} />
@@ -171,7 +174,10 @@ function App() {
           <Route path="assignments" element={<StudentAssignments />} />
           <Route path="assignments/:id" element={<StudentAssignmentDetail />} />
           <Route path="assignments/pending" element={<StudentAssignments />} />
-          <Route path="assignments/submitted" element={<StudentAssignments />} />
+          <Route
+            path="assignments/submitted"
+            element={<StudentAssignments />}
+          />
           <Route path="tests" element={<StudentTests />} />
           <Route path="tests/attempt" element={<StudentTestAttempt />} />
           <Route path="tests/results" element={<StudentTestResults />} />
@@ -181,14 +187,17 @@ function App() {
           <Route path="fees" element={<StudentFees />} />
           <Route path="fees/history" element={<StudentPaymentHistory />} />
           <Route path="fees/pending" element={<StudentPendingFees />} />
-          <Route path="certificate/eligibility" element={<StudentCertificateEligibility />} />
+          <Route
+            path="certificate/eligibility"
+            element={<StudentCertificateEligibility />}
+          />
           <Route path="certificate" element={<StudentCertificate />} />
           <Route path="certificate/verify" element={<StudentCertificate />} />
           <Route path="notifications" element={<StudentNotifications />} />
           <Route path="profile" element={<StudentProfile />} />
           <Route path="settings" element={<StudentSettings />} />
         </Route>
-      {/* =========================
+        {/* =========================
             TEACHER
         ========================= */}
 
@@ -210,7 +219,7 @@ function App() {
           <Route path="students" element={<FranchiseStudents />} />
           <Route path="students/add" element={<FranchiseStudentAdd />} />
           <Route path="students/:id/edit" element={<FranchiseStudentAdd />} />
-          <Route path="students/:id" element={<StudentDetail />} />
+          {/* <Route path="students/:id" element={<StudentDetail />} /> */}
           <Route path="courses" element={<FranchiseCourses />} />
           <Route path="batches" element={<FranchiseBatches />} />
           <Route path="attendance" element={<FranchiseAttendance />} />
