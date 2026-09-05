@@ -111,49 +111,7 @@ const menus = {
     ["My Profile", "/teacher/profile", CircleUserRound],
     ["Settings", "/teacher/settings", Settings],
   ],
-  FRANCHISE: [
-    ["Dashboard", "/franchise/dashboard", LayoutDashboard],
-    [
-      "Students",
-      "/franchise/students",
-      Users,
-      ["All Students", "Add Student", "Student Progress"],
-    ],
-    [
-      "Teachers",
-      "/franchise/teachers",
-      GraduationCap,
-      ["All Teachers", "Add Teacher", "Teacher Performance"],
-    ],
-    [
-      "Courses",
-      "/franchise/courses",
-      BookOpen,
-      ["Course Catalog", "Assign Course"],
-    ],
-    [
-      "Batches",
-      "/franchise/batches",
-      CalendarDays,
-      ["All Batches", "Create Batch", "Schedule"],
-    ],
-    [
-      "Attendance",
-      "/franchise/attendance",
-      ClipboardCheck,
-      ["Daily Attendance", "Attendance Reports"],
-    ],
-    [
-      "Fees",
-      "/franchise/fees",
-      CreditCard,
-      ["Fee Details", "Payment History", "Pending Fees"],
-    ],
-    ["Reports", "/franchise/reports", ChartNoAxesCombined],
-    ["Notifications", "/franchise/notifications", Bell],
-    ["My Profile", "/franchise/profile", CircleUserRound],
-    ["Settings", "/franchise/settings", Settings],
-  ],
+ 
 };
 
 const labels = {
