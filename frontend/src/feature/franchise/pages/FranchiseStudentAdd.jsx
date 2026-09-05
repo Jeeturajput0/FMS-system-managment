@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   UserPlus,
@@ -14,6 +14,8 @@ import { apiFetch } from "../../../utils/api";
 
 const FranchiseStudentAdd = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
 
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
@@ -48,7 +50,18 @@ const FranchiseStudentAdd = () => {
     };
 
     getCourses();
-  }, []);
+
+    if (id) {
+      apiFetch(`/api/students/${id}`)
+        .then(({ student }) => setForm({
+          name: student.name || "",
+          mobile: student.mobile || "",
+          email: student.email || "",
+          courseId: student.courseId?._id || student.courseId || "",
+        }))
+        .catch((error) => setMessage(error.message || "Unable to load student"));
+    }
+  }, [id]);
 
   // =========================
   // Input Change
@@ -90,8 +103,8 @@ const FranchiseStudentAdd = () => {
         coachingId: user.coachingId,
       };
 
-      await apiFetch("/api/students", {
-        method: "POST",
+      await apiFetch(isEdit ? `/api/students/${id}` : "/api/students", {
+        method: isEdit ? "PUT" : "POST",
         body: JSON.stringify(payload),
       });
 
@@ -133,11 +146,11 @@ const FranchiseStudentAdd = () => {
           </div>
 
           <h1 className="text-3xl font-black tracking-tight text-slate-900">
-            Add Student
+            {isEdit ? "Edit Student" : "Add Student"}
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            Create a new student enrolment for your franchise centre.
+            {isEdit ? "Update this franchise student record." : "Create a new student enrolment for your franchise centre."}
           </p>
         </div>
       </div>
@@ -163,7 +176,7 @@ const FranchiseStudentAdd = () => {
         {/* Form Header */}
         <div className="border-b border-slate-200 bg-slate-50/70 px-6 py-5 sm:px-8">
           <h2 className="text-lg font-black text-slate-900">
-            Student Information
+            {isEdit ? "Edit Student Information" : "Student Information"}
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
@@ -294,7 +307,7 @@ const FranchiseStudentAdd = () => {
             ) : (
               <>
                 <Save size={18} />
-                Save Student
+                {isEdit ? "Update Student" : "Save Student"}
               </>
             )}
           </button>

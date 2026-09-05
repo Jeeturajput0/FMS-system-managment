@@ -1,0 +1,1 @@
+export { getAdminPortalOverview } from "../portal.controller.js";

@@ -9,7 +9,7 @@ import {
   deleteModule,
   toggleModulePublish,
   reorderModule,
-} from "../controller/module.controller.js";
+} from "../controller/admin/module.controller.js";
 
 import { protect, authorize } from "../middleware/auth.middleware.js";
 

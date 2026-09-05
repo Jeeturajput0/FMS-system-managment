@@ -9,6 +9,8 @@ import {
   Loader2,
   RefreshCw,
   AlertCircle,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -124,6 +126,7 @@ export const StudentDirectory = () => {
 
   const [showAddModal, setShowAddModal] =
     useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
 
   /* =======================================================
      FORM DATA
@@ -596,9 +599,9 @@ export const StudentDirectory = () => {
 
       const response =
         await apiFetch(
-          STUDENT_API,
+          editingStudent ? `${STUDENT_API}/${editingStudent._id}` : STUDENT_API,
           {
-            method: "POST",
+            method: editingStudent ? "PUT" : "POST",
             body: JSON.stringify(
               payload
             ),
@@ -624,6 +627,7 @@ export const StudentDirectory = () => {
       );
 
       setShowAddModal(false);
+      setEditingStudent(null);
     } catch (err) {
       console.error(
         "Create student error:",
@@ -656,6 +660,7 @@ export const StudentDirectory = () => {
 
   const openAddModal = () => {
     setError("");
+    setEditingStudent(null);
 
     setFormData({
       ...initialFormData,
@@ -676,6 +681,31 @@ export const StudentDirectory = () => {
     });
 
     setShowAddModal(true);
+  };
+
+  const openEditModal = (student) => {
+    setError("");
+    setEditingStudent(student);
+    setFormData({
+      name: student.name || "",
+      email: student.email || "",
+      mobile: student.mobile || student.phone || "",
+      courseId: getId(student.courseId),
+      coachingId: getId(student.coachingId),
+      batchId: getId(student.batchId),
+    });
+    setShowAddModal(true);
+  };
+
+  const deleteStudent = async (student) => {
+    if (!window.confirm(`Deactivate ${student.name}?`)) return;
+    try {
+      setError("");
+      await apiFetch(`${STUDENT_API}/${student._id}`, { method: "DELETE" });
+      await fetchStudents();
+    } catch (requestError) {
+      setError(requestError.message || "Unable to deactivate student");
+    }
   };
 
   /* =======================================================
@@ -1130,14 +1160,20 @@ export const StudentDirectory = () => {
                       {/* ACTION */}
 
                       <td className="py-4 px-4 text-right">
-                        <Link
-                          to={`/admin/students/${student.id}`}
-                          className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors font-bold text-xs inline-flex items-center gap-1"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-
-                          View
-                        </Link>
+                        <div className="inline-flex items-center gap-1">
+                          <Link
+                            to={`/admin/students/${student.id}`}
+                            className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors font-bold text-xs inline-flex items-center gap-1"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </Link>
+                          <button onClick={() => openEditModal(student)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 inline-flex items-center gap-1" title="Edit">
+                            <Edit className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <button onClick={() => deleteStudent(student)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 inline-flex items-center gap-1" title="Deactivate">
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )

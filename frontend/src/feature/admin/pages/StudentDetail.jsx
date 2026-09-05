@@ -1,147 +1,34 @@
-import React from "react";
-import { Link, useParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  BookOpen,
-  CheckCircle2,
-  Mail,
-  Phone,
-  UserRound,
-} from "lucide-react";
-import { useData } from "../../../context/DataContext";
+import React, { useEffect, useState } from "react";
+import { ArrowLeft, Edit, Loader2 } from "lucide-react";
+import { Link, useLocation, useParams } from "react-router-dom";
+import { apiFetch } from "../../../utils/api";
+
+const value = (item) => item?.title || item?.name || item || "Not assigned";
 
 export const StudentDetail = () => {
   const { id } = useParams();
-  const { students } = useData();
+  const location = useLocation();
+  const franchiseView = location.pathname.startsWith("/franchise");
+  const backPath = franchiseView ? "/franchise/students" : "/admin/students";
+  const editPath = franchiseView ? `/franchise/students/${id}/edit` : "/admin/students";
+  const [student, setStudent] = useState(null);
+  const [error, setError] = useState("");
 
-  const student = students.find((item) => item.id === id) || students[0];
+  useEffect(() => {
+    apiFetch(`/api/students/${id}`)
+      .then((response) => setStudent(response.student))
+      .catch((requestError) => setError(requestError.message || "Student not found"));
+  }, [id]);
 
-  if (!student) {
-    return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-slate-600">
-        Student not found.
-      </div>
-    );
-  }
+  if (error) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">{error}</div>;
+  if (!student) return <div className="flex min-h-64 items-center justify-center"><Loader2 className="animate-spin text-orange-500" /></div>;
 
-  return (
-    <div className="space-y-6 pb-12">
-      <Link
-        to="/admin/students"
-        className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-orange-600 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to Student Directory
-      </Link>
+  const fields = [
+    ["Email", student.email || "-"], ["Phone", student.mobile], ["Father name", student.fatherName || "-"],
+    ["Course", value(student.courseId)], ["Franchise", value(student.coachingId)], ["Status", student.status],
+    ["Address", [student.address, student.city, student.state, student.pincode].filter(Boolean).join(", ") || "-"],
+    ["Joining date", student.joiningDate ? new Date(student.joiningDate).toLocaleDateString("en-IN") : "-"],
+  ];
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <img
-              src={student.avatar}
-              alt={student.name}
-              className="h-16 w-16 rounded-2xl object-cover ring-2 ring-orange-200"
-            />
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-extrabold text-slate-900">
-                  {student.name}
-                </h2>
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                  {student.status}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-slate-600">
-                {student.id} • {student.batch}
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-orange-50 px-4 py-3 text-right">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500">
-              Fee Status
-            </p>
-            <p className="text-sm font-extrabold text-slate-900">
-              {student.feesPaid} / {student.feesTotal}
-            </p>
-            <p className="text-[10px] font-bold text-orange-600">
-              {student.feesStatus}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-600">
-            Profile Details
-          </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-slate-500">
-                <Mail className="h-4 w-4" /> Email
-              </div>
-              <p className="font-semibold text-slate-900">{student.email}</p>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-slate-500">
-                <Phone className="h-4 w-4" /> Phone
-              </div>
-              <p className="font-semibold text-slate-900">{student.phone}</p>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-slate-500">
-                <UserRound className="h-4 w-4" /> Course
-              </div>
-              <p className="font-semibold text-slate-900">{student.course}</p>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-slate-500">
-                <BookOpen className="h-4 w-4" /> Franchise
-              </div>
-              <p className="font-semibold text-slate-900">
-                {student.franchise}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-600">
-            Progress
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <div className="mb-1 flex justify-between text-xs text-slate-600">
-                <span>Attendance</span>
-                <span>{student.attendance}</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-500"
-                  style={{ width: "92%" }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-xs text-slate-600">
-                <span>Course Completion</span>
-                <span>84%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400"
-                  style={{ width: "84%" }}
-                />
-              </div>
-            </div>
-            <div className="rounded-2xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> On-track enrollment
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="space-y-6 pb-12"><Link to={backPath} className="inline-flex items-center gap-2 text-sm font-bold text-slate-600"><ArrowLeft size={16} /> Back to students</Link><div className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center"><div><p className="text-xs font-bold uppercase tracking-wider text-orange-500">{student.studentId || student._id}</p><h1 className="mt-2 text-3xl font-black text-slate-900">{student.name}</h1><p className="mt-1 text-sm text-slate-500">Complete student profile and enrollment details</p></div><div className="flex items-center gap-3"><span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">{student.status}</span><Link to={editPath} className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white"><Edit size={15} /> Edit</Link></div></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{fields.map(([label, fieldValue]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-xs font-bold uppercase text-slate-400">{label}</p><p className="mt-2 font-semibold text-slate-900">{fieldValue}</p></div>)}</div><div className="rounded-2xl border border-slate-200 bg-white p-6"><h2 className="font-bold text-slate-900">Fees and progress</h2><div className="mt-4 grid gap-4 sm:grid-cols-3"><div><p className="text-xs text-slate-500">Course fee</p><p className="font-bold">₹{Number(student.courseFee || 0).toLocaleString("en-IN")}</p></div><div><p className="text-xs text-slate-500">Paid</p><p className="font-bold text-emerald-600">₹{Number(student.totalPaid || 0).toLocaleString("en-IN")}</p></div><div><p className="text-xs text-slate-500">Attendance</p><p className="font-bold">{student.attendancePercentage || 0}%</p></div></div></div></div>;
 };

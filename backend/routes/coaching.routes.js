@@ -6,7 +6,7 @@ import {
   updateCoaching,
   deleteCoaching,
   updateCoachingStatus,
-} from "../controller/coaching.controller.js";
+} from "../controller/admin/coaching.controller.js";
 import { protect, authorize } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

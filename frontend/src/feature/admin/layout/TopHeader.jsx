@@ -30,6 +30,10 @@ export const TopHeader = ({ onMenuClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { notifications, markNotificationRead, markAllNotificationsRead } = useData();
+  const currentUser = JSON.parse(localStorage.getItem('ai_scholars_user') || 'null');
+  const profileName = currentUser?.name || 'Admin';
+  const profileEmail = currentUser?.email || 'admin@aischolar.com';
+  const profileRole = currentUser?.role || 'ADMIN';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -187,14 +191,14 @@ export const TopHeader = ({ onMenuClick }) => {
           >
             <img
               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-              alt="Arjun"
+              alt={profileName}
               className="w-9 h-9 rounded-xl object-cover ring-2 ring-orange-500/40"
             />
             <div className="hidden sm:block">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-bold text-slate-900 leading-tight">Arjun Sharma</p>
+                <p className="text-xs font-bold text-slate-900 leading-tight">{profileName}</p>
                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-200">
-                  <ShieldCheck className="w-3 h-3 text-amber-600" /> Super Admin
+                  <ShieldCheck className="w-3 h-3 text-amber-600" /> {profileRole}
                 </span>
               </div>
               <p className="text-[10px] font-medium text-slate-600">HQ Master Control</p>
@@ -204,8 +208,8 @@ export const TopHeader = ({ onMenuClick }) => {
           {showProfileMenu && (
             <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-                <p className="text-xs font-bold text-slate-900">Arjun Sharma</p>
-                <p className="text-xs text-slate-600">admin@aischolar.com</p>
+                <p className="text-xs font-bold text-slate-900">{profileName}</p>
+                <p className="text-xs text-slate-600">{profileEmail}</p>
               </div>
               <Link
                 to="/admin/settings"

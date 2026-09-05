@@ -20,6 +20,8 @@ export const PortalLoginPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
+    franchiseName: "",
+    phone: "",
     email: "",
     password: "",
     role: "STUDENT",
@@ -103,17 +105,10 @@ export const PortalLoginPage = () => {
           )}
           <form onSubmit={submit} className="space-y-4">
             {register && (
-              <label className="block text-sm font-bold text-slate-700">
-                Full name
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={update}
-                  required
-                  className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-blue-500"
-                  placeholder="Your full name"
-                />
-              </label>
+              <>
+                <label className="block text-sm font-bold text-slate-700">Full name<input name="name" value={form.name} onChange={update} required className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-blue-500" placeholder="Your full name" /></label>
+                {form.role === "FRANCHISE" && <><label className="block text-sm font-bold text-slate-700">Franchise name<input name="franchiseName" value={form.franchiseName} onChange={update} required className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-blue-500" placeholder="Your centre name" /></label><label className="block text-sm font-bold text-slate-700">Phone number<input name="phone" value={form.phone} onChange={update} required className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-blue-500" placeholder="Centre phone number" /></label></>}
+              </>
             )}
             <label className="block text-sm font-bold text-slate-700">
               Role

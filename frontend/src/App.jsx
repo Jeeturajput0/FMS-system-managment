@@ -19,6 +19,7 @@ import { StudentDirectory } from "./feature/admin/pages/StudentDirectory";
 import { StudentDetail } from "./feature/admin/pages/StudentDetail";
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
 import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
+import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
 import { CourseAdd } from "./feature/admin/pages/CourseAdd";
 import CourseModules from "./feature/admin/pages/CourseModule";
 import ModuleAdd from "./feature/admin/pages/ModuleAdd";
@@ -139,7 +140,11 @@ function App() {
           />
           <Route
             path="settings"
-            element={<AdminPlaceholderPage title="Settings" />}
+            element={<AdminProfilePage />}
+          />
+          <Route
+            path="profile"
+            element={<AdminProfilePage />}
           />
         </Route>
 
@@ -222,13 +227,15 @@ function App() {
           <Route index element={<FranchiseDashboard />} />
 
           <Route path="students" element={<FranchiseStudents />} />
+          <Route path="students/add" element={<FranchiseStudentAdd />} />
+          <Route path="students/:id/edit" element={<FranchiseStudentAdd />} />
+          <Route path="students/:id" element={<StudentDetail />} />
           <Route path="courses" element={<FranchiseCourses />} />
           <Route path="batches" element={<FranchiseBatches />} />
           <Route path="attendance" element={<FranchiseAttendance />} />
           <Route path="fees" element={<FranchiseFees />} />
           <Route path="schedule" element={<FranchiseSchedule />} />
           <Route path="reports" element={<FranchiseReports />} />
-<Route path="/add" element={<FranchiseStudentAdd />} />
         </Route>
       </Routes>
     </BrowserRouter>

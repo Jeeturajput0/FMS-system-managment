@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../model/user.model.js";
+import Coaching from "../model/coaching.model.js";
 
 const secret = () => process.env.JWT_SECRET || "ai-scholars-dev-secret";
 const toPublicUser = (user) => ({
@@ -19,7 +20,19 @@ const createToken = (user) =>
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role = "STUDENT", coachingId = null } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role = "STUDENT",
+      coachingId = null,
+      franchiseName,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+    } = req.body;
     const allowedRoles = ["SUPER_ADMIN", "ADMIN", "FRANCHISE", "TEACHER", "STUDENT"];
     if (!name?.trim() || !email?.trim() || !password || password.length < 6 || !allowedRoles.includes(role)) {
       return res
@@ -35,6 +48,13 @@ export const registerUser = async (req, res) => {
       return res
         .status(409)
         .json({ success: false, message: "User already exists" });
+    if (role === "FRANCHISE" && !phone?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required for franchise registration",
+      });
+    }
+
     const user = await User.create({
       name: name.trim(),
       email: normalizedEmail,
@@ -42,6 +62,24 @@ export const registerUser = async (req, res) => {
       role,
       coachingId,
     });
+
+    if (role === "FRANCHISE") {
+      const coaching = await Coaching.create({
+        name: franchiseName?.trim() || `${name.trim()} Franchise`,
+        code: `FR-${Date.now().toString().slice(-6)}`,
+        ownerName: name.trim(),
+        email: normalizedEmail,
+        phone: phone.trim(),
+        address: address?.trim() || "",
+        city: city?.trim() || "",
+        state: state?.trim() || "",
+        pincode: pincode?.trim() || "",
+        status: "active",
+        createdBy: user._id,
+      });
+      user.coachingId = coaching._id;
+      await user.save();
+    }
     return res
       .status(201)
       .json({

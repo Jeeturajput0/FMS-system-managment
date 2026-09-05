@@ -5,7 +5,7 @@ import {
   getCourse,
   listCourses,
   updateCourse,
-} from "../controller/course.controller.js";
+} from "../controller/admin/course.controller.js";
 import { protect, authorize } from "../middleware/auth.middleware.js";
 import { requireDatabase } from "../middleware/db.middleware.js";
 import { courseUpload } from "../middleware/upload.middleware.js";

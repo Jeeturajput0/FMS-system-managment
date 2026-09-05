@@ -7,7 +7,7 @@ import {
   updateStudent,
   deleteStudent,
   updateStudentStatus,
-} from "../controller/student.controller.js";
+} from "../controller/admin/student.controller.js";
 
 import { protect, authorize } from "../middleware/auth.middleware.js";
 
@@ -43,7 +43,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN", "FRANCHISE"),
   updateStudent,
 );
 
@@ -54,7 +54,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN", "FRANCHISE"),
   deleteStudent,
 );
 
@@ -65,7 +65,7 @@ router.delete(
 router.patch(
   "/:id/status",
   protect,
-  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN"),
+  authorize("SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN", "FRANCHISE_ADMIN", "FRANCHISE"),
   updateStudentStatus,
 );
 

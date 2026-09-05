@@ -1,5 +1,5 @@
 import express from "express";
-import { createTopic, getTopics, getTopicById } from "../controller/topic.controller.js";
+import { createTopic, getTopics, getTopicById } from "../controller/admin/topic.controller.js";
 import { authorize, protect } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

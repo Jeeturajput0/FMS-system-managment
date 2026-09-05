@@ -1,0 +1,1 @@
+export * from "../module.controller.js";

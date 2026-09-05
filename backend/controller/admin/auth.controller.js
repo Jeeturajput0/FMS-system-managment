@@ -1,0 +1,1 @@
+export { getCurrentUser, loginUser, registerUser } from "../user.controller.js";

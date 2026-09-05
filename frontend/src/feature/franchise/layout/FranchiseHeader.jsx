@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 
 export const FranchiseHeader = ({ onMenuClick }) => {
+  const user = JSON.parse(localStorage.getItem("ai_scholars_user") || "null");
+  const initials = (user?.name || "Franchise").slice(0, 1).toUpperCase();
   return (
     <header className="sticky top-0 z-30 h-20 bg-white border-b border-slate-200">
       <div className="h-full px-4 sm:px-6 flex items-center justify-between">
@@ -43,16 +45,16 @@ export const FranchiseHeader = ({ onMenuClick }) => {
           {/* Profile */}
           <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
             <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-              F
+              {initials}
             </div>
 
             <div className="hidden sm:block">
               <p className="text-sm font-bold text-slate-900">
-                Franchise Admin
+                {user?.name || "Franchise Admin"}
               </p>
 
               <p className="text-xs text-slate-500">
-                Franchise
+                {user?.email || "Franchise"}
               </p>
             </div>
           </div>

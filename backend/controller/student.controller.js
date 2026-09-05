@@ -4,6 +4,16 @@ import Student from "../model/student.model.js";
 import Course from "../model/course.model.js";
 import Fee from "../model/fee.model.js";
 
+const franchiseRoles = ["FRANCHISE", "FRANCHISE_ADMIN"];
+
+const getUserCoachingId = (req) =>
+  franchiseRoles.includes(req.user?.role) ? req.user.coachingId : null;
+
+const isOutsideFranchise = (student, req) => {
+  const coachingId = getUserCoachingId(req);
+  return coachingId && String(student.coachingId) !== String(coachingId);
+};
+
 // ======================================================
 // CREATE STUDENT
 // POST /api/students
@@ -42,8 +52,16 @@ export const createStudent = async (req, res) => {
     // REQUIRED VALIDATION
     // ==================================================
 
+    const userCoachingId = getUserCoachingId(req);
     const resolvedCoachingId =
-      coachingId || process.env.DEFAULT_COACHING_ID || new mongoose.Types.ObjectId();
+      userCoachingId || coachingId || process.env.DEFAULT_COACHING_ID;
+
+    if (!resolvedCoachingId) {
+      return res.status(400).json({
+        success: false,
+        message: "Coaching is required",
+      });
+    }
 
     if (!name?.trim()) {
       return res.status(400).json({
@@ -266,7 +284,17 @@ export const getStudents = async (req, res) => {
     // COACHING FILTER
     // ==================================================
 
-    if (coachingId) {
+    const userCoachingId = getUserCoachingId(req);
+
+    if (userCoachingId) {
+      if (!mongoose.Types.ObjectId.isValid(userCoachingId)) {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is not linked to a valid franchise",
+        });
+      }
+      query.coachingId = userCoachingId;
+    } else if (coachingId) {
       if (!mongoose.Types.ObjectId.isValid(coachingId)) {
         return res.status(400).json({
           success: false,
@@ -368,6 +396,7 @@ export const getStudents = async (req, res) => {
     const [students, total] = await Promise.all([
       Student.find(query)
         .populate("courseId", "title slug courseFee")
+        .populate("coachingId", "name code email phone")
         .populate("createdBy", "name email")
 
         .sort({
@@ -431,6 +460,7 @@ export const getStudentById = async (req, res) => {
 
     const student = await Student.findById(id)
       .populate("courseId")
+      .populate("coachingId", "name code email phone")
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email");
 
@@ -439,6 +469,10 @@ export const getStudentById = async (req, res) => {
         success: false,
         message: "Student not found",
       });
+    }
+
+    if (isOutsideFranchise(student, req)) {
+      return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
     }
 
     return res.status(200).json({
@@ -484,6 +518,10 @@ export const updateStudent = async (req, res) => {
         success: false,
         message: "Student not found",
       });
+    }
+
+    if (isOutsideFranchise(student, req)) {
+      return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
     }
 
     const {
@@ -712,18 +750,27 @@ export const deleteStudent = async (req, res) => {
       });
     }
 
-    // Soft delete
+    if (isOutsideFranchise(student, req)) {
+      return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
+    }
 
-    student.status = "inactive";
+    const isAdmin = ["SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN"].includes(req.user?.role);
 
-    student.updatedBy = req.user._id;
-
-    await student.save();
+    if (isAdmin) {
+      await Promise.all([
+        Student.deleteOne({ _id: student._id }),
+        Fee.deleteMany({ studentId: student._id }),
+      ]);
+    } else {
+      student.status = "inactive";
+      student.updatedBy = req.user._id;
+      await student.save();
+    }
 
     return res.status(200).json({
       success: true,
 
-      message: "Student deactivated successfully",
+      message: isAdmin ? "Student deleted successfully" : "Student deactivated successfully",
     });
   } catch (error) {
     console.error("Delete Student Error:", error);
@@ -765,12 +812,26 @@ export const updateStudentStatus = async (req, res) => {
       });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
     const student = await Student.findById(id);
 
     if (!student) {
       return res.status(404).json({
         success: false,
         message: "Student not found",
+      });
+    }
+
+    if (isOutsideFranchise(student, req)) {
+      return res.status(403).json({
+        success: false,
+        message: "Student does not belong to your franchise",
       });
     }
 

@@ -1,6 +1,7 @@
 import express from "express";
 import { authorize, protect } from "../middleware/auth.middleware.js";
-import { getAdminPortalOverview, getPortalCourses, getPortalDashboard, getPortalFees, getPortalStudents } from "../controller/portal.controller.js";
+import { getAdminPortalOverview } from "../controller/admin/portal.controller.js";
+import { getPortalCourses, getPortalDashboard, getPortalFees, getPortalStudents } from "../controller/franchise/portal.controller.js";
 
 const router = express.Router();
 router.get("/admin-overview", protect, authorize("SUPER_ADMIN", "ADMIN"), getAdminPortalOverview);
