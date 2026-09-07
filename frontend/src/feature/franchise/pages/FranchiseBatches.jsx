@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Edit, Eye, Trash2 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 import { Link } from "react-router-dom";
 
@@ -41,6 +42,7 @@ export const FranchiseBatches = () => {
       fetchBatches();
     } catch (requestError) { setError(requestError.message); }
   };
+  const removeBatch = async (batch) => { if (!window.confirm(`Delete ${batch.name}?`)) return; try { await apiFetch(`/api/batches/${batch._id}`, { method: "DELETE" }); await fetchBatches(); } catch (err) { setError(err.message); } };
 
   return (
     <div className="p-6">
@@ -183,7 +185,7 @@ export const FranchiseBatches = () => {
                         {batch.status || "ACTIVE"}
                       </span>
                     </td>
-                    <td className="px-6 py-4"><button onClick={() => setSelectedBatch(batch)} className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700">Add student</button></td>
+                    <td className="px-6 py-4"><div className="flex items-center gap-2"><Link to={`/franchise/batches/${batch._id}`} className="rounded-lg bg-slate-100 p-2 text-slate-600"><Eye size={15} /></Link><Link to={`/franchise/batches/${batch._id}/edit`} className="rounded-lg bg-blue-50 p-2 text-blue-600"><Edit size={15} /></Link><button onClick={() => setSelectedBatch(batch)} className="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700">Add student</button><button onClick={() => removeBatch(batch)} className="rounded-lg bg-red-50 p-2 text-red-600"><Trash2 size={15} /></button></div></td>
                   </tr>
                 ))}
               </tbody>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
 const week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
@@ -7,6 +7,7 @@ const week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"
 const FranchiseBatchForm = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("ai_scholars_user") || "null");
+  const { id } = useParams();
   const [courses, setCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [error, setError] = useState("");
@@ -14,8 +15,8 @@ const FranchiseBatchForm = () => {
   const [form, setForm] = useState({ name: "", code: "", description: "", course: "", teacher: "", startDate: "", endDate: "", startTime: "", endTime: "", days: [], room: "", maxStudents: 30, status: "ACTIVE" });
 
   useEffect(() => {
-    Promise.all([apiFetch("/api/courses"), apiFetch("/api/portal/teachers")])
-      .then(([courseResponse, teacherResponse]) => { setCourses(courseResponse.data || []); setTeachers(teacherResponse.data || []); })
+    Promise.all([apiFetch("/api/courses"), apiFetch("/api/portal/teachers"), id ? apiFetch(`/api/batches/${id}`) : Promise.resolve(null)])
+      .then(([courseResponse, teacherResponse, batchResponse]) => { setCourses(courseResponse.data || []); setTeachers(teacherResponse.data || []); if (batchResponse?.batch) setForm((current) => ({ ...current, ...batchResponse.batch, course: batchResponse.batch.course?._id || batchResponse.batch.course || "", teacher: batchResponse.batch.teacher?._id || batchResponse.batch.teacher || "" })); })
       .catch((requestError) => setError(requestError.message));
   }, []);
 
@@ -24,7 +25,7 @@ const FranchiseBatchForm = () => {
   const submit = async (event) => {
     event.preventDefault(); setSaving(true); setError("");
     try {
-      await apiFetch("/api/batches", { method: "POST", body: JSON.stringify({ ...form, franchise: user?.coachingId || user?.franchiseId }) });
+      await apiFetch(id ? `/api/batches/${id}` : "/api/batches", { method: id ? "PUT" : "POST", body: JSON.stringify({ ...form, franchise: user?.coachingId || user?.franchiseId }) });
       navigate("/franchise/batches");
     } catch (requestError) { setError(requestError.message); } finally { setSaving(false); }
   };

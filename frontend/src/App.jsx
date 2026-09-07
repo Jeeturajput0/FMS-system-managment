@@ -379,6 +379,8 @@ function App() {
 
           <Route path="students" element={<FranchiseStudents />} />
 
+          <Route path="students/:id" element={<FranchiseStudents />} />
+
           <Route path="students/add" element={<FranchiseStudentAdd />} />
 
           <Route path="students/:id/edit" element={<FranchiseStudentAdd />} />
@@ -404,6 +406,8 @@ function App() {
 
           <Route path="batches" element={<FranchiseBatches />} />
           <Route path="batches/add" element={<FranchiseBatchForm />} />
+          <Route path="batches/:id" element={<FranchiseBatches />} />
+          <Route path="batches/:id/edit" element={<FranchiseBatchForm />} />
 
           {/* ----------------------------------------------------
               FRANCHISE ATTENDANCE

@@ -1,7 +1,7 @@
 import express from "express";
 import { authorize, protect } from "../middleware/auth.middleware.js";
 import { getAdminPortalOverview } from "../controller/admin/portal.controller.js";
-import { createPortalTeacher, getPortalAttendance, getPortalCourses, getPortalDashboard, getPortalFees, getPortalStudents, getPortalTeacherBatches, getPortalTeachers, getPortalSettings, savePortalAttendance, updatePortalSettings } from "../controller/franchise/portal.controller.js";
+import { createPortalTeacher, deletePortalTeacher, getPortalAttendance, getPortalCourses, getPortalDashboard, getPortalFees, getPortalStudents, getPortalTeacherBatches, getPortalTeachers, getPortalSettings, savePortalAttendance, updatePortalSettings, updatePortalTeacher } from "../controller/franchise/portal.controller.js";
 
 const router = express.Router();
 router.get("/admin-overview", protect, authorize("SUPER_ADMIN", "ADMIN"), getAdminPortalOverview);
@@ -13,6 +13,8 @@ router.get("/fees", protect, getPortalFees);
 router.get("/teachers", protect, getPortalTeachers);
 router.get("/teacher-batches", protect, getPortalTeacherBatches);
 router.post("/teachers", protect, createPortalTeacher);
+router.put("/teachers/:id", protect, updatePortalTeacher);
+router.delete("/teachers/:id", protect, deletePortalTeacher);
 router.get("/attendance", protect, getPortalAttendance);
 router.put("/attendance", protect, savePortalAttendance);
 router.get("/settings", protect, getPortalSettings);

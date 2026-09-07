@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Edit, Eye, Loader2, Plus, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
 const courseName = (course) => course?.title || course?.name || "Not assigned";
@@ -10,6 +10,9 @@ export const FranchiseStudents = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [selectedCourses, setSelectedCourses] = useState([]);
+  const { id } = useParams();
 
   const loadStudents = async () => {
     try {
@@ -24,7 +27,7 @@ export const FranchiseStudents = () => {
     }
   };
 
-  useEffect(() => { loadStudents(); }, []);
+  useEffect(() => { loadStudents(); apiFetch("/api/portal/courses").then((response) => setCourses(response.data || [])).catch(() => {}); }, []);
 
   const removeStudent = async (student) => {
     if (!window.confirm(`Deactivate ${student.name}?`)) return;
@@ -38,8 +41,9 @@ export const FranchiseStudents = () => {
 
   const filteredStudents = students.filter((student) => {
     const value = search.trim().toLowerCase();
-    return !value || [student.name, student.email, student.mobile, student.studentId]
-      .some((field) => String(field || "").toLowerCase().includes(value));
+    const courseId = String(student.courseId?._id || student.courseId || "");
+    return (!selectedCourses.length || selectedCourses.includes(courseId)) && (!value || [student.name, student.email, student.mobile, student.studentId]
+      .some((field) => String(field || "").toLowerCase().includes(value)));
   });
 
   return (
@@ -49,7 +53,8 @@ export const FranchiseStudents = () => {
         <Link to="/franchise/students/add" className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white"><Plus size={17} /> Add Student</Link>
       </div>
       {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>}
-      <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, phone, email or student ID" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500" />
+      <div className="grid gap-3 sm:grid-cols-[1fr_280px]"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, phone, email or student ID" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500" /><select multiple value={selectedCourses} onChange={(event) => setSelectedCourses([...event.target.selectedOptions].map((option) => option.value).filter(Boolean))} className="min-h-12 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"><option value="">All courses</option>{courses.map((course) => <option key={course._id} value={course._id}>{course.title || course.name}</option>)}</select></div>
+      {id && <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">Viewing student profile: {students.find((student) => student._id === id)?.name || id}</div>}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="overflow-x-auto"><table className="w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="p-4">Student</th><th className="p-4">Phone</th><th className="p-4">Email</th><th className="p-4">Course</th><th className="p-4">Status</th><th className="p-4 text-right">Actions</th></tr></thead>
         <tbody>{loading ? <tr><td colSpan="6" className="p-10 text-center"><Loader2 className="mx-auto animate-spin text-blue-600" /></td></tr> : filteredStudents.length === 0 ? <tr><td colSpan="6" className="p-10 text-center text-slate-500">No students found.</td></tr> : filteredStudents.map((student) => <tr key={student._id} className="border-t border-slate-100 hover:bg-slate-50">

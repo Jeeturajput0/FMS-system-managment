@@ -170,6 +170,38 @@ export const createPortalTeacher = async (req, res) => {
   }
 };
 
+export const updatePortalTeacher = async (req, res) => {
+  try {
+    const { name, email, password, courseIds = [], isActive } = req.body;
+    const teacher = await User.findOne({ _id: req.params.id, role: "TEACHER", coachingId: req.user.coachingId });
+    if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+    if (name?.trim()) teacher.name = name.trim();
+    if (email?.trim()) teacher.email = email.trim().toLowerCase();
+    if (Array.isArray(courseIds)) teacher.assignedCourses = courseIds.filter((id) => mongoose.isValidObjectId(id));
+    if (typeof isActive === "boolean") teacher.isActive = isActive;
+    if (password) teacher.password = await bcrypt.hash(password, 12);
+    await teacher.save();
+    const data = await User.findById(teacher._id).select("name email isActive assignedCourses createdAt").populate("assignedCourses", "title name").lean();
+    return res.json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to update teacher", error: error.message });
+  }
+};
+
+export const deletePortalTeacher = async (req, res) => {
+  try {
+    const teacher = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "TEACHER", coachingId: req.user.coachingId },
+      { $set: { isActive: false } },
+      { new: true },
+    ).select("name isActive").lean();
+    if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+    return res.json({ success: true, message: "Teacher deactivated successfully", data: teacher });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to deactivate teacher", error: error.message });
+  }
+};
+
 export const getPortalAttendance = async (req, res) => {
   try {
     const { batchId, date } = req.query;
