@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import {
   BookOpen,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   Trash2,
   Loader2,
   Pencil,
@@ -25,6 +27,7 @@ export default function CourseModules() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [expandedModuleIds, setExpandedModuleIds] = useState([]);
 
   const loadModules = async () => {
     try {
@@ -131,6 +134,14 @@ export default function CourseModules() {
     } catch (publishError) {
       alert(publishError.message);
     }
+  };
+
+  const toggleModuleTopics = (moduleId) => {
+    setExpandedModuleIds((current) =>
+      current.includes(moduleId)
+        ? current.filter((id) => id !== moduleId)
+        : [...current, moduleId],
+    );
   };
 
   if (loading) {
@@ -266,9 +277,14 @@ export default function CourseModules() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
+                  <button
+                    type="button"
+                    onClick={() => toggleModuleTopics(module._id)}
+                    className="inline-flex items-center gap-1.5 text-left text-sm font-bold text-slate-900 hover:text-orange-600"
+                  >
+                    {expandedModuleIds.includes(module._id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     {module.title}
-                  </h3>
+                  </button>
 
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
                     {!courseId && module.courseId?.title && (
@@ -345,7 +361,7 @@ export default function CourseModules() {
               </p>
             )}
 
-            <div className="mt-5">
+            {expandedModuleIds.includes(module._id) && <div className="mt-5">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Topics
@@ -377,7 +393,7 @@ export default function CourseModules() {
                   No topics added yet.
                 </div>
               )}
-            </div>
+            </div>}
           </div>
         ))}
       </div>

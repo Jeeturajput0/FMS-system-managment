@@ -9,7 +9,7 @@ import Topic from "../model/topic.model.js";
 
 export const createModule = async (req, res) => {
   try {
-    const { title, description, order, duration, isPublished, topics } = req.body;
+    const { courseId, title, description, order, duration, isPublished, topics } = req.body;
 
     // ----------------------------------------------
     // Validation
@@ -50,6 +50,19 @@ export const createModule = async (req, res) => {
       })));
       module.topics = createdTopics.map((topic) => topic._id);
       await module.save();
+    }
+
+    if (courseId) {
+      const course = await Course.findOneAndUpdate(
+        { _id: courseId, isActive: true },
+        { $addToSet: { modules: module._id } },
+        { new: true },
+      );
+      if (!course) {
+        await Module.findByIdAndDelete(module._id);
+        await Topic.deleteMany({ moduleId: module._id });
+        return res.status(404).json({ success: false, message: "Course not found" });
+      }
     }
 
     return res.status(201).json({

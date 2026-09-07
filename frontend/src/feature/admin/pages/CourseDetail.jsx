@@ -17,7 +17,7 @@ import {
   Layers,
   Plus
 } from 'lucide-react';
-import { apiFetch } from '../../../utils/api';
+import { apiFetch, assetUrl } from '../../../utils/api';
 
 export const CourseDetail = () => {
   const { id } = useParams();
@@ -36,6 +36,7 @@ export const CourseDetail = () => {
   if (loading) return <p className="text-sm text-slate-600">Loading course...</p>;
   if (!course) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">Course not found.</div>;
 
+  const courseImage = course.images?.[0] || course.thumbnail;
   const enrolledList = students.filter((s) => s.courseId === (course.id || course._id) || s.course === course.title);
 
   const toggleModule = (modId) => {
@@ -68,15 +69,19 @@ export const CourseDetail = () => {
       {/* Header Banner */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-700 font-bold flex items-center justify-center shadow-lg text-2xl shrink-0">
-            <BookOpen className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-700 font-bold flex items-center justify-center shadow-lg text-2xl shrink-0 overflow-hidden">
+            {courseImage ? (
+              <img src={assetUrl(courseImage)} alt={`${course.title} course`} className="w-full h-full object-cover" />
+            ) : (
+              <BookOpen className="w-8 h-8" />
+            )}
           </div>
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-extrabold text-slate-900">{course.title}</h2>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-800">
+              {/* <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-800">
                 {course._id || course.id}
-              </span>
+              </span> */}
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                 {course.isPublished ? 'Published' : 'Draft'}
               </span>
@@ -104,12 +109,7 @@ export const CourseDetail = () => {
 
         {isAdminView && (
           <div className="flex items-center gap-2">
-            <Link
-              to={`/admin/courses/${course._id || course.id}/modules`}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50"
-            >
-              <Layers className="w-4 h-4" /> Manage Modules
-            </Link>
+           
             <Link
               to={`/admin/courses/${course._id || course.id}/modules/add`}
               className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
