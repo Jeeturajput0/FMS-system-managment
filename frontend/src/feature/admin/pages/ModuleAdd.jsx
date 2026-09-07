@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Loader2, Pencil, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Eye, Loader2, Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
@@ -102,6 +102,7 @@ const ModuleAdd = () => {
           isPublished: Boolean(module.isPublished),
         });
         setTopics((module.topics || []).map((topic) => ({
+          _id: topic._id,
           title: topic.title || "",
           description: topic.description || "",
           type: topic.type || "Lesson",
@@ -144,6 +145,16 @@ const ModuleAdd = () => {
 
   const updateTopic = (index, field, value) => {
     setTopics((prev) => prev.map((topic, topicIndex) => topicIndex === index ? { ...topic, [field]: value } : topic));
+  };
+
+  const deleteTopic = async (topicId) => {
+    if (!topicId || !window.confirm("Are you sure you want to delete this topic?")) return;
+    try {
+      await apiFetch(`/api/topics/${topicId}`, { method: "DELETE" });
+      setTopics((current) => current.filter((topic) => topic._id !== topicId));
+    } catch (deleteError) {
+      setError(deleteError.message);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -374,6 +385,23 @@ const ModuleAdd = () => {
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              {readOnly && topics.length > 0 && (
+                <div className="mb-4 rounded-xl border border-orange-100 bg-orange-50 p-3">
+                  <p className="mb-2 text-xs font-bold text-slate-800">Topic Actions</p>
+                  <div className="space-y-2">
+                    {topics.map((topic) => (
+                      <div key={topic._id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-2">
+                        <span className="truncate text-xs font-semibold text-slate-700">{topic.title}</span>
+                        <div className="flex shrink-0 gap-1">
+                          <button type="button" onClick={() => navigate(`/admin/topics/${topic._id}`)} className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-600"><Eye className="h-3 w-3" /> View</button>
+                          <button type="button" onClick={() => navigate(`/admin/topics/${topic._id}/edit`)} className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-600"><Pencil className="h-3 w-3" /> Edit</button>
+                          <button type="button" onClick={() => deleteTopic(topic._id)} className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600"><Trash2 className="h-3 w-3" /> Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div><p className="text-sm font-bold text-slate-800">Topics</p><p className="mt-1 text-xs text-slate-500">Add multiple lessons, videos, PDFs, assignments or tests to this module.</p></div>
                 {!readOnly && <button type="button" onClick={() => setTopics((prev) => [...prev, emptyTopic()])} className="inline-flex items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600"><Plus className="h-3.5 w-3.5" /> Add Topic</button>}

@@ -1,4 +1,5 @@
 import Topic from "../model/topic.model.js";
+import Module from "../model/module.model.js";
 
 export const getTopics = async (req, res) => {
   try {
@@ -29,6 +30,7 @@ export const createTopic = async (req, res) => {
       duration: { value: Number(duration?.value || 0), unit: duration?.unit || "minutes" },
       order: Number(order) || 1,
     });
+    await Module.findByIdAndUpdate(moduleId, { $addToSet: { topics: topic._id } });
     await topic.populate({ path: "moduleId", select: "title courseId", populate: { path: "courseId", select: "title" } });
     return res.status(201).json({ success: true, data: topic, message: "Topic created successfully" });
   } catch (error) {
@@ -50,6 +52,55 @@ export const getTopicById = async (req, res) => {
     }
 
     return res.json({ success: true, data: topic });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const updateTopic = async (req, res) => {
+  try {
+    const { moduleId, title, description, type, duration, order } = req.body;
+    if (!moduleId || !title?.trim()) {
+      return res.status(400).json({ success: false, message: "Module and topic title are required" });
+    }
+    const module = await Module.findOne({ _id: moduleId, isActive: true });
+    if (!module) return res.status(404).json({ success: false, message: "Module not found" });
+
+    const existingTopic = await Topic.findOne({ _id: req.params.id, isActive: true }).select("moduleId").lean();
+    if (!existingTopic) return res.status(404).json({ success: false, message: "Topic not found" });
+
+    const topic = await Topic.findOneAndUpdate(
+      { _id: req.params.id, isActive: true },
+      {
+        moduleId,
+        title: title.trim(),
+        description: description?.trim() || "",
+        type: type || "Lesson",
+        duration: { value: Number(duration?.value || 0), unit: duration?.unit || "minutes" },
+        order: Number(order) || 1,
+      },
+      { new: true, runValidators: true },
+    ).populate({ path: "moduleId", select: "title courseId", populate: { path: "courseId", select: "title" } });
+    if (String(existingTopic.moduleId) !== String(moduleId)) {
+      await Module.findByIdAndUpdate(existingTopic.moduleId, { $pull: { topics: topic._id } });
+      await Module.findByIdAndUpdate(moduleId, { $addToSet: { topics: topic._id } });
+    }
+    return res.json({ success: true, data: topic, message: "Topic updated successfully" });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteTopic = async (req, res) => {
+  try {
+    const topic = await Topic.findOneAndUpdate(
+      { _id: req.params.id, isActive: true },
+      { isActive: false },
+      { new: true },
+    );
+    if (!topic) return res.status(404).json({ success: false, message: "Topic not found" });
+    await Module.findByIdAndUpdate(topic.moduleId, { $pull: { topics: topic._id } });
+    return res.json({ success: true, message: "Topic deleted successfully" });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }

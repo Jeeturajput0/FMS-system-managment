@@ -343,6 +343,11 @@ function App() {
           />
 
           <Route
+            path="topics/:topicId/edit"
+            element={<TopicAdd />}
+          />
+
+          <Route
             path="topics"
             element={<TopicAdd />}
           />
