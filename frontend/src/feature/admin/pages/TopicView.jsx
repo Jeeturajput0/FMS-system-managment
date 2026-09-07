@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, Clock, FileText, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, Clock, FileText, Layers3, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
@@ -44,38 +44,43 @@ export default function TopicView() {
   };
 
   return (
-    <div className="max-w-3xl space-y-6 pb-12">
-      <Link to={modulePath} className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-orange-600">
-        <ArrowLeft className="h-4 w-4" /> Back to Modules
-      </Link>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-            <FileText className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-orange-500">Topic View</p>
-            <h1 className="mt-1 text-2xl font-extrabold text-slate-900">{topic.title}</h1>
-            <p className="mt-2 text-xs text-slate-500">{topic.moduleId?.courseId?.title || "Course"} / {topic.moduleId?.title || "Module"}</p>
-          </div>
-          <div className="ml-auto flex shrink-0 gap-2">
-            <button type="button" onClick={() => navigate(`/admin/topics/${topicId}/edit`)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"><Pencil className="h-3.5 w-3.5" /> Edit</button>
-            <button type="button" onClick={handleDelete} className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600"><BookOpen className="mb-1 h-4 w-4 text-orange-500" />Type: <b>{topic.type}</b></div>
-          <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600"><Clock className="mb-1 h-4 w-4 text-orange-500" />Duration: <b>{formatDuration(topic.duration)}</b></div>
-          <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600">Order: <b>{topic.order}</b></div>
-        </div>
-
-        <div className="mt-6 border-t border-slate-100 pt-5">
-          <h2 className="text-sm font-bold text-slate-900">Description</h2>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{topic.description || "No description added yet."}</p>
-        </div>
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link to={modulePath} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-orange-600">
+          <ArrowLeft className="h-4 w-4" /> Back to Modules
+        </Link>
+        <span className="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-orange-600">Topic workspace</span>
       </div>
+
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="bg-slate-950 px-6 py-8 text-white sm:px-8">
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+            <div className="flex items-start gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-orange-500 shadow-lg shadow-orange-500/20"><FileText className="h-8 w-8" /></div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-300">{topic.moduleId?.courseId?.title || "Course"}</p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{topic.title}</h1>
+                <p className="mt-2 flex items-center gap-2 text-sm text-slate-300"><Layers3 className="h-4 w-4 text-orange-300" /> {topic.moduleId?.title || "Module"}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 lg:self-start">
+              <button type="button" onClick={() => navigate(`/admin/topics/${topicId}/edit`)} className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 hover:bg-orange-50"><Pencil className="h-3.5 w-3.5" /> Edit Topic</button>
+              <button type="button" onClick={handleDelete} className="inline-flex items-center gap-1.5 rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-200 hover:bg-red-500/20"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 border-b border-slate-100 p-6 sm:grid-cols-3 sm:p-8">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4"><BookOpen className="h-5 w-5 text-orange-500" /><p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Content type</p><p className="mt-1 text-sm font-extrabold text-slate-900">{topic.type}</p></div>
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4"><Clock className="h-5 w-5 text-orange-500" /><p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Estimated duration</p><p className="mt-1 text-sm font-extrabold text-slate-900">{formatDuration(topic.duration)}</p></div>
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4"><CheckCircle2 className="h-5 w-5 text-emerald-500" /><p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Syllabus position</p><p className="mt-1 text-sm font-extrabold text-slate-900">Topic {topic.order}</p></div>
+        </div>
+
+        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_280px]">
+          <article><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-500">Learning content</p><h2 className="mt-2 text-xl font-extrabold text-slate-900">About this topic</h2><p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-600">{topic.description || "No description added yet."}</p></article>
+          <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p className="text-xs font-bold text-slate-900">Topic details</p><dl className="mt-4 space-y-4 text-xs"><div><dt className="text-slate-400">Topic ID</dt><dd className="mt-1 break-all font-mono text-slate-700">{topic._id}</dd></div><div><dt className="text-slate-400">Created</dt><dd className="mt-1 font-semibold text-slate-700">{topic.createdAt ? new Date(topic.createdAt).toLocaleDateString("en-IN") : "-"}</dd></div><div><dt className="text-slate-400">Last updated</dt><dd className="mt-1 font-semibold text-slate-700">{topic.updatedAt ? new Date(topic.updatedAt).toLocaleDateString("en-IN") : "-"}</dd></div></dl></aside>
+        </div>
+      </section>
     </div>
   );
 }

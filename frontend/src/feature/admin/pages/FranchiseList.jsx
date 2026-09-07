@@ -15,7 +15,7 @@ export const FranchiseList = () => {
     return matchesSearch && (status === "All" || franchise.status === status);
   });
   const remove = async (franchise) => {
-    if (!window.confirm(`Deactivate ${franchise.name}?`)) return;
+    if (!window.confirm(`Permanently delete ${franchise.name} and its linked data?`)) return;
     try { setError(""); await deleteFranchise(franchise.id); } catch (deleteError) { setError(deleteError.message); }
   };
   return <div className="space-y-6 pb-12">

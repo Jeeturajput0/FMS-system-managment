@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 import Coaching from "../model/coaching.model.js";
+import User from "../model/user.model.js";
+import Student from "../model/student.model.js";
+import Fee from "../model/fee.model.js";
+import Batch from "../model/batches.model.js";
+import Attendance from "../model/attendance.model.js";
 import { generateCenterCode, generateUniqueCenterCode, normalizeCenterCode } from "../utils/centerCode.js";
 
 /*
@@ -350,17 +355,18 @@ const deleteCoaching = async (req, res) => {
       });
     }
 
-    // Soft delete
-    coaching.status = "inactive";
-    if (mongoose.isValidObjectId(req.user?._id)) {
-      coaching.updatedBy = req.user._id;
-    }
-
-    await coaching.save();
+    await Promise.all([
+      User.deleteMany({ coachingId: coaching._id }),
+      Student.deleteMany({ coachingId: coaching._id }),
+      Fee.deleteMany({ coachingId: coaching._id }),
+      Batch.deleteMany({ franchise: coaching._id }),
+      Attendance.deleteMany({ coachingId: coaching._id }),
+    ]);
+    await Coaching.deleteOne({ _id: coaching._id });
 
     return res.status(200).json({
       success: true,
-      message: "Franchise deactivated successfully",
+      message: "Franchise permanently deleted successfully",
     });
   } catch (error) {
     console.error("Delete coaching error:", error);

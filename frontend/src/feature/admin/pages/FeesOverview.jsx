@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowUpRight, CreditCard, IndianRupee, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, CreditCard, Eye, IndianRupee, TrendingUp, X } from 'lucide-react';
 import { useData } from '../../../context/DataContext';
 
 export const FeesOverview = () => {
   const { students, payments, fees, franchises } = useData();
   const [selectedFranchise, setSelectedFranchise] = useState('All');
+  const [selectedFee, setSelectedFee] = useState(null);
 
   const visibleFees = useMemo(() => selectedFranchise === 'All'
     ? fees
@@ -102,7 +103,7 @@ export const FeesOverview = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase">
-              <tr><th className="px-4 py-3">Student</th><th className="px-4 py-3">Franchise</th><th className="px-4 py-3">Course Purchased</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Paid</th><th className="px-4 py-3">Pending</th><th className="px-4 py-3">Status</th></tr>
+              <tr><th className="px-4 py-3">Student</th><th className="px-4 py-3">Franchise</th><th className="px-4 py-3">Course Purchased</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Paid</th><th className="px-4 py-3">Pending</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">View</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {visibleFees.map((fee) => <tr key={fee._id}>
@@ -113,11 +114,13 @@ export const FeesOverview = () => {
                 <td className="px-4 py-3 font-bold text-emerald-700">₹{fee.totalPaid?.toLocaleString('en-IN')}</td>
                 <td className="px-4 py-3 font-bold text-amber-700">₹{fee.totalPending?.toLocaleString('en-IN')}</td>
                 <td className="px-4 py-3 font-bold">{fee.status}</td>
+                <td className="px-4 py-3 text-right"><button type="button" onClick={() => setSelectedFee(fee)} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-50"><Eye className="h-3.5 w-3.5" /> View</button></td>
               </tr>)}
             </tbody>
           </table>
         </div>
       </div>
+      {selectedFee && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" onClick={() => setSelectedFee(null)}><div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl" onClick={(event) => event.stopPropagation()}><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-orange-500">Fee Details</p><h3 className="mt-1 text-xl font-extrabold text-slate-900">{selectedFee.studentId?.name || 'Student'}</h3></div><button type="button" onClick={() => setSelectedFee(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"><X className="h-4 w-4" /></button></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="rounded-xl bg-slate-50 p-3 text-xs"><span className="text-slate-500">Franchise</span><b className="mt-1 block text-slate-900">{selectedFee.coachingId?.name || '—'}</b></div><div className="rounded-xl bg-slate-50 p-3 text-xs"><span className="text-slate-500">Course</span><b className="mt-1 block text-slate-900">{selectedFee.courseId?.title || '—'}</b></div><div className="rounded-xl bg-slate-50 p-3 text-xs"><span className="text-slate-500">Mobile</span><b className="mt-1 block text-slate-900">{selectedFee.studentId?.mobile || '—'}</b></div><div className="rounded-xl bg-slate-50 p-3 text-xs"><span className="text-slate-500">Email</span><b className="mt-1 block break-all text-slate-900">{selectedFee.studentId?.email || '—'}</b></div></div><div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs"><div><p className="text-slate-500">Total</p><b>₹{Number(selectedFee.totalAmount || 0).toLocaleString('en-IN')}</b></div><div><p className="text-slate-500">Paid</p><b className="text-emerald-700">₹{Number(selectedFee.totalPaid || 0).toLocaleString('en-IN')}</b></div><div><p className="text-slate-500">Pending</p><b className="text-amber-700">₹{Number(selectedFee.totalPending || 0).toLocaleString('en-IN')}</b></div></div></div></div>}
     </div>
   );
 };

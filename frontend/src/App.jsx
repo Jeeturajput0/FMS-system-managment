@@ -24,6 +24,7 @@ import FranchiseForm from "./feature/admin/pages/FranchiseForm";
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
 import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
 import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
+import AdminManagementPage from "./feature/admin/pages/AdminManagementPage";
 
 import { CourseAdd } from "./feature/admin/pages/CourseAdd";
 import CourseModules from "./feature/admin/pages/CourseModule";
@@ -409,11 +410,7 @@ function App() {
 
           <Route
             path="admins"
-            element={
-              <AdminPlaceholderPage
-                title="Admins"
-              />
-            }
+            element={<AdminManagementPage />}
           />
 
           <Route

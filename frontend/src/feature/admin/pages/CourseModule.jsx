@@ -379,6 +379,7 @@ export default function CourseModules() {
                       className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600"
                     >
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <span className="shrink-0 font-mono text-[10px] text-slate-400">{topicIndex + 1}.</span>
                       <Link
                         to={`/admin/topics/${topic._id}`}
                         className="truncate font-semibold text-slate-700 hover:text-orange-600"

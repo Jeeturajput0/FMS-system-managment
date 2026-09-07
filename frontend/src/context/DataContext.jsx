@@ -143,7 +143,7 @@ export const DataProvider = ({ children }) => {
   const deleteFranchise = async (id) => {
     const response = await apiFetch(`/api/coaching/${id}`, { method: 'DELETE' });
     setFranchises((prev) => prev.filter((item) => item.id !== id));
-    showToast(response.message || 'Franchise deactivated successfully!');
+    showToast(response.message || 'Franchise permanently deleted successfully!');
   };
 
   // Course Actions

@@ -136,7 +136,10 @@ export const getModulesByCourse = async (req, res) => {
     }
 
     const modules = await Module.find({
-      _id: { $in: course.modules || [] },
+      $or: [
+        { _id: { $in: course.modules || [] } },
+        { courseId: course._id },
+      ],
       isActive: true,
     })
       .populate("topics")
