@@ -175,6 +175,11 @@ export const StudentDetail = () => {
     ],
 
     [
+      "Teacher",
+      student.batchId?.teacher?.name || student.batchId?.teacher?.email || "Not Assigned"
+    ],
+
+    [
       "Status",
       student.status || "Registered"
     ],

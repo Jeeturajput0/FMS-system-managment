@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Batch from "../../model/batches.model.js";
 import User from "../../model/user.model.js";
+import Student from "../../model/student.model.js";
 
 // ============================================================
 // HELPER
@@ -135,6 +136,13 @@ const createBatch = async (req, res) => {
 
       createdBy: req.user?._id || null,
     });
+
+    if (studentList.length) {
+      await Student.updateMany(
+        { _id: { $in: studentList }, coachingId: franchise },
+        { $set: { batchId: batch._id } },
+      );
+    }
 
     const populatedBatch = await Batch.findById(batch._id)
       .populate("franchise", "name email phone")
@@ -766,6 +774,11 @@ const addStudentToBatch = async (req, res) => {
       });
     }
 
+    const student = await Student.findOne({ _id: studentId, coachingId: batch.franchise });
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student does not belong to this franchise" });
+    }
+
     if (batch.students.some((student) => student.toString() === studentId)) {
       return res.status(409).json({
         success: false,
@@ -783,6 +796,7 @@ const addStudentToBatch = async (req, res) => {
     batch.students.push(studentId);
 
     await batch.save();
+    await Student.updateOne({ _id: student._id }, { $set: { batchId: batch._id } });
 
     const updatedBatch = await Batch.findById(id)
       .populate("franchise", "name")
@@ -843,6 +857,10 @@ const removeStudentFromBatch = async (req, res) => {
     );
 
     await batch.save();
+    await Student.findOneAndUpdate(
+      { _id: studentId, batchId: batch._id },
+      { $set: { batchId: null } },
+    );
 
     const updatedBatch = await Batch.findById(id)
       .populate("franchise", "name")

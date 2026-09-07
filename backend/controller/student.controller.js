@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Student from "../model/student.model.js";
 import Course from "../model/course.model.js";
 import Fee from "../model/fee.model.js";
+import Batch from "../model/batches.model.js";
 
 const franchiseRoles = ["FRANCHISE", "FRANCHISE_ADMIN"];
 
@@ -397,6 +398,14 @@ export const getStudents = async (req, res) => {
       Student.find(query)
         .populate("courseId", "title slug courseFee")
         .populate("coachingId", "name code email phone")
+        .populate({
+          path: "batchId",
+          select: "name code course teacher status startDate endDate days room",
+          populate: [
+            { path: "teacher", select: "name email isActive" },
+            { path: "course", select: "title name" },
+          ],
+        })
         .populate("createdBy", "name email")
 
         .sort({
@@ -409,6 +418,25 @@ export const getStudents = async (req, res) => {
 
       Student.countDocuments(query),
     ]);
+
+    // Older records may only be present in Batch.students and may not yet
+    // have Student.batchId. Resolve that legacy relationship for admin views.
+    const missingBatchStudentIds = students
+      .filter((student) => !student.batchId)
+      .map((student) => student._id);
+    if (missingBatchStudentIds.length) {
+      const linkedBatches = await Batch.find({ students: { $in: missingBatchStudentIds } })
+        .select("name code course teacher status startDate endDate days room students")
+        .populate("teacher", "name email isActive")
+        .populate("course", "title name")
+        .lean();
+      const batchByStudent = new Map();
+      linkedBatches.forEach((batch) => batch.students.forEach((studentId) => batchByStudent.set(String(studentId), batch)));
+      students.forEach((student) => {
+        const batch = batchByStudent.get(String(student._id));
+        if (batch) student.batchId = batch;
+      });
+    }
 
     // ==================================================
     // RESPONSE
@@ -461,6 +489,14 @@ export const getStudentById = async (req, res) => {
     const student = await Student.findById(id)
       .populate("courseId")
       .populate("coachingId", "name code email phone")
+      .populate({
+        path: "batchId",
+        select: "name code course teacher status startDate endDate days room",
+        populate: [
+          { path: "teacher", select: "name email isActive" },
+          { path: "course", select: "title name" },
+        ],
+      })
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email");
 

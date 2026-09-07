@@ -82,6 +82,13 @@ const getBatchName = (batch) => {
   );
 };
 
+const getTeacherName = (batch) => {
+  const teacher = batch?.teacher;
+  if (!teacher) return "Not Assigned";
+  if (typeof teacher === "string") return teacher;
+  return teacher.name || teacher.email || "Not Assigned";
+};
+
 const formatCurrency = (amount = 0) => {
   return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 };
@@ -416,6 +423,11 @@ export const StudentDirectory = () => {
 
         batch:
           getBatchName(
+            student.batchId
+          ),
+
+        teacher:
+          getTeacherName(
             student.batchId
           ),
 
@@ -959,6 +971,10 @@ export const StudentDirectory = () => {
                 </th>
 
                 <th className="py-4 px-4">
+                  Teacher
+                </th>
+
+                <th className="py-4 px-4">
                   Fees Status
                 </th>
 
@@ -982,7 +998,7 @@ export const StudentDirectory = () => {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="9"
+                    colSpan="10"
                     className="py-16 text-center"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
@@ -1000,7 +1016,7 @@ export const StudentDirectory = () => {
 
                 <tr>
                   <td
-                    colSpan="9"
+                    colSpan="10"
                     className="py-16 text-center"
                   >
                     <div className="flex flex-col items-center">
@@ -1095,6 +1111,12 @@ export const StudentDirectory = () => {
                         {
                           student.batch
                         }
+                      </td>
+
+                      {/* TEACHER */}
+
+                      <td className="py-4 px-4 text-slate-700">
+                        {student.teacher}
                       </td>
 
                       {/* FEES */}
