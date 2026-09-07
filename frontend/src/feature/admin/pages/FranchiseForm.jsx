@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Building2, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Save, Wand2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useData } from "../../../context/DataContext";
 import { apiFetch } from "../../../utils/api";
@@ -7,6 +7,12 @@ import { apiFetch } from "../../../utils/api";
 const emptyForm = {
   name: "", code: "", ownerName: "", email: "", phone: "", address: "",
   city: "", state: "", pincode: "", status: "pending",
+};
+
+const generateCenterCode = (name, date = new Date()) => {
+  const words = String(name || "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().split(/\s+/).filter(Boolean);
+  const initials = words.length > 1 ? words.map((word) => word[0]).join("") : (words[0] || "CENTER").slice(0, 4);
+  return `${initials.toUpperCase()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getFullYear()).slice(-2)}`;
 };
 
 export default function FranchiseForm() {
@@ -18,6 +24,7 @@ export default function FranchiseForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [centerCodeManuallyEdited, setCenterCodeManuallyEdited] = useState(isEdit);
 
   useEffect(() => {
     if (!id) return;
@@ -32,6 +39,7 @@ export default function FranchiseForm() {
           city: franchise.city || "", state: franchise.state || "", pincode: franchise.pincode || "",
           status: franchise.status || "pending",
         });
+        setCenterCodeManuallyEdited(true);
       } catch (loadError) {
         setError(loadError.message);
       } finally {
@@ -41,7 +49,20 @@ export default function FranchiseForm() {
     loadFranchise();
   }, [id]);
 
-  const change = (event) => setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
+  const change = (event) => {
+    const { name, value } = event.target;
+    if (name === "name") {
+      setForm((prev) => ({ ...prev, name: value, ...(!centerCodeManuallyEdited ? { code: generateCenterCode(value) } : {}) }));
+      return;
+    }
+    if (name === "code") setCenterCodeManuallyEdited(true);
+    setForm((prev) => ({ ...prev, [name]: name === "code" ? value.toUpperCase() : value }));
+  };
+
+  const autoGenerateCode = () => {
+    setCenterCodeManuallyEdited(false);
+    setForm((prev) => ({ ...prev, code: generateCenterCode(prev.name) }));
+  };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -50,7 +71,7 @@ export default function FranchiseForm() {
       setSaving(true);
       const franchise = isEdit
         ? await updateFranchise(id, form)
-        : await createFranchise(form);
+        : await createFranchise({ ...form, centerCodeManuallyEdited });
       navigate(`/admin/franchises/${franchise.id}`);
     } catch (saveError) {
       setError(saveError.message);
@@ -70,7 +91,7 @@ export default function FranchiseForm() {
         <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50 p-6"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><Building2 className="h-5 w-5" /></div><div><h2 className="font-bold text-slate-900">Franchise Information</h2><p className="text-xs text-slate-500">All required contact and center details.</p></div></div>
         <div className="grid gap-5 p-6 md:grid-cols-2">
           <Field label="Franchise Name *" name="name" value={form.name} onChange={change} required />
-          <Field label="Center Code" name="code" value={form.code} onChange={change} placeholder="AIS-AGR" />
+          <label><span className="mb-2 block text-sm font-bold text-slate-700">Center Code</span><div className="flex gap-2"><input name="code" value={form.code} onChange={change} required className="min-w-0 flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm uppercase outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100" /><button type="button" onClick={autoGenerateCode} title="Generate from franchise name" className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 text-xs font-bold text-orange-700 hover:bg-orange-100"><Wand2 className="h-4 w-4" /> Auto Generate</button></div><span className="mt-1.5 block text-xs text-slate-500">Auto-generated from franchise name. You can edit it manually.</span></label>
           <Field label="Owner Name *" name="ownerName" value={form.ownerName} onChange={change} required />
           <Field label="Email *" name="email" value={form.email} onChange={change} type="email" required />
           <Field label="Phone *" name="phone" value={form.phone} onChange={change} required />

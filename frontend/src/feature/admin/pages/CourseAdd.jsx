@@ -38,6 +38,8 @@ export const CourseAdd = () => {
   const [error, setError] = useState("");
   const [existingImage, setExistingImage] = useState("");
   const [selectedPreviews, setSelectedPreviews] = useState([]);
+  const [modules, setModules] = useState([]);
+  const [selectedModuleIds, setSelectedModuleIds] = useState([]);
 
   // =========================
   // INPUT CHANGE
@@ -55,6 +57,12 @@ export const CourseAdd = () => {
     setSelectedPreviews(previews);
     return () => previews.forEach((preview) => URL.revokeObjectURL(preview));
   }, [form.images]);
+
+  useEffect(() => {
+    apiFetch("/api/modules")
+      .then((response) => setModules(response.data || []))
+      .catch((loadError) => setError(loadError.message));
+  }, []);
 
   // =========================
   // GET COURSE FOR EDIT
@@ -89,6 +97,7 @@ export const CourseAdd = () => {
         // New images select karne ke liye
         images: [],
       });
+      setSelectedModuleIds((course.modules || []).map((module) => module._id || module));
 
     } catch (error) {
       console.log(error);
@@ -196,20 +205,30 @@ export const CourseAdd = () => {
       // API
       // =========================
 
+      let savedCourseId = id;
       if (id) {
         // UPDATE
-        await apiUpload(
+        const response = await apiUpload(
           `/api/courses/${id}`,
           body,
           "PUT"
         );
+        savedCourseId = response.data?._id || id;
       } else {
         // CREATE
-        await apiUpload(
+        const response = await apiUpload(
           "/api/courses",
           body,
           "POST"
         );
+        savedCourseId = response.data?._id;
+      }
+
+      if (savedCourseId) {
+        await apiFetch(`/api/courses/${savedCourseId}/modules`, {
+          method: "PUT",
+          body: JSON.stringify({ moduleIds: selectedModuleIds }),
+        });
       }
 
       // =========================
@@ -526,6 +545,15 @@ export const CourseAdd = () => {
           </div>
 
           {/* IMAGES */}
+
+          <div className="sm:col-span-2">
+            <label className="text-sm font-semibold text-slate-700">Course Modules</label>
+            <p className="mt-1 text-xs text-slate-500">Select one or more modules created from the Modules section.</p>
+            <div className="mt-3 grid max-h-56 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
+              {modules.map((module) => <label key={module._id} className="flex cursor-pointer items-center gap-3 rounded-lg bg-slate-50 p-3 text-sm"><input type="checkbox" checked={selectedModuleIds.includes(module._id)} onChange={() => setSelectedModuleIds((ids) => ids.includes(module._id) ? ids.filter((id) => id !== module._id) : [...ids, module._id])} className="h-4 w-4 accent-orange-500" /><span><b className="block text-slate-800">{module.title}</b><small className="text-slate-500">{module.topics?.length || 0} topics</small></span></label>)}
+              {!modules.length && <p className="text-xs text-slate-500">No standalone modules created yet.</p>}
+            </div>
+          </div>
 
           <div className="sm:col-span-2">
 
