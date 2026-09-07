@@ -1,5 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { apiFetch } from "../../../utils/api";
 
 const menuItems = [
   {
@@ -50,6 +52,20 @@ const menuItems = [
 ];
 
 const TeacherSidebar = () => {
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    apiFetch("/api/portal/courses")
+      .then((response) => setCourses(response.data || []))
+      .catch(() => setCourses([]));
+  }, []);
+
+  const courseLabel = courses.length === 1
+    ? courses[0].title || courses[0].name
+    : courses.length > 1
+      ? `${courses.length} assigned courses`
+      : "No course assigned";
+
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-slate-200 bg-white md:block">
 
@@ -90,9 +106,7 @@ const TeacherSidebar = () => {
               {item.icon}
             </span>
 
-            <span>
-              {item.label}
-            </span>
+            <span>{item.label}{item.label === "My Courses" && <small className="mt-0.5 block truncate text-[10px] font-medium opacity-70">{courseLabel}</small>}</span>
           </NavLink>
         ))}
 

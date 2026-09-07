@@ -199,7 +199,6 @@ export const FranchiseCourses = () => {
 
                 <th className="px-5 py-4">Course Level</th>
 
-
                 <th className="px-5 py-4">Fee</th>
 
                 <th className="px-5 py-4">Status</th>
@@ -269,7 +268,7 @@ export const FranchiseCourses = () => {
                             </p>
 
                             <p className="mt-0.5 text-xs text-slate-500">
-                             {courseLevel}
+                              {courseLevel}
                             </p>
                           </div>
                         </div>

@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema(
       ref: "Coaching",
       default: null,
     },
+    assignedCourses: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    }],
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

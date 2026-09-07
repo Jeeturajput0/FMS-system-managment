@@ -13,6 +13,7 @@ import feeRoutes from "./routes/fee.routes.js";
 import topicRoutes from "./routes/topic.routes.js";
 import router from "./routes/coaching.routes.js";
 import portalRoutes from "./routes/portal.routes.js";
+import batchRoutes from "./routes/batchRoutes.js"
 
 dotenv.config();
 
@@ -40,7 +41,7 @@ app.use("/api/fees", feeRoutes);
 app.use("/api/coaching", router);
 app.use("/api/topics", topicRoutes);
 app.use("/api/portal", portalRoutes);
-
+app.use("/api/batches", batchRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,

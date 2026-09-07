@@ -1,15 +1,20 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "../../../utils/api";
 
 export const FranchiseTeachers = () => {
-  return (
-    <div>
-      <h1 className="text-3xl font-black text-slate-900">
-        Teachers
-      </h1>
+  const [teachers, setTeachers] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "", courseIds: [] });
 
-      <p className="mt-2 text-slate-500">
-        Manage teachers and instructors.
-      </p>
-    </div>
-  );
+  const load = () => Promise.all([apiFetch("/api/portal/teachers"), apiFetch("/api/courses")]).then(([teacherResponse, courseResponse]) => { setTeachers(teacherResponse.data || []); setCourses(courseResponse.data || []); }).catch((requestError) => setError(requestError.message));
+  useEffect(() => { load(); }, []);
+  const filtered = useMemo(() => teachers.filter((teacher) => `${teacher.name} ${teacher.email}`.toLowerCase().includes(search.toLowerCase())), [teachers, search]);
+  const addTeacher = async (event) => { event.preventDefault(); setSaving(true); setError(""); try { await apiFetch("/api/portal/teachers", { method: "POST", body: JSON.stringify(form) }); setForm({ name: "", email: "", password: "", courseIds: [] }); setShowForm(false); await load(); } catch (requestError) { setError(requestError.message); } finally { setSaving(false); } };
+  const toggleCourse = (courseId) => setForm({ ...form, courseIds: form.courseIds.includes(courseId) ? form.courseIds.filter((id) => id !== courseId) : [...form.courseIds, courseId] });
+
+  return <div className="space-y-6"><div className="flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-3xl font-black text-slate-900">Teachers</h1><p className="mt-2 text-sm text-slate-500">Create teachers and assign their courses.</p></div><button type="button" onClick={() => setShowForm(!showForm)} className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Add Teacher</button></div>{showForm && <form onSubmit={addTeacher} className="grid gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-5 sm:grid-cols-2"><input required placeholder="Teacher name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className="rounded-xl border px-3 py-2" /><input required type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="rounded-xl border px-3 py-2" /><input required minLength={6} type="password" placeholder="Temporary password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} className="rounded-xl border px-3 py-2" /><div className="sm:col-span-2"><p className="mb-2 text-sm font-bold text-slate-700">Assign course(s)</p><div className="flex flex-wrap gap-2">{courses.map((course) => <button type="button" key={course._id} onClick={() => toggleCourse(course._id)} className={`rounded-lg px-3 py-2 text-xs font-bold ${form.courseIds.includes(course._id) ? "bg-blue-600 text-white" : "bg-white text-slate-600"}`}>{course.title || course.name}</button>)}</div></div><button disabled={saving} className="rounded-xl bg-blue-600 px-4 py-2 font-bold text-white disabled:opacity-50">{saving ? "Saving..." : "Create teacher"}</button></form>}{error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search teachers..." className="w-full rounded-xl border bg-white px-4 py-3 text-sm" /><div className="overflow-hidden rounded-2xl border bg-white"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-4">Teacher</th><th className="px-5 py-4">Assigned course</th><th className="px-5 py-4">Status</th></tr></thead><tbody className="divide-y">{filtered.map((teacher) => <tr key={teacher._id}><td className="px-5 py-4"><p className="font-semibold">{teacher.name}</p><p className="text-xs text-slate-500">{teacher.email}</p></td><td className="px-5 py-4">{teacher.assignedCourses?.map((course) => course.title || course.name).join(", ") || "Not assigned"}</td><td className="px-5 py-4 text-emerald-600">{teacher.isActive ? "Active" : "Inactive"}</td></tr>)}</tbody></table>{!filtered.length && <p className="p-8 text-center text-sm text-slate-500">No teachers found.</p>}</div></div>;
 };
