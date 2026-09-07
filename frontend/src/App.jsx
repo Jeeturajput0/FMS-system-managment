@@ -491,11 +491,6 @@ function App() {
           />
 
           <Route
-            path="assignments/:id"
-            element={<StudentAssignmentDetail />}
-          />
-
-          <Route
             path="assignments/pending"
             element={<StudentAssignments />}
           />
@@ -503,6 +498,11 @@ function App() {
           <Route
             path="assignments/submitted"
             element={<StudentAssignments />}
+          />
+
+          <Route
+            path="assignments/:id"
+            element={<StudentAssignmentDetail />}
           />
 
           <Route

@@ -1,11 +1,12 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   Menu,
   Bell,
   UserCircle,
 } from "lucide-react";
 
-const StudentHeader = () => {
+const StudentHeader = ({ onMenuClick }) => {
   const user = JSON.parse(
     localStorage.getItem("ai_scholars_user") || "{}",
   );
@@ -14,7 +15,7 @@ const StudentHeader = () => {
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6">
 
       {/* Mobile menu */}
-      <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100">
+      <button onClick={onMenuClick} className="lg:hidden p-2 rounded-lg hover:bg-slate-100" aria-label="Open navigation">
         <Menu className="w-5 h-5" />
       </button>
 
@@ -33,13 +34,13 @@ const StudentHeader = () => {
       <div className="flex items-center gap-4 ml-auto">
 
         {/* Notification */}
-        <button className="relative p-2 rounded-xl hover:bg-slate-100">
+        <Link to="/student/notifications" className="relative p-2 rounded-xl hover:bg-slate-100" aria-label="View notifications">
 
           <Bell className="w-5 h-5 text-slate-600" />
 
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
 
-        </button>
+        </Link>
 
         {/* User */}
         <div className="flex items-center gap-3">

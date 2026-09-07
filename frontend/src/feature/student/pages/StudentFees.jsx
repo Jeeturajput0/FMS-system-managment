@@ -1,6 +1,12 @@
 import React from "react";
+import { useStudentData } from "../context/StudentDataContext";
 
 const StudentFees = () => {
+  const { fees, loading, error } = useStudentData();
+  const fee = fees[0];
+  if (loading) return <p className="text-sm text-slate-500">Loading fee details...</p>;
+  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-600">{error}</p>;
+  const currency = (amount) => `₹${Number(amount || 0).toLocaleString("en-IN")}`;
   return (
     <div className="space-y-6">
 
@@ -18,17 +24,17 @@ const StudentFees = () => {
 
         <FeeCard
           title="Total Fees"
-          amount="₹50,000"
+          amount={currency(fee?.totalAmount)}
         />
 
         <FeeCard
           title="Paid"
-          amount="₹38,000"
+          amount={currency(fee?.totalPaid)}
         />
 
         <FeeCard
           title="Pending"
-          amount="₹12,000"
+          amount={currency(fee?.totalPending)}
         />
 
       </div>
