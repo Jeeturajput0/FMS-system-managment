@@ -15,10 +15,12 @@ import {
   ChevronDown,
   GraduationCap,
 } from "lucide-react";
+import { useStudentData } from "../context/StudentDataContext";
 
 const StudentSidebar = ({ open, onClose }) => {
   const [openMenu, setOpenMenu] = useState("course");
   const navigate = useNavigate();
+  const { courses } = useStudentData();
 
   const toggleMenu = (menu) => {
     setOpenMenu((prev) => (prev === menu ? "" : menu));
@@ -125,6 +127,16 @@ const StudentSidebar = ({ open, onClose }) => {
               >
                 Course Overview
               </NavLink>
+
+              {courses.map((course) => (
+                <div
+                  key={course._id}
+                  className="ml-8 truncate px-4 py-2 text-xs font-bold text-blue-300"
+                  title={course.title}
+                >
+                  {course.title}
+                </div>
+              ))}
 
               <NavLink
                 to="/student/courses/modules"

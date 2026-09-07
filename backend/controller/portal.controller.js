@@ -100,6 +100,21 @@ export const getPortalStudents = async (req, res) => {
 
 export const getPortalCourses = async (req, res) => {
   try {
+    if (req.user.role === "STUDENT") {
+      const student = await Student.findOne({
+        ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
+        $or: [
+          ...(mongoose.isValidObjectId(req.user._id) ? [{ userId: req.user._id }] : []),
+          ...(req.user.email ? [{ email: req.user.email.toLowerCase() }] : []),
+        ],
+      }).select("courseId").lean();
+
+      const data = student?.courseId
+        ? await Course.find({ _id: student.courseId, isActive: true }).lean()
+        : [];
+      return res.json({ success: true, data });
+    }
+
     const teacherCourseIds = req.user.role === "TEACHER"
       ? await getTeacherCourseIds(req.user)
       : null;
