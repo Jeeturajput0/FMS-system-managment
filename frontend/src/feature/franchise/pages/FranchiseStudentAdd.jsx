@@ -53,13 +53,17 @@ const FranchiseStudentAdd = () => {
 
     if (id) {
       apiFetch(`/api/students/${id}`)
-        .then(({ student }) => setForm({
-          name: student.name || "",
-          mobile: student.mobile || "",
-          email: student.email || "",
-          courseId: student.courseId?._id || student.courseId || "",
-        }))
-        .catch((error) => setMessage(error.message || "Unable to load student"));
+        .then(({ student }) =>
+          setForm({
+            name: student.name || "",
+            mobile: student.mobile || "",
+            email: student.email || "",
+            courseId: student.courseId?._id || student.courseId || "",
+          }),
+        )
+        .catch((error) =>
+          setMessage(error.message || "Unable to load student"),
+        );
     }
   }, [id]);
 
@@ -86,13 +90,11 @@ const FranchiseStudentAdd = () => {
       setMessage("");
 
       const user = JSON.parse(
-        localStorage.getItem("ai_scholars_user") || "null"
+        localStorage.getItem("ai_scholars_user") || "null",
       );
 
       if (!user?.coachingId) {
-        throw new Error(
-          "Franchise coaching ID not found. Please login again."
-        );
+        throw new Error("Franchise coaching ID not found. Please login again.");
       }
 
       const payload = {
@@ -113,7 +115,7 @@ const FranchiseStudentAdd = () => {
       console.error("Create Student Error:", error);
 
       setMessage(
-        error.message || "Unable to create student. Please try again."
+        error.message || "Unable to create student. Please try again.",
       );
     } finally {
       setSaving(false);
@@ -150,7 +152,9 @@ const FranchiseStudentAdd = () => {
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            {isEdit ? "Update this franchise student record." : "Create a new student enrolment for your franchise centre."}
+            {isEdit
+              ? "Update this franchise student record."
+              : "Create a new student enrolment for your franchise centre."}
           </p>
         </div>
       </div>
@@ -160,9 +164,7 @@ const FranchiseStudentAdd = () => {
       ========================= */}
       {message && (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-semibold text-red-600">
-            {message}
-          </p>
+          <p className="text-sm font-semibold text-red-600">{message}</p>
         </div>
       )}
 

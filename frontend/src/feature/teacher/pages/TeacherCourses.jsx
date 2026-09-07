@@ -1,10 +1,108 @@
 import { useEffect, useState } from "react";
-import { BookOpen, ChevronDown, ChevronRight, Loader2, Users } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Users,
+} from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 
 const TeacherCourses = () => {
-  const [courses, setCourses] = useState([]); const [open, setOpen] = useState(null); const [error, setError] = useState("");
-  useEffect(() => { apiFetch("/api/portal/courses").then((response) => setCourses(response.data || [])).catch((e) => setError(e.message)); }, []);
-  return <div className="space-y-6"><div><p className="text-xs font-bold uppercase tracking-widest text-blue-600">Teaching library</p><h1 className="mt-2 text-3xl font-black text-slate-900">My Courses</h1><p className="mt-2 text-sm text-slate-500">Only courses assigned to your teaching account are shown.</p></div>{error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}{!courses.length && !error && <div className="rounded-2xl border bg-white p-12 text-center text-slate-500"><BookOpen className="mx-auto text-slate-300" /><p className="mt-3">No assigned courses yet.</p></div>}<div className="grid gap-5 md:grid-cols-2">{courses.map((course) => <article key={course._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex items-start gap-4 p-5"><div className="rounded-xl bg-blue-50 p-3 text-blue-600"><BookOpen size={22} /></div><div className="min-w-0 flex-1"><h2 className="font-black text-slate-900">{course.title || course.name}</h2><p className="mt-1 text-xs text-slate-500">{course.category || "General"} · {course.level || "Beginner"}</p></div><button onClick={() => setOpen(open === course._id ? null : course._id)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">{open === course._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}</button></div>{open === course._id && <div className="border-t border-slate-100 bg-slate-50 p-5"><p className="text-sm leading-6 text-slate-600">{course.description || course.shortDescription || "Course content is available for your batches."}</p><div className="mt-4 grid gap-3 sm:grid-cols-2"><div className="rounded-xl bg-white p-3"><p className="text-xs font-bold uppercase text-slate-400">Modules</p><p className="mt-1 font-bold text-slate-800">{course.modules?.length ?? "View in course"}</p></div><div className="rounded-xl bg-white p-3"><p className="text-xs font-bold uppercase text-slate-400">Topics</p><p className="mt-1 font-bold text-slate-800">{course.topics?.length ?? "View in course"}</p></div></div><a href={`/courses/${course._id}`} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-600">Open full course <ChevronRight size={15} /></a></div>}</article>)}</div></div>;
+  const [courses, setCourses] = useState([]);
+  const [open, setOpen] = useState(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    apiFetch("/api/portal/courses")
+      .then((response) => setCourses(response.data || []))
+      .catch((e) => setError(e.message));
+  }, []);
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
+          Teaching library
+        </p>
+        <h1 className="mt-2 text-3xl font-black text-slate-900">My Courses</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Only courses assigned to your teaching account are shown.
+        </p>
+      </div>
+      {error && (
+        <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>
+      )}
+      {!courses.length && !error && (
+        <div className="rounded-2xl border bg-white p-12 text-center text-slate-500">
+          <BookOpen className="mx-auto text-slate-300" />
+          <p className="mt-3">No assigned courses yet.</p>
+        </div>
+      )}
+      <div className="grid gap-5 md:grid-cols-2">
+        {courses.map((course) => (
+          <article
+            key={course._id}
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+          >
+            <div className="flex items-start gap-4 p-5">
+              <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+                <BookOpen size={22} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-black text-slate-900">
+                  {course.title || course.name}
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  {course.category || "General"} · {course.level || "Beginner"}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpen(open === course._id ? null : course._id)}
+                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              >
+                {open === course._id ? (
+                  <ChevronDown size={18} />
+                ) : (
+                  <ChevronRight size={18} />
+                )}
+              </button>
+            </div>
+            {open === course._id && (
+              <div className="border-t border-slate-100 bg-slate-50 p-5">
+                <p className="text-sm leading-6 text-slate-600">
+                  {course.description ||
+                    course.shortDescription ||
+                    "Course content is available for your batches."}
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl bg-white p-3">
+                    <p className="text-xs font-bold uppercase text-slate-400">
+                      Modules
+                    </p>
+                    <p className="mt-1 font-bold text-slate-800">
+                      {course.modules?.length ?? "View in course"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-white p-3">
+                    <p className="text-xs font-bold uppercase text-slate-400">
+                      Topics
+                    </p>
+                    <p className="mt-1 font-bold text-slate-800">
+                      {course.topics?.length ?? "View in course"}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={`/courses/${course._id}`}
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-600"
+                >
+                  Open full course <ChevronRight size={15} />
+                </a>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  );
 };
 export default TeacherCourses;
