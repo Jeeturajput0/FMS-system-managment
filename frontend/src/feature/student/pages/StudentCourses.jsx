@@ -1,6 +1,12 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { useStudentData } from "../context/StudentDataContext";
 
 const StudentCourses = () => {
+  const { courses, loading, error } = useStudentData();
+  if (loading) return <p className="text-sm text-slate-500">Loading courses...</p>;
+  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-600">{error}</p>;
+
   return (
     <div className="space-y-6">
 
@@ -14,17 +20,15 @@ const StudentCourses = () => {
         </p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-slate-200">
-
-        <h2 className="text-lg font-bold">
-          MERN Stack Development
-        </h2>
-
-        <p className="text-sm text-slate-500 mt-2">
-          HTML, CSS, JavaScript, React, Node.js,
-          Express.js and MongoDB
-        </p>
-
+      <div className="grid gap-4 md:grid-cols-2">
+        {courses.map((course) => (
+          <div key={course._id} className="bg-white p-6 rounded-3xl border border-slate-200">
+            <h2 className="text-lg font-bold">{course.title}</h2>
+            <p className="text-sm text-slate-500 mt-2">{course.shortDescription || course.description}</p>
+            <Link to={`/student/courses/${course._id}`} className="mt-4 inline-block text-sm font-bold text-blue-600">View course</Link>
+          </div>
+        ))}
+        {!courses.length && <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">No courses are available.</p>}
       </div>
 
     </div>

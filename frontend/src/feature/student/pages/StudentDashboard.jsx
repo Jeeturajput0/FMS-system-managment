@@ -1,14 +1,24 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   BookOpen,
   ClipboardList,
   Clock3,
   Award,
-  TrendingUp,
   CreditCard,
 } from "lucide-react";
+import { useStudentData } from "../context/StudentDataContext";
 
 const StudentDashboard = () => {
+  const { dashboard, loading, error } = useStudentData();
+  const student = dashboard?.recent?.[0];
+  const progress = Number(student?.courseProgress || 0);
+  const attendance = Number(dashboard?.attendance || student?.attendancePercentage || 0);
+  const pendingFees = Number(dashboard?.pendingFees || student?.totalPending || 0);
+
+  if (loading) return <p className="text-sm text-slate-500">Loading your dashboard...</p>;
+  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-600">{error}</p>;
+
   return (
     <div className="space-y-6">
 
@@ -16,7 +26,7 @@ const StudentDashboard = () => {
       <div>
 
         <h1 className="text-2xl font-extrabold text-slate-900">
-          Welcome Back, Student! 👋
+          Welcome Back, {student?.name || "Student"}!
         </h1>
 
         <p className="text-sm text-slate-500 mt-1">
@@ -31,25 +41,25 @@ const StudentDashboard = () => {
         <StatCard
           icon={<BookOpen />}
           title="Course Progress"
-          value="68%"
+          value={`${progress}%`}
         />
 
         <StatCard
           icon={<ClipboardList />}
           title="Pending Assignments"
-          value="4"
+          value="—"
         />
 
         <StatCard
           icon={<Clock3 />}
           title="Attendance"
-          value="87%"
+          value={`${attendance}%`}
         />
 
         <StatCard
           icon={<Award />}
           title="Certificate"
-          value="Eligible"
+          value={student?.certificateEligible ? "Eligible" : "Pending"}
         />
 
       </div>
@@ -70,7 +80,7 @@ const StudentDashboard = () => {
 
               <div>
                 <p className="font-bold">
-                  MERN Stack Development
+                  {student?.courseId?.title || "No course assigned"}
                 </p>
 
                 <p className="text-xs text-slate-500 mt-1">
@@ -79,7 +89,7 @@ const StudentDashboard = () => {
               </div>
 
               <span className="font-bold text-blue-600">
-                68%
+                {progress}%
               </span>
 
             </div>
@@ -88,7 +98,7 @@ const StudentDashboard = () => {
 
               <div
                 className="h-full bg-blue-600 rounded-full"
-                style={{ width: "68%" }}
+                style={{ width: `${progress}%` }}
               />
 
             </div>
@@ -112,15 +122,15 @@ const StudentDashboard = () => {
               </p>
 
               <p className="text-xl font-extrabold">
-                ₹12,000
+                ₹{pendingFees.toLocaleString("en-IN")}
               </p>
             </div>
 
           </div>
 
-          <button className="mt-5 w-full py-2.5 rounded-xl bg-orange-500 text-white text-xs font-bold">
+          <Link to="/student/fees" className="mt-5 block w-full py-2.5 text-center rounded-xl bg-orange-500 text-white text-xs font-bold">
             View Fees
-          </button>
+          </Link>
 
         </div>
 
@@ -134,25 +144,9 @@ const StudentDashboard = () => {
         </h2>
 
         <div className="mt-4 divide-y divide-slate-100">
-
-          <Activity
-            title="React Assignment"
-            date="Today"
-            type="Assignment"
-          />
-
-          <Activity
-            title="JavaScript Test"
-            date="Tomorrow"
-            type="Test"
-          />
-
-          <Activity
-            title="Node.js Project Review"
-            date="08 Sep"
-            type="Project"
-          />
-
+          <Activity title="Course progress" date={`${progress}%`} type="Current progress" />
+          <Activity title="Attendance" date={`${attendance}%`} type="Overall attendance" />
+          <Activity title="Fee balance" date={`₹${pendingFees.toLocaleString("en-IN")}`} type="Pending fees" />
         </div>
 
       </div>

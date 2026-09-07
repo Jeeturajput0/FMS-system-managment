@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
   ClipboardList,
   FlaskConical,
   BarChart3,
-  Clock3,
-  Trophy,
   CreditCard,
   Award,
   Bell,
@@ -16,11 +14,11 @@ import {
   LogOut,
   ChevronDown,
   GraduationCap,
-  FileText,
 } from "lucide-react";
 
-const StudentSidebar = () => {
+const StudentSidebar = ({ open, onClose }) => {
   const [openMenu, setOpenMenu] = useState("course");
+  const navigate = useNavigate();
 
   const toggleMenu = (menu) => {
     setOpenMenu((prev) => (prev === menu ? "" : menu));
@@ -41,14 +39,22 @@ const StudentSidebar = () => {
     }`;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    window.location.href = "/login";
+    localStorage.removeItem("ai_scholars_token");
+    localStorage.removeItem("ai_scholars_user");
+    navigate("/log", { replace: true });
   };
 
   return (
-    <aside className="w-72 min-h-screen bg-slate-950 text-white hidden lg:flex flex-col">
+    <>
+      {open && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={onClose}
+          className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
+        />
+      )}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 min-h-screen flex-col bg-slate-950 text-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
 
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/10">
@@ -449,6 +455,7 @@ const StudentSidebar = () => {
       </div>
 
     </aside>
+    </>
   );
 };
 
