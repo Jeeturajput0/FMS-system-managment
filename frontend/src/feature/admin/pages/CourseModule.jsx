@@ -17,6 +17,9 @@ export default function CourseModules() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [modules, setModules] = useState([]);
+  const [allModules, setAllModules] = useState([]);
+  const [selectedModuleIds, setSelectedModuleIds] = useState([]);
+  const [savingModules, setSavingModules] = useState(false);
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(courseId || "");
   const [course, setCourse] = useState(null);
@@ -35,6 +38,13 @@ export default function CourseModules() {
 
       const data = await apiFetch(endpoint);
       setModules(data.data || []);
+      if (activeCourseId) {
+        const inventory = await apiFetch("/api/modules");
+        setAllModules(inventory.data || []);
+        setSelectedModuleIds((data.data || []).map((item) => item._id));
+      } else {
+        setAllModules(data.data || []);
+      }
 
       if (activeCourseId) {
         try {
@@ -51,6 +61,23 @@ export default function CourseModules() {
       setError(loadError.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveCourseModules = async () => {
+    if (!courseId) return;
+    try {
+      setSavingModules(true);
+      const response = await apiFetch(`/api/courses/${courseId}/modules`, {
+        method: "PUT",
+        body: JSON.stringify({ moduleIds: selectedModuleIds }),
+      });
+      setModules(response.data?.modules || []);
+      setCourse(response.data);
+    } catch (saveError) {
+      setError(saveError.message);
+    } finally {
+      setSavingModules(false);
     }
   };
 
@@ -151,6 +178,19 @@ export default function CourseModules() {
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}
         </div>
+      )}
+
+      {courseId && (
+        <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><h2 className="text-sm font-bold text-slate-900">Populate Course Modules</h2><p className="mt-1 text-xs text-slate-600">Select existing standalone modules to attach to this course.</p></div>
+            <button onClick={saveCourseModules} disabled={savingModules} className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">{savingModules ? "Saving..." : "Save Modules"}</button>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {allModules.map((module) => <label key={module._id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-white bg-white p-3 text-sm"><input type="checkbox" checked={selectedModuleIds.includes(module._id)} onChange={() => setSelectedModuleIds((ids) => ids.includes(module._id) ? ids.filter((id) => id !== module._id) : [...ids, module._id])} className="h-4 w-4 accent-blue-600" /><span><b className="block text-slate-800">{module.title}</b><small className="text-slate-500">{module.topics?.length || 0} topics</small></span></label>)}
+            {!allModules.length && <p className="text-xs text-slate-500">Create modules first from All Modules.</p>}
+          </div>
+        </section>
       )}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

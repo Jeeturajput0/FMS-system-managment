@@ -1,4 +1,5 @@
 import Course from "../model/course.model.js";
+import Module from "../model/module.model.js";
 import mongoose from "mongoose";
 
 const getDuration = (duration) =>
@@ -37,7 +38,7 @@ export const getCourse = async (req, res) => {
       path: "modules",
       match: { isActive: true },
       options: { sort: { order: 1 } },
-      populate: { path: "title" },
+      populate: { path: "topics" },
     });
 
     if (!course) {
@@ -47,6 +48,26 @@ export const getCourse = async (req, res) => {
     return res.json({ success: true, data: course });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to get course" });
+  }
+};
+
+export const updateCourseModules = async (req, res) => {
+  try {
+    const { moduleIds = [] } = req.body;
+    if (!Array.isArray(moduleIds) || moduleIds.some((id) => !mongoose.isValidObjectId(id))) {
+      return res.status(400).json({ success: false, message: "Valid module IDs are required" });
+    }
+    const modules = await Module.find({ _id: { $in: moduleIds }, isActive: true }).select("_id");
+    if (modules.length !== new Set(moduleIds).size) return res.status(404).json({ success: false, message: "One or more modules not found" });
+    const course = await Course.findOneAndUpdate(
+      { _id: req.params.id, isActive: true },
+      { $set: { modules: [...new Set(moduleIds)], updatedBy: req.user._id } },
+      { new: true, runValidators: true },
+    ).populate({ path: "modules", match: { isActive: true }, options: { sort: { order: 1 } }, populate: { path: "topics" } });
+    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    return res.json({ success: true, message: "Course modules updated successfully", data: course });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to update course modules", error: error.message });
   }
 };
 

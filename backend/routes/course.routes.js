@@ -5,6 +5,7 @@ import {
   getCourse,
   listCourses,
   updateCourse,
+  updateCourseModules,
 } from "../controller/admin/course.controller.js";
 import { protect, authorize } from "../middleware/auth.middleware.js";
 import { requireDatabase } from "../middleware/db.middleware.js";
@@ -28,6 +29,12 @@ router.put(
   authorize("SUPER_ADMIN", "ADMIN"),
   courseUpload,
   updateCourse,
+);
+router.put(
+  "/:id/modules",
+  protect,
+  authorize("SUPER_ADMIN", "ADMIN"),
+  updateCourseModules,
 );
 router.delete("/:id", protect, authorize("SUPER_ADMIN", "ADMIN"), deleteCourse);
 

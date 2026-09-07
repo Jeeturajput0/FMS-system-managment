@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Coaching from "../model/coaching.model.js";
+import { generateCenterCode, generateUniqueCenterCode, normalizeCenterCode } from "../utils/centerCode.js";
 
 /*
 =========================================
@@ -22,12 +23,14 @@ const createCoaching = async (req, res) => {
       pincode,
       logo,
       status,
+      joinedDate,
+      centerCodeManuallyEdited = false,
     } = req.body;
 
-    if (!name || !ownerName || !email || !phone) {
+    if (!name || !ownerName || !email || !phone || !city) {
       return res.status(400).json({
         success: false,
-        message: "Name, owner name, email and phone are required",
+        message: "Name, owner name, email, phone and city are required",
       });
     }
 
@@ -41,23 +44,15 @@ const createCoaching = async (req, res) => {
       });
     }
 
-    // Check duplicate code
-    if (code) {
-      const existingCode = await Coaching.findOne({
-        code: code.toUpperCase(),
-      });
-
-      if (existingCode) {
-        return res.status(400).json({
-          success: false,
-          message: "Franchise code already exists",
-        });
-      }
-    }
+    const baseCode = code ? normalizeCenterCode(code) : generateCenterCode(name, joinedDate || new Date());
+    if (!baseCode) return res.status(400).json({ success: false, message: "Center code is required" });
+    const existingCode = await Coaching.exists({ code: baseCode });
+    if (existingCode && centerCodeManuallyEdited) return res.status(409).json({ success: false, message: "Center code already exists. Please choose another code." });
+    const centerCode = existingCode ? await generateUniqueCenterCode(Coaching, baseCode) : baseCode;
 
     const coaching = await Coaching.create({
       name,
-      code,
+      code: centerCode,
       ownerName,
       email,
       phone,
@@ -67,6 +62,7 @@ const createCoaching = async (req, res) => {
       pincode,
       logo,
       status: status || "pending",
+      joinedDate: joinedDate || new Date(),
       ...(mongoose.isValidObjectId(req.user?._id)
         ? { createdBy: req.user._id }
         : {}),
@@ -76,9 +72,14 @@ const createCoaching = async (req, res) => {
       success: true,
       message: "Franchise created successfully",
       coaching,
+      data: coaching,
     });
   } catch (error) {
     console.error("Create coaching error:", error);
+
+    if (error?.code === 11000) {
+      return res.status(409).json({ success: false, message: "Center code already exists. Please choose another code." });
+    }
 
     return res.status(500).json({
       success: false,
@@ -232,6 +233,7 @@ const updateCoaching = async (req, res) => {
       pincode,
       logo,
       status,
+      joinedDate,
     } = req.body;
 
     const coaching = await Coaching.findById(req.params.id);
@@ -241,6 +243,10 @@ const updateCoaching = async (req, res) => {
         success: false,
         message: "Franchise not found",
       });
+    }
+
+    if (!name?.trim() || !ownerName?.trim() || !email?.trim() || !phone?.trim() || !city?.trim()) {
+      return res.status(400).json({ success: false, message: "Name, owner name, email, phone and city are required" });
     }
 
     if (email && email !== coaching.email) {
@@ -259,25 +265,27 @@ const updateCoaching = async (req, res) => {
       }
     }
 
-    if (code) {
+    if (code !== undefined) {
+      const normalizedCode = normalizeCenterCode(code);
+      if (!normalizedCode) return res.status(400).json({ success: false, message: "Center code is required" });
       const codeExists = await Coaching.findOne({
-        code: code.toUpperCase(),
+        code: normalizedCode,
         _id: {
           $ne: coaching._id,
         },
       });
 
       if (codeExists) {
-        return res.status(400).json({
+        return res.status(409).json({
           success: false,
-          message: "Franchise code already exists",
+          message: "Center code already exists. Please choose another code.",
         });
       }
     }
 
     coaching.name = name ?? coaching.name;
 
-    coaching.code = code?.toUpperCase() ?? coaching.code;
+    coaching.code = code !== undefined ? normalizeCenterCode(code) : coaching.code;
 
     coaching.ownerName = ownerName ?? coaching.ownerName;
 
@@ -296,6 +304,7 @@ const updateCoaching = async (req, res) => {
     coaching.logo = logo ?? coaching.logo;
 
     coaching.status = status ?? coaching.status;
+    coaching.joinedDate = joinedDate ?? coaching.joinedDate;
 
     if (mongoose.isValidObjectId(req.user?._id)) {
       coaching.updatedBy = req.user._id;
@@ -310,6 +319,10 @@ const updateCoaching = async (req, res) => {
     });
   } catch (error) {
     console.error("Update coaching error:", error);
+
+    if (error?.code === 11000) {
+      return res.status(409).json({ success: false, message: "Center code already exists. Please choose another code." });
+    }
 
     return res.status(500).json({
       success: false,

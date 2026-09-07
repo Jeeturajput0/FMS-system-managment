@@ -9,21 +9,11 @@ import Topic from "../model/topic.model.js";
 
 export const createModule = async (req, res) => {
   try {
-    const { courseId, courseIds, title, description, order, duration, isPublished, topics } = req.body;
-    const selectedCourseIds = [...new Set(
-      (Array.isArray(courseIds) ? courseIds : [courseId]).filter(Boolean),
-    )];
+    const { title, description, order, duration, isPublished, topics } = req.body;
 
     // ----------------------------------------------
     // Validation
     // ----------------------------------------------
-
-    if (selectedCourseIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Course is required",
-      });
-    }
 
     if (!title || !title.trim()) {
       return res.status(400).json({
@@ -36,65 +26,36 @@ export const createModule = async (req, res) => {
     // Check Course
     // ----------------------------------------------
 
-    const courses = await Course.find({
-      _id: { $in: selectedCourseIds },
+    const lastModule = await Module.findOne({ isActive: true }).sort({ order: -1 });
+    const module = await Module.create({
+      courseId: null,
+      title: title.trim(),
+      description: description?.trim() || "",
+      order: Number(order) > 0 ? Number(order) : (lastModule?.order || 0) + 1,
+      duration: { value: Number(duration?.value || 0), unit: duration?.unit || "hours" },
+      isPublished: Boolean(isPublished),
       isActive: true,
+      createdBy: req.user._id,
     });
-
-    if (courses.length !== selectedCourseIds.length) {
-      return res.status(404).json({
-        success: false,
-        message: "Course not found",
-      });
-    }
-
-    // ----------------------------------------------
-    // Automatic Order
-    // ----------------------------------------------
-
-    const modules = await Promise.all(selectedCourseIds.map(async (selectedCourseId) => {
-      let moduleOrder = Number(order);
-      if (!moduleOrder || moduleOrder < 1) {
-        const lastModule = await Module.findOne({ courseId: selectedCourseId, isActive: true }).sort({ order: -1 });
-        moduleOrder = lastModule ? lastModule.order + 1 : 1;
-      }
-
-      return Module.create({
-        courseId: selectedCourseId,
-        title: title.trim(),
-        description: description?.trim() || "",
-        order: moduleOrder,
-        duration: { value: Number(duration?.value || 0), unit: duration?.unit || "hours" },
-        isPublished: Boolean(isPublished),
-        isActive: true,
-        createdBy: req.user._id,
-      });
-    }));
-
-    await Promise.all(modules.map((module) => Course.findByIdAndUpdate(module.courseId, {
-      $addToSet: { modules: module._id },
-    })));
 
     const topicData = Array.isArray(topics) ? topics.filter((topic) => topic?.title?.trim()) : [];
     if (topicData.length) {
-      await Promise.all(modules.map(async (module) => {
-        const createdTopics = await Topic.create(topicData.map((topic, index) => ({
+      const createdTopics = await Topic.create(topicData.map((topic, index) => ({
           moduleId: module._id,
           title: topic.title.trim(),
           description: topic.description?.trim() || "",
           type: topic.type || "Lesson",
           duration: { value: Number(topic.duration?.value || 0), unit: topic.duration?.unit || "minutes" },
           order: index + 1,
-        })));
-        module.topics = createdTopics.map((topic) => topic._id);
-        await module.save();
-      }));
+      })));
+      module.topics = createdTopics.map((topic) => topic._id);
+      await module.save();
     }
 
     return res.status(201).json({
       success: true,
-      message: `${modules.length} module${modules.length === 1 ? "" : "s"} created successfully`,
-      data: modules,
+      message: "Module created successfully",
+      data: module,
     });
   } catch (error) {
     console.error("CREATE MODULE ERROR:", error);
@@ -162,7 +123,7 @@ export const getModulesByCourse = async (req, res) => {
     }
 
     const modules = await Module.find({
-      courseId,
+      _id: { $in: course.modules || [] },
       isActive: true,
     })
       .populate("topics")
@@ -232,13 +193,6 @@ export const updateModule = async (req, res) => {
     const { courseId, title, description, order, duration, isPublished, topics } =
       req.body;
 
-    if (!courseId) {
-      return res.status(400).json({
-        success: false,
-        message: "Course is required",
-      });
-    }
-
     if (!title || !title.trim()) {
       return res.status(400).json({
         success: false,
@@ -249,18 +203,6 @@ export const updateModule = async (req, res) => {
     // ----------------------------------------------
     // Check Course
     // ----------------------------------------------
-
-    const course = await Course.findOne({
-      _id: courseId,
-      isActive: true,
-    });
-
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: "Course not found",
-      });
-    }
 
     // ----------------------------------------------
     // Find Module
@@ -278,13 +220,13 @@ export const updateModule = async (req, res) => {
       });
     }
 
-    const oldCourseId = module.courseId.toString();
+    const oldCourseId = module.courseId?.toString();
 
     // ----------------------------------------------
     // Update
     // ----------------------------------------------
 
-    module.courseId = courseId;
+    module.courseId = courseId || null;
 
     module.title = title.trim();
 
@@ -323,14 +265,14 @@ export const updateModule = async (req, res) => {
     // If Course Changed
     // ----------------------------------------------
 
-    if (oldCourseId !== courseId.toString()) {
+    if (oldCourseId && oldCourseId !== courseId?.toString()) {
       await Course.findByIdAndUpdate(oldCourseId, {
         $pull: {
           modules: module._id,
         },
       });
 
-      await Course.findByIdAndUpdate(courseId, {
+      if (courseId) await Course.findByIdAndUpdate(courseId, {
         $addToSet: {
           modules: module._id,
         },

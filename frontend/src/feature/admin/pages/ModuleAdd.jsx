@@ -153,12 +153,6 @@ const ModuleAdd = () => {
 
     setError("");
 
-    const selectedCourseIds = isCreateMode ? formData.courseIds : [formData.courseId];
-    if (selectedCourseIds.length === 0) {
-      setError("Please select at least one course.");
-      return;
-    }
-
     if (!formData.title.trim()) {
       setError("Module title is required.");
       return;
@@ -168,7 +162,7 @@ const ModuleAdd = () => {
       setLoading(true);
 
       const payload = {
-        ...(isCreateMode ? { courseIds: selectedCourseIds } : { courseId: formData.courseId }),
+        ...(isEditMode && formData.courseId ? { courseId: formData.courseId } : {}),
         title: formData.title.trim(),
         description: formData.description.trim(),
         order: Number(formData.order),
@@ -194,7 +188,7 @@ const ModuleAdd = () => {
             : "Module created successfully"),
       );
 
-      navigate(`/admin/courses/${selectedCourseIds[0]}/modules`);
+      navigate("/admin/courses/modules");
     } catch (submitError) {
       console.error("SAVE MODULE:", submitError);
       setError(submitError.message);
@@ -284,15 +278,8 @@ const ModuleAdd = () => {
           </div>
 
           <div className="space-y-6 p-6">
-            <div>
-              <label className="mb-2 block text-sm font-bold text-slate-700">{isCreateMode ? "Courses *" : "Course *"}</label>
-              <div className="max-h-56 space-y-2 overflow-y-auto rounded-xl border border-slate-300 bg-white p-3">
-                {coursesLoading ? <p className="text-sm text-slate-500">Loading courses...</p> : courses.map((course) => {
-                  const selected = isCreateMode ? formData.courseIds.includes(course._id) : formData.courseId === course._id;
-                  return <label key={course._id} className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-slate-50"><input type={isCreateMode ? "checkbox" : "radio"} name="course" checked={selected} disabled={readOnly} onChange={() => toggleCourse(course._id)} className="h-4 w-4 accent-orange-500" /><span className="text-sm font-medium text-slate-700">{course.title}</span></label>;
-                })}
-              </div>
-              <p className="mt-1.5 text-xs text-slate-400">{isCreateMode ? "Select one or more courses. A module will be created for each selected course." : "A module belongs to one course; choose its assigned course."}</p>
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+              {isCreateMode ? "This module will be created independently. Open a course later to attach it." : "Module assignment is managed from the course module manager."}
             </div>
 
             <div>
