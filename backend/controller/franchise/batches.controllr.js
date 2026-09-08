@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 import Batch from "../../model/batches.model.js";
 import User from "../../model/user.model.js";
 import Student from "../../model/student.model.js";
+import Coaching from "../../model/coaching.model.js";
+import Course from "../../model/course.model.js";
+import { generateBatchCode } from "../../utils/batchCode.js";
 
 // ============================================================
 // HELPER
@@ -20,7 +23,6 @@ const createBatch = async (req, res) => {
   try {
     const {
       name,
-      code,
       description,
       franchise,
       course,
@@ -40,13 +42,6 @@ const createBatch = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Batch name is required",
-      });
-    }
-
-    if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Batch code is required",
       });
     }
 
@@ -85,8 +80,20 @@ const createBatch = async (req, res) => {
       });
     }
 
+    const [franchiseRecord, courseRecord] = await Promise.all([
+      Coaching.findById(franchise).select("name"),
+      Course.findById(course).select("title name"),
+    ]);
+    if (!franchiseRecord) return res.status(404).json({ success: false, message: "Franchise not found" });
+    if (!courseRecord) return res.status(404).json({ success: false, message: "Course not found" });
+    const generatedCode = generateBatchCode({
+      franchiseName: franchiseRecord.name,
+      courseTitle: courseRecord.title || courseRecord.name,
+      startDate,
+    });
+
     const existingBatch = await Batch.findOne({
-      code: code.trim().toUpperCase(),
+      code: generatedCode,
     });
 
     if (existingBatch) {
@@ -111,7 +118,7 @@ const createBatch = async (req, res) => {
 
     const batch = await Batch.create({
       name: name.trim(),
-      code: code.trim().toUpperCase(),
+      code: generatedCode,
       description: description || "",
 
       franchise,
@@ -476,7 +483,6 @@ const updateBatch = async (req, res) => {
 
     const {
       name,
-      code,
       description,
       franchise,
       course,
@@ -511,22 +517,6 @@ const updateBatch = async (req, res) => {
         success: false,
         message: "Invalid teacher ID",
       });
-    }
-
-    if (code) {
-      const existingBatch = await Batch.findOne({
-        code: code.trim().toUpperCase(),
-        _id: { $ne: id },
-      });
-
-      if (existingBatch) {
-        return res.status(409).json({
-          success: false,
-          message: "Batch code already exists",
-        });
-      }
-
-      batch.code = code.trim().toUpperCase();
     }
 
     if (name !== undefined) {
@@ -612,6 +602,22 @@ const updateBatch = async (req, res) => {
     if (status !== undefined) {
       batch.status = status;
     }
+
+    const [franchiseRecord, courseRecord] = await Promise.all([
+      Coaching.findById(batch.franchise).select("name"),
+      Course.findById(batch.course).select("title name"),
+    ]);
+    if (!franchiseRecord) return res.status(404).json({ success: false, message: "Franchise not found" });
+    if (!courseRecord) return res.status(404).json({ success: false, message: "Course not found" });
+
+    const generatedCode = generateBatchCode({
+      franchiseName: franchiseRecord.name,
+      courseTitle: courseRecord.title || courseRecord.name,
+      startDate: batch.startDate,
+    });
+    const existingBatch = await Batch.findOne({ code: generatedCode, _id: { $ne: id } });
+    if (existingBatch) return res.status(409).json({ success: false, message: "Batch code already exists" });
+    batch.code = generatedCode;
 
     await batch.save();
 

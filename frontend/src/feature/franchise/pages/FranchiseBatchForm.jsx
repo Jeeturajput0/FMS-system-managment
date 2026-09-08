@@ -12,12 +12,30 @@ const week = [
   "SUNDAY",
 ];
 
+const initials = (value) => {
+  const words = String(value || "")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!words.length) return "XX";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return words.map((word) => word[0]).join("").slice(0, 4).toUpperCase();
+};
+
+const previewBatchCode = (franchiseName, courseTitle, startDate) => {
+  const date = startDate ? new Date(`${startDate}T00:00:00`) : new Date();
+  const validDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  return `${initials(franchiseName)}${initials(courseTitle)}${String(validDate.getMonth() + 1).padStart(2, "0")}${String(validDate.getFullYear()).slice(-2)}`;
+};
+
 const FranchiseBatchForm = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("ai_scholars_user") || "null");
   const { id } = useParams();
   const [courses, setCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [franchiseName, setFranchiseName] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -37,14 +55,17 @@ const FranchiseBatchForm = () => {
   });
 
   useEffect(() => {
+    const franchiseId = user?.coachingId || user?.franchiseId;
     Promise.all([
       apiFetch("/api/courses"),
       apiFetch("/api/portal/teachers"),
       id ? apiFetch(`/api/batches/${id}`) : Promise.resolve(null),
+      franchiseId ? apiFetch(`/api/coaching/${franchiseId}`) : Promise.resolve(null),
     ])
-      .then(([courseResponse, teacherResponse, batchResponse]) => {
+      .then(([courseResponse, teacherResponse, batchResponse, franchiseResponse]) => {
         setCourses(courseResponse.data || []);
         setTeachers(teacherResponse.data || []);
+        setFranchiseName(franchiseResponse?.coaching?.name || user?.coachingName || "");
         if (batchResponse?.batch)
           setForm((current) => ({
             ...current,
@@ -61,6 +82,20 @@ const FranchiseBatchForm = () => {
       })
       .catch((requestError) => setError(requestError.message));
   }, []);
+
+  useEffect(() => {
+    if (id || !franchiseName || !form.course) return;
+    const selectedCourse = courses.find((course) => course._id === form.course);
+    if (!selectedCourse) return;
+    setForm((current) => ({
+      ...current,
+      code: previewBatchCode(
+        franchiseName,
+        selectedCourse.title || selectedCourse.name,
+        current.startDate,
+      ),
+    }));
+  }, [courses, franchiseName, form.course, form.startDate, id]);
 
   const update = (event) =>
     setForm({ ...form, [event.target.name]: event.target.value });
@@ -129,12 +164,15 @@ const FranchiseBatchForm = () => {
         <label>
           <span className="label">Batch code</span>
           <input
-            required
             name="code"
             value={form.code}
-            onChange={update}
+            readOnly
+            placeholder="Select course and start date"
             className="input"
           />
+          <span className="mt-1 block text-xs text-slate-500">
+            Auto-generated: franchise + course + month + year (example: JBFS0326)
+          </span>
         </label>
         <label>
           <span className="label">Course</span>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
+import logo from "../../../../assist/logo.png";
 
 const menuItems = [
   {
@@ -77,7 +78,7 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
       <aside
         className={`
           fixed left-0 top-0 z-50 h-screen w-64
-          bg-white border-r border-slate-200
+          bg-[#0F172A] text-slate-300 border-r border-slate-800
           flex flex-col
           transition-transform duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -85,20 +86,21 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
         `}
       >
         {/* Logo */}
-        <div className="h-20 px-6 flex items-center justify-between border-b border-slate-200">
+        <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800/80">
           <div>
-            <h1 className="text-xl font-black text-slate-900">
-              AI Scholars
-            </h1>
-
-            <p className="text-xs font-medium text-slate-500">
+           <img
+                 src={logo}
+                 alt="AI Scholars"
+                 className="h-12 w-auto max-w-[190px] object-contain"
+               />
+            <p className="text-xs font-medium text-amber-400">
               Franchise Portal
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-100"
+            className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
           >
             <X size={20} />
           </button>
@@ -123,8 +125,8 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
                   transition
                   ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/20"
+                      : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
                   }
                   `
                 }
@@ -137,7 +139,7 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Bottom */}
-        <div className="border-t border-slate-200 p-4">
+        <div className="border-t border-slate-800/80 p-4">
           <NavLink
             to="/franchise/settings"
             onClick={onClose}
@@ -147,8 +149,8 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
               text-sm font-semibold
               ${
                 isActive
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/20"
+                  : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
               }
               `
             }

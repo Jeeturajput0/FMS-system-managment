@@ -29,15 +29,15 @@ const StudentSidebar = ({ open, onClose }) => {
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
       isActive
-        ? "bg-blue-600 text-white shadow-md"
-        : "text-slate-300 hover:bg-white/10 hover:text-white"
+        ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/20"
+        : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
     }`;
 
   const subLinkClass = ({ isActive }) =>
     `block px-4 py-2 ml-8 rounded-lg text-xs font-medium transition ${
       isActive
-        ? "text-blue-300 bg-white/10"
-        : "text-slate-400 hover:text-white"
+        ? "text-amber-300 bg-slate-800"
+        : "text-slate-400 hover:text-slate-100"
     }`;
 
   const handleLogout = () => {
@@ -56,14 +56,14 @@ const StudentSidebar = ({ open, onClose }) => {
           className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 min-h-screen flex-col bg-slate-950 text-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 min-h-screen flex-col bg-[#0F172A] text-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
 
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="px-6 py-5 border-b border-slate-800/80">
 
         <div className="flex items-center gap-3">
 
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
             <GraduationCap className="w-6 h-6" />
           </div>
 
@@ -79,7 +79,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
         </div>
 
-        <p className="text-xs font-bold text-blue-400 mt-5">
+        <p className="text-xs font-bold text-amber-400 mt-5">
           Student Portal
         </p>
 
@@ -102,7 +102,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <button
             onClick={() => toggleMenu("course")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
           >
 
             <span className="flex items-center gap-3">
@@ -131,7 +131,7 @@ const StudentSidebar = ({ open, onClose }) => {
               {courses.map((course) => (
                 <div
                   key={course._id}
-                  className="ml-8 truncate px-4 py-2 text-xs font-bold text-blue-300"
+                  className="ml-8 truncate px-4 py-2 text-xs font-bold text-amber-300"
                   title={course.title}
                 >
                   {course.title}
@@ -169,7 +169,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <button
             onClick={() => toggleMenu("assignments")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
           >
 
             <span className="flex items-center gap-3">
@@ -221,7 +221,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <button
             onClick={() => toggleMenu("tests")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
           >
 
             <span className="flex items-center gap-3">
@@ -273,7 +273,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <button
             onClick={() => toggleMenu("progress")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
           >
 
             <span className="flex items-center gap-3">
@@ -325,7 +325,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <button
             onClick={() => toggleMenu("fees")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
           >
 
             <span className="flex items-center gap-3">
@@ -377,7 +377,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <button
             onClick={() => toggleMenu("certificate")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
           >
 
             <span className="flex items-center gap-3">
@@ -454,11 +454,11 @@ const StudentSidebar = ({ open, onClose }) => {
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-white/10">
+      <div className="p-3 border-t border-slate-800/80">
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-500/10"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-slate-800/60"
         >
           <LogOut className="w-5 h-5" />
           Logout

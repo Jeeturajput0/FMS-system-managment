@@ -185,174 +185,178 @@ export const FranchiseCourses = () => {
       )}
 
       {/* Course Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1100px] text-left text-sm">
-            {/* Table Header */}
-            <thead className="border-b border-slate-100 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-5 py-4">Course</th>
+     <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <div className="overflow-x-auto">
+    <table className="w-full min-w-[850px] table-auto text-left text-sm">
+      {/* Table Header */}
+      <thead className="border-b border-slate-100 bg-slate-50">
+        <tr className="text-[11px] uppercase tracking-wide text-slate-500">
+          <th className="w-[25%] px-4 py-3.5 font-bold">
+            Course
+          </th>
 
-                <th className="px-5 py-4">Category</th>
+          <th className="w-[13%] px-4 py-3.5 font-bold">
+            Category
+          </th>
 
-                <th className="px-5 py-4">Duration</th>
+          <th className="w-[12%] px-4 py-3.5 font-bold">
+            Duration
+          </th>
 
-                <th className="px-5 py-4">Course Level</th>
+          <th className="w-[14%] px-4 py-3.5 font-bold">
+            Level
+          </th>
 
-                <th className="px-5 py-4">Fee</th>
+          <th className="w-[13%] px-4 py-3.5 font-bold">
+            Fee
+          </th>
 
-                <th className="px-5 py-4">Status</th>
+          <th className="w-[12%] px-4 py-3.5 font-bold">
+            Status
+          </th>
 
-                <th className="px-5 py-4 text-right">Action</th>
+          <th className="w-[11%] px-4 py-3.5 text-right font-bold">
+            Action
+          </th>
+        </tr>
+      </thead>
+
+      {/* Table Body */}
+      <tbody className="divide-y divide-slate-100">
+
+        {/* Loading */}
+        {loading ? (
+          <tr>
+            <td colSpan={7} className="p-10 text-center">
+              <Loader2
+                size={24}
+                className="mx-auto animate-spin text-blue-600"
+              />
+
+              <p className="mt-3 text-sm text-slate-500">
+                Loading courses...
+              </p>
+            </td>
+          </tr>
+        ) : filteredCourses.length === 0 ? (
+          /* Empty */
+          <tr>
+            <td colSpan={7} className="p-10 text-center">
+              <BookOpen
+                size={32}
+                className="mx-auto text-slate-300"
+              />
+
+              <p className="mt-3 font-semibold text-slate-600">
+                No courses found
+              </p>
+
+              <p className="mt-1 text-xs text-slate-400">
+                Try changing your search or filters.
+              </p>
+            </td>
+          </tr>
+        ) : (
+          /* Courses */
+          filteredCourses.map((course) => {
+            const courseLevel = course.level || "Beginner";
+
+            return (
+              <tr
+                key={course._id}
+                className="transition hover:bg-slate-50"
+              >
+                {/* Course */}
+                <td className="px-4 py-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid h-10 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-blue-50 text-blue-600">
+                      {course.thumbnail || course.images?.[0] ? (
+                        <img
+                          src={assetUrl(
+                            course.thumbnail ||
+                              course.images[0]
+                          )}
+                          alt={course.title || "Course"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <BookOpen size={17} />
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="max-w-[220px] truncate font-bold text-slate-900">
+                        {course.title || "Untitled Course"}
+                      </p>
+
+                      <p className="mt-0.5 text-[11px] text-slate-500">
+                        {courseLevel}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+
+                {/* Category */}
+                <td className="px-4 py-3.5">
+                  <span className="inline-flex max-w-[120px] truncate rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                    {course.category || "General"}
+                  </span>
+                </td>
+
+                {/* Duration */}
+                <td className="whitespace-nowrap px-4 py-3.5 text-sm text-slate-600">
+                  {getDuration(course.duration)}
+                </td>
+
+                {/* Level */}
+                <td className="px-4 py-3.5">
+                  <span
+                    className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-bold ${getLevelStyle(
+                      courseLevel
+                    )}`}
+                  >
+                    {courseLevel}
+                  </span>
+                </td>
+
+                {/* Fee */}
+                <td className="whitespace-nowrap px-4 py-3.5 font-bold text-slate-900">
+                  {getFee(course.courseFee)}
+                </td>
+
+                {/* Status */}
+                <td className="px-4 py-3.5">
+                  <span
+                    className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${
+                      course.isPublished === false
+                        ? "bg-amber-50 text-amber-700"
+                        : "bg-emerald-50 text-emerald-700"
+                    }`}
+                  >
+                    {course.isPublished === false
+                      ? "Draft"
+                      : "Published"}
+                  </span>
+                </td>
+
+                {/* Action */}
+                <td className="px-4 py-3.5 text-right">
+                  <Link
+                    to={`/courses/${course._id}`}
+                    className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-600 transition hover:bg-blue-100"
+                  >
+                    <Eye size={13} />
+                    View
+                  </Link>
+                </td>
               </tr>
-            </thead>
-
-            {/* Table Body */}
-            <tbody className="divide-y divide-slate-100">
-              {/* Loading */}
-              {loading ? (
-                <tr>
-                  <td colSpan="8" className="p-12 text-center">
-                    <Loader2 className="mx-auto animate-spin text-blue-600" />
-
-                    <p className="mt-3 text-sm text-slate-500">
-                      Loading courses...
-                    </p>
-                  </td>
-                </tr>
-              ) : filteredCourses.length === 0 ? (
-                /* Empty */
-                <tr>
-                  <td colSpan="8" className="p-12 text-center">
-                    <BookOpen size={35} className="mx-auto text-slate-300" />
-
-                    <p className="mt-3 font-semibold text-slate-600">
-                      No courses found
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-400">
-                      Try changing your search or filters.
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                /* Courses */
-                filteredCourses.map((course) => {
-                  const courseLevel = course.level || "Beginner";
-
-                  return (
-                    <tr
-                      key={course._id}
-                      className="transition hover:bg-slate-50"
-                    >
-                      {/* Course */}
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="grid h-11 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-blue-50 text-blue-600">
-                            {course.thumbnail || course.images?.[0] ? (
-                              <img
-                                src={assetUrl(
-                                  course.thumbnail || course.images[0],
-                                )}
-                                alt={course.title}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <BookOpen size={19} />
-                            )}
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="truncate font-bold text-slate-900">
-                              {course.title}
-                            </p>
-
-                            <p className="mt-0.5 text-xs text-slate-500">
-                              {courseLevel}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Category */}
-                      <td className="px-5 py-4">
-                        <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                          {course.category || "General"}
-                        </span>
-                      </td>
-
-                      {/* Duration */}
-                      <td className="px-5 py-4 text-slate-700">
-                        {getDuration(course.duration)}
-                      </td>
-
-                      {/* Level */}
-                      <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-bold ${getLevelStyle(
-                            courseLevel,
-                          )}`}
-                        >
-                          {courseLevel}
-                        </span>
-                      </td>
-
-                      {/* Target Audience */}
-                      <td className="px-5 py-4">
-                        {course.targetAudience ? (
-                          <div className="flex items-center gap-2 text-slate-600">
-                            <Users
-                              size={14}
-                              className="shrink-0 text-slate-400"
-                            />
-
-                            <span className="max-w-[180px] truncate text-xs font-medium">
-                              {course.targetAudience}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-slate-400">
-                            All Students
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Fee */}
-                      <td className="px-5 py-4 font-bold text-slate-900">
-                        {getFee(course.courseFee)}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-5 py-4">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                            course.isPublished === false
-                              ? "bg-amber-50 text-amber-700"
-                              : "bg-emerald-50 text-emerald-700"
-                          }`}
-                        >
-                          {course.isPublished === false ? "Draft" : "Published"}
-                        </span>
-                      </td>
-
-                      {/* Action */}
-                      <td className="px-5 py-4 text-right">
-                        <Link
-                          to={`/courses/${course._id}`}
-                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-600 transition hover:bg-blue-100"
-                        >
-                          <Eye size={14} />
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
     </div>
   );
 };
