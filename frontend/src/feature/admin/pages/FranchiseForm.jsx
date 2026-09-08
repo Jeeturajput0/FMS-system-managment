@@ -5,7 +5,7 @@ import { useData } from "../../../context/DataContext";
 import { apiFetch } from "../../../utils/api";
 
 const emptyForm = {
-  name: "", code: "", ownerName: "", email: "", phone: "", address: "",
+  name: "", code: "", ownerName: "", email: "", phone: "", password: "", address: "",
   city: "", state: "", pincode: "", status: "pending",
 };
 
@@ -94,6 +94,7 @@ export default function FranchiseForm() {
           <label><span className="mb-2 block text-sm font-bold text-slate-700">Center Code</span><div className="flex gap-2"><input name="code" value={form.code} onChange={change} required className="min-w-0 flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm uppercase outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100" /><button type="button" onClick={autoGenerateCode} title="Generate from franchise name" className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 text-xs font-bold text-orange-700 hover:bg-orange-100"><Wand2 className="h-4 w-4" /> Auto Generate</button></div><span className="mt-1.5 block text-xs text-slate-500">Auto-generated from franchise name. You can edit it manually.</span></label>
           <Field label="Owner Name *" name="ownerName" value={form.ownerName} onChange={change} required />
           <Field label="Email *" name="email" value={form.email} onChange={change} type="email" required />
+          <Field label={isEdit ? "Reset Login Password (optional)" : "Initial Login Password *"} name="password" value={form.password} onChange={change} type="password" required={!isEdit} minLength={6} placeholder={isEdit ? "Leave blank to keep current password" : "Minimum 6 characters"} />
           <Field label="Phone *" name="phone" value={form.phone} onChange={change} required />
           <Field label="City *" name="city" value={form.city} onChange={change} required />
           <Field label="State" name="state" value={form.state} onChange={change} />
@@ -107,6 +108,6 @@ export default function FranchiseForm() {
   );
 }
 
-function Field({ label, name, value, onChange, type = "text", required = false, placeholder = "" }) {
-  return <label><span className="mb-2 block text-sm font-bold text-slate-700">{label}</span><input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100" /></label>;
+function Field({ label, name, value, onChange, type = "text", required = false, minLength, placeholder = "" }) {
+  return <label><span className="mb-2 block text-sm font-bold text-slate-700">{label}</span><input type={type} name={name} value={value} onChange={onChange} required={required} minLength={minLength} placeholder={placeholder} className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100" /></label>;
 }

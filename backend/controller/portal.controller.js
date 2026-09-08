@@ -152,7 +152,7 @@ export const getPortalTeachers = async (req, res) => {
       role: "TEACHER",
       ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
     };
-    const data = await User.find(filter).select("name email isActive coachingId assignedCourses createdAt").populate("assignedCourses", "title name").sort({ name: 1 }).lean();
+    const data = await User.find(filter).select("name email mobile isActive coachingId assignedCourses createdAt").populate("assignedCourses", "title name").sort({ name: 1 }).lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load teachers", error: error.message });
@@ -169,16 +169,16 @@ export const getPortalTeacherBatches = async (req, res) => {
 
 export const createPortalTeacher = async (req, res) => {
   try {
-    const { name, email, password, courseIds = [] } = req.body;
-    if (!name?.trim() || !email?.trim() || !password || password.length < 6) {
-      return res.status(400).json({ success: false, message: "Name, email and password of 6+ characters are required" });
+    const { name, email, mobile, password, courseIds = [] } = req.body;
+    if (!name?.trim() || !email?.trim() || !mobile?.trim() || !password || password.length < 6) {
+      return res.status(400).json({ success: false, message: "Name, mobile, email and password of 6+ characters are required" });
     }
     if (await User.exists({ email: email.trim().toLowerCase() })) {
       return res.status(409).json({ success: false, message: "Email is already registered" });
     }
     const validCourseIds = Array.isArray(courseIds) ? courseIds.filter((id) => mongoose.isValidObjectId(id)) : [];
-    const teacher = await User.create({ name: name.trim(), email: email.trim().toLowerCase(), password: await bcrypt.hash(password, 12), role: "TEACHER", coachingId: req.user.coachingId, assignedCourses: validCourseIds });
-    const data = await User.findById(teacher._id).select("name email isActive assignedCourses").populate("assignedCourses", "title name").lean();
+    const teacher = await User.create({ name: name.trim(), email: email.trim().toLowerCase(), mobile: mobile.trim(), password: await bcrypt.hash(password, 12), role: "TEACHER", coachingId: req.user.coachingId, assignedCourses: validCourseIds });
+    const data = await User.findById(teacher._id).select("name email mobile isActive assignedCourses").populate("assignedCourses", "title name").lean();
     return res.status(201).json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to create teacher", error: error.message });
@@ -187,16 +187,17 @@ export const createPortalTeacher = async (req, res) => {
 
 export const updatePortalTeacher = async (req, res) => {
   try {
-    const { name, email, password, courseIds = [], isActive } = req.body;
+    const { name, email, mobile, password, courseIds = [], isActive } = req.body;
     const teacher = await User.findOne({ _id: req.params.id, role: "TEACHER", coachingId: req.user.coachingId });
     if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
     if (name?.trim()) teacher.name = name.trim();
     if (email?.trim()) teacher.email = email.trim().toLowerCase();
+    if (mobile?.trim()) teacher.mobile = mobile.trim();
     if (Array.isArray(courseIds)) teacher.assignedCourses = courseIds.filter((id) => mongoose.isValidObjectId(id));
     if (typeof isActive === "boolean") teacher.isActive = isActive;
     if (password) teacher.password = await bcrypt.hash(password, 12);
     await teacher.save();
-    const data = await User.findById(teacher._id).select("name email isActive assignedCourses createdAt").populate("assignedCourses", "title name").lean();
+    const data = await User.findById(teacher._id).select("name email mobile isActive assignedCourses createdAt").populate("assignedCourses", "title name").lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to update teacher", error: error.message });

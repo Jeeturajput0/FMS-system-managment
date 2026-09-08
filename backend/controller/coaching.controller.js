@@ -5,6 +5,7 @@ import Student from "../model/student.model.js";
 import Fee from "../model/fee.model.js";
 import Batch from "../model/batches.model.js";
 import Attendance from "../model/attendance.model.js";
+import bcrypt from "bcryptjs";
 import { generateCenterCode, generateUniqueCenterCode, normalizeCenterCode } from "../utils/centerCode.js";
 
 /*
@@ -26,26 +27,36 @@ const createCoaching = async (req, res) => {
       city,
       state,
       pincode,
+      password,
       logo,
       status,
       joinedDate,
       centerCodeManuallyEdited = false,
     } = req.body;
 
-    if (!name || !ownerName || !email || !phone || !city) {
+    if (!name || !ownerName || !email || !phone || !city || !password || password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "Name, owner name, email, phone and city are required",
+        message: "Name, owner name, email, phone, city and a password of 6+ characters are required",
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check duplicate email
-    const existingEmail = await Coaching.findOne({ email });
+    const existingEmail = await Coaching.findOne({ email: normalizedEmail });
 
     if (existingEmail) {
       return res.status(400).json({
         success: false,
         message: "Franchise with this email already exists",
+      });
+    }
+
+    if (await User.exists({ email: normalizedEmail })) {
+      return res.status(400).json({
+        success: false,
+        message: "A user with this email already exists",
       });
     }
 
@@ -59,7 +70,7 @@ const createCoaching = async (req, res) => {
       name,
       code: centerCode,
       ownerName,
-      email,
+      email: normalizedEmail,
       phone,
       address,
       city,
@@ -72,6 +83,19 @@ const createCoaching = async (req, res) => {
         ? { createdBy: req.user._id }
         : {}),
     });
+
+    try {
+      await User.create({
+        name: ownerName.trim(),
+        email: normalizedEmail,
+        password: await bcrypt.hash(password, 12),
+        role: "FRANCHISE",
+        coachingId: coaching._id,
+      });
+    } catch (userError) {
+      await Coaching.deleteOne({ _id: coaching._id });
+      throw userError;
+    }
 
     return res.status(201).json({
       success: true,
@@ -236,6 +260,7 @@ const updateCoaching = async (req, res) => {
       city,
       state,
       pincode,
+      password,
       logo,
       status,
       joinedDate,
@@ -316,6 +341,32 @@ const updateCoaching = async (req, res) => {
     }
 
     await coaching.save();
+
+    // Keep the linked franchise login in sync. This also repairs older
+    // franchise records that were created before login accounts were added.
+    const linkedUser = await User.findOne({ coachingId: coaching._id }).select("+password");
+    if (linkedUser) {
+      linkedUser.name = coaching.ownerName;
+      linkedUser.email = coaching.email;
+      if (password) {
+        if (password.length < 6) {
+          return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+        }
+        linkedUser.password = await bcrypt.hash(password, 12);
+      }
+      await linkedUser.save();
+    } else if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+      }
+      await User.create({
+        name: coaching.ownerName,
+        email: coaching.email,
+        password: await bcrypt.hash(password, 12),
+        role: "FRANCHISE",
+        coachingId: coaching._id,
+      });
+    }
 
     return res.status(200).json({
       success: true,

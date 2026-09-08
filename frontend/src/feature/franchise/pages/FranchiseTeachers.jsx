@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Edit, Eye, Plus, Trash2 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 
-const empty = { name: "", email: "", password: "", courseIds: [] };
+const empty = { name: "", mobile: "", email: "", password: "", courseIds: [] };
 export const FranchiseTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -25,7 +25,7 @@ export const FranchiseTeachers = () => {
   const filtered = useMemo(
     () =>
       teachers.filter((t) =>
-        `${t.name} ${t.email}`.toLowerCase().includes(search.toLowerCase()),
+        `${t.name} ${t.mobile} ${t.email}`.toLowerCase().includes(search.toLowerCase()),
       ),
     [teachers, search],
   );
@@ -105,6 +105,14 @@ export const FranchiseTeachers = () => {
           />
           <input
             required
+            type="tel"
+            placeholder="Mobile number"
+            value={form.mobile}
+            onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
+          <input
+            required
             type="email"
             placeholder="Email"
             value={form.email}
@@ -173,6 +181,7 @@ export const FranchiseTeachers = () => {
                 <tr key={t._id}>
                   <td className="px-5 py-4">
                     <p className="font-semibold">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.mobile || "No mobile number"}</p>
                     <p className="text-xs text-slate-500">{t.email}</p>
                   </td>
                   <td className="px-5 py-4">
@@ -196,6 +205,7 @@ export const FranchiseTeachers = () => {
                           setEditing(t);
                           setForm({
                             name: t.name,
+                            mobile: t.mobile || "",
                             email: t.email,
                             password: "",
                             courseIds: (t.assignedCourses || []).map(
@@ -238,6 +248,7 @@ export const FranchiseTeachers = () => {
           >
             <h2 className="text-xl font-black">{viewing.name}</h2>
             <p className="mt-1 text-sm text-slate-500">{viewing.email}</p>
+            <p className="mt-1 text-sm text-slate-500">Mobile: {viewing.mobile || "-"}</p>
             <p className="mt-5 text-sm">
               <b>Courses:</b>{" "}
               {viewing.assignedCourses
