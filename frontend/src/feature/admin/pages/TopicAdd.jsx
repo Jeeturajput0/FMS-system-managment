@@ -10,7 +10,7 @@ import {
   Plus,
   Sparkles,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
 const emptyForm = {
@@ -25,18 +25,27 @@ const emptyForm = {
 export default function TopicAdd() {
   const navigate = useNavigate();
   const { topicId } = useParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = Boolean(topicId);
   const [modules, setModules] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [moduleId, setModuleId] = useState("");
+  const [moduleId, setModuleId] = useState(searchParams.get("moduleId") || "");
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     apiFetch("/api/modules")
-      .then((response) => setModules(response.data || []))
+      .then((response) => {
+        const availableModules = response.data || [];
+        setModules(availableModules);
+        const requestedModuleId = searchParams.get("moduleId");
+        if (!isEditMode && requestedModuleId && availableModules.some((module) => module._id === requestedModuleId)) {
+          setModuleId(requestedModuleId);
+        }
+      })
       .catch((loadError) => setError(loadError.message));
-  }, []);
+  }, [isEditMode, searchParams]);
 
   useEffect(() => {
     if (!topicId) return;

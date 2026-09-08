@@ -367,9 +367,9 @@ export default function CourseModules() {
 
                       <div className="flex justify-end gap-2">
                         <Link
-                          to={`/admin/topics/add`}
-                          title="Edit topics"
-                          aria-label="Edit topics"
+                          to={`/admin/topics/add?moduleId=${moduleId}${module.courseId?._id ? `&courseId=${module.courseId._id}` : ""}`}
+                          title="Add topic"
+                          aria-label="Add topic"
                           className="rounded-lg bg-emerald-50 p-2 text-emerald-600 hover:bg-emerald-100"
                         >
                           <Plus className="h-4 w-4" />

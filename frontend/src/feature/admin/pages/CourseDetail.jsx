@@ -176,8 +176,8 @@ export const CourseDetail = () => {
                     key={moduleId}
                     className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs"
                   >
-                    <button
-                      onClick={() => toggleModule(moduleId)}
+                    <Link
+                      to={`/admin/modules/${moduleId}/topics`}
                       className="w-full p-4 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
@@ -185,7 +185,7 @@ export const CourseDetail = () => {
                           <Layers className="w-4 h-4" />
                         </div>
                        <div className="pt-0.5">
-                         <h4 className="font-bold text-slate-900 text-sm">
+                        <h4 className="font-bold text-slate-900 text-sm hover:text-orange-600">
                           {module.title}
                         </h4>
                         <span className="text-[10px] text-slate-500 font-medium">
@@ -197,13 +197,9 @@ export const CourseDetail = () => {
                         <span className="text-xs text-slate-600 font-medium">
                           {module.topics?.length || 0} Topics
                         </span>
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-slate-400" />
-                        )}
+                        <ChevronRight className="w-4 h-4 text-slate-400" />
                       </div>
-                    </button>
+                    </Link>
 
                     {isExpanded && (
                       <div className="p-4 divide-y divide-slate-100">

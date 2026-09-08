@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Clock, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock, FileText, Loader2, Plus, Pencil } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../../utils/api";
@@ -50,7 +50,10 @@ const ModuleTopics = () => {
             <p className="mt-1 text-xs text-slate-500">{topics.length} {topics.length === 1 ? "topic" : "topics"} in this module</p>
           </div>
         </div>
-        <Link to={`/admin/modules/${id}/edit`} title="Edit module" aria-label="Edit module" className="inline-flex items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 hover:bg-blue-100"><FileText className="h-4 w-4" /></Link>
+        <div className="flex items-center gap-2">
+          <Link to={`/admin/topics/add?moduleId=${id}${module.courseId?._id ? `&courseId=${module.courseId._id}` : ""}`} title="Add topic" aria-label="Add topic" className="inline-flex items-center justify-center rounded-xl bg-emerald-50 p-3 text-emerald-600 hover:bg-emerald-100"><Plus className="h-4 w-4" /></Link>
+          <Link to={`/admin/modules/${id}/edit`} title="Edit module" aria-label="Edit module" className="inline-flex items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 hover:bg-blue-100"><Pencil className="h-4 w-4" /></Link>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
