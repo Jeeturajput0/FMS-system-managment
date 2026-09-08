@@ -170,9 +170,7 @@ const FranchiseBatchForm = () => {
             placeholder="Select course and start date"
             className="input"
           />
-          <span className="mt-1 block text-xs text-slate-500">
-            Auto-generated: franchise + course + month + year (example: JBFS0326)
-          </span>
+         
         </label>
         <label>
           <span className="label">Course</span>
