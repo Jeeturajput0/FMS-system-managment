@@ -339,10 +339,11 @@ export const FranchiseCourses = () => {
                       <td className="px-5 py-4 text-right">
                         <Link
                           to={`/courses/${course._id}`}
+                          title="View course"
+                          aria-label="View course"
                           className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-600 transition hover:bg-blue-100"
                         >
                           <Eye size={14} />
-                          View
                         </Link>
                       </td>
                     </tr>

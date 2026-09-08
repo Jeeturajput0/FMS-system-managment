@@ -114,7 +114,7 @@ export const FeesOverview = () => {
                 <td className="px-4 py-3 font-bold text-emerald-700">₹{fee.totalPaid?.toLocaleString('en-IN')}</td>
                 <td className="px-4 py-3 font-bold text-amber-700">₹{fee.totalPending?.toLocaleString('en-IN')}</td>
                 <td className="px-4 py-3 font-bold">{fee.status}</td>
-                <td className="px-4 py-3 text-right"><button type="button" onClick={() => setSelectedFee(fee)} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-50"><Eye className="h-3.5 w-3.5" /> View</button></td>
+                <td className="px-4 py-3 text-right"><button type="button" onClick={() => setSelectedFee(fee)} title="View fee details" aria-label="View fee details" className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-600 hover:bg-emerald-100"><Eye className="h-3.5 w-3.5" /></button></td>
               </tr>)}
             </tbody>
           </table>

@@ -202,12 +202,16 @@ export const FranchiseBatches = () => {
                       <div className="flex items-center gap-2">
                         <Link
                           to={`/franchise/batches/${batch._id}`}
+                          title="View batch"
+                          aria-label="View batch"
                           className="rounded-lg bg-slate-100 p-2 text-slate-600"
                         >
                           <Eye size={15} />
                         </Link>
                         <Link
                           to={`/franchise/batches/${batch._id}/edit`}
+                          title="Edit batch"
+                          aria-label="Edit batch"
                           className="rounded-lg bg-blue-50 p-2 text-blue-600"
                         >
                           <Edit size={15} />
@@ -220,6 +224,8 @@ export const FranchiseBatches = () => {
                         </button>
                         <button
                           onClick={() => removeBatch(batch)}
+                          title="Delete batch"
+                          aria-label="Delete batch"
                           className="rounded-lg bg-red-50 p-2 text-red-600"
                         >
                           <Trash2 size={15} />

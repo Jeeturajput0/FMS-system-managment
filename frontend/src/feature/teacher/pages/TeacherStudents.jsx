@@ -71,9 +71,11 @@ const TeacherStudents = () => {
                   <td className="p-4">
                     <button
                       onClick={() => setSelected(s)}
+                      title="View student"
+                      aria-label="View student"
                       className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700"
                     >
-                      <Eye size={14} /> View
+                      <Eye size={14} />
                     </button>
                   </td>
                 </tr>

@@ -14,6 +14,9 @@ import {
   Award,
   Layers,
   Clock,
+  Delete,
+  DeleteIcon,
+  LucideDelete,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch, apiUpload, assetUrl } from "../../../utils/api";
@@ -166,7 +169,7 @@ export const CourseCatalog = () => {
           className="px-4 py-2.5 rounded-xl bg-linear-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Create New Course</span>
+          <span> Create New Course</span>
         </button>
       </div>
 
@@ -287,16 +290,20 @@ export const CourseCatalog = () => {
                     <td className="py-4 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          to={isAdminView ? `/admin/courses/${c.id}` : `/courses/${c.id}`}
-                          className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors font-bold text-xs flex items-center gap-1"
+                          to={isAdminView ? `/admin/courses/${c._id || c.id}` : `/courses/${c._id || c.id}`}
+                          title="View course"
+                          aria-label="View course"
+                          className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors font-bold text-xs flex items-center gap-1"
                         >
-                          <Eye className="w-3.5 h-3.5" /> View
+                          <Eye className="w-3.5 h-3.5" />
                         </Link>
                         <Link
                           to={`/admin/courses/${c.id}/edit`}
-                          className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors font-bold text-xs flex items-center gap-1"
+                          title="Edit course"
+                          aria-label="Edit course"
+                          className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-bold text-xs flex items-center gap-1"
                         >
-                          <Edit className="w-3.5 h-3.5" /> Edit
+                          <Edit className="w-3.5 h-3.5" />
                         </Link>
                         <button
                           type="button"
@@ -305,9 +312,11 @@ export const CourseCatalog = () => {
                             await apiFetch(`/api/courses/${c.id}`, { method: 'DELETE' });
                             replaceCourses(courses.filter((course) => course.id !== c.id));
                           }}
-                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-bold text-xs flex items-center gap-1"
+                          title="Delete course"
+                          aria-label="Delete course"
+                          className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors font-bold text-xs flex items-center gap-1"
                         >
-                          <X className="w-3.5 h-3.5" /> Delete
+                          <Delete className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>

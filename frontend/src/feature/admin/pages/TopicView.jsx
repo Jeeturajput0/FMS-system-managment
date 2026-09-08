@@ -64,8 +64,8 @@ export default function TopicView() {
               </div>
             </div>
             <div className="flex gap-2 lg:self-start">
-              <button type="button" onClick={() => navigate(`/admin/topics/${topicId}/edit`)} className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 hover:bg-orange-50"><Pencil className="h-3.5 w-3.5" /> Edit Topic</button>
-              <button type="button" onClick={handleDelete} className="inline-flex items-center gap-1.5 rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-200 hover:bg-red-500/20"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
+              <button type="button" onClick={() => navigate(`/admin/topics/${topicId}/edit`)} title="Edit topic" aria-label="Edit topic" className="inline-flex items-center rounded-xl bg-blue-50 p-3 text-blue-600 hover:bg-blue-100"><Pencil className="h-4 w-4" /></button>
+              <button type="button" onClick={handleDelete} title="Delete topic" aria-label="Delete topic" className="inline-flex items-center rounded-xl bg-red-50 p-3 text-red-500 hover:bg-red-100"><Trash2 className="h-4 w-4" /></button>
             </div>
           </div>
         </div>

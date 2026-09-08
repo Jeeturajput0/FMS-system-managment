@@ -163,6 +163,7 @@ export const FranchiseStudents = () => {
                       <div className="flex justify-end gap-2">
                         <Link
                           title="View"
+                          aria-label="View student"
                           to={`/franchise/students/${student._id}`}
                           className="rounded-lg bg-slate-100 p-2 text-slate-600"
                         >
@@ -170,6 +171,7 @@ export const FranchiseStudents = () => {
                         </Link>
                         <Link
                           title="Edit"
+                          aria-label="Edit student"
                           to={`/franchise/students/${student._id}/edit`}
                           className="rounded-lg bg-blue-50 p-2 text-blue-600"
                         >
@@ -177,6 +179,7 @@ export const FranchiseStudents = () => {
                         </Link>
                         <button
                           title="Deactivate"
+                          aria-label="Delete student"
                           onClick={() => removeStudent(student)}
                           className="rounded-lg bg-red-50 p-2 text-red-600"
                         >
