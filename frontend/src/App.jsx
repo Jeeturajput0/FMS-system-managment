@@ -29,6 +29,7 @@ import AdminManagementPage from "./feature/admin/pages/AdminManagementPage";
 import { CourseAdd } from "./feature/admin/pages/CourseAdd";
 import CourseModules from "./feature/admin/pages/CourseModule";
 import ModuleAdd from "./feature/admin/pages/ModuleAdd";
+import ModuleTopics from "./feature/admin/pages/ModuleTopics";
 import TopicView from "./feature/admin/pages/TopicView";
 import TopicAdd from "./feature/admin/pages/TopicAdd";
 
@@ -237,17 +238,21 @@ function App() {
 
           <Route path="modules/:id" element={<ModuleAdd />} />
 
+          <Route path="modules/:id/topics" element={<ModuleTopics />} />
+
           <Route path="modules/:id/edit" element={<ModuleAdd />} />
 
           <Route path="topics/:topicId" element={<TopicView />} />
 
           <Route path="topics/:topicId/edit" element={<TopicAdd />} />
 
-          <Route path="topics" element={<TopicAdd />} />
+          <Route path="topics/add" element={<TopicAdd />} />
 
-          <Route path="courses/:id/edit" element={<CourseAdd />} />
+          <Route path="courses/edit/:id" element={<CourseAdd />} />
 
           <Route path="courses/:id" element={<CourseDetail />} />
+
+          <Route path="course/:id" element={<CourseDetail />} />
 
           {/* ----------------------------------------------------
               STUDENTS

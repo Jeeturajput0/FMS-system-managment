@@ -561,111 +561,57 @@ export const FranchiseBatches = () => {
                           </div>
                         </td>
 
-                        {/* STATUS */}
-                        <td className="px-5 py-4">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold ${statusStyle.wrapper}`}
-                          >
-                            <span
-                              className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`}
-                            />
-
-                            {status}
-                          </span>
-                        </td>
-
-                        {/* ACTIONS */}
-                        <td className="px-5 py-4">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {/* VIEW */}
-                            <Link
-                              title="View Batch"
-                              to={`/franchise/batches/${batch._id}`}
-                              className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-blue-100 hover:text-blue-600"
-                            >
-                              <Eye size={15} />
-                            </Link>
-
-                            {/* EDIT */}
-                            <Link
-                              title="Edit Batch"
-                              to={`/franchise/batches/${batch._id}/edit`}
-                              className="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-blue-600 transition hover:bg-blue-100"
-                            >
-                              <Edit size={15} />
-                            </Link>
-
-                            {/* ADD STUDENT */}
-                            <button
-                              type="button"
-                              title="Add Student"
-                              onClick={() =>
-                                setSelectedBatch(batch)
-                              }
-                              className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-50 text-indigo-600 transition hover:bg-indigo-100"
-                            >
-                              <Plus size={15} />
-                            </button>
-
-                            {/* DELETE */}
-                            <button
-                              type="button"
-                              title="Delete Batch"
-                              onClick={() =>
-                                removeBatch(batch)
-                              }
-                              className="grid h-8 w-8 place-items-center rounded-lg bg-red-50 text-red-500 transition hover:bg-red-100 hover:text-red-600"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    {/* Status */}
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                          batch.status === "ACTIVE"
+                            ? "bg-green-100 text-green-700"
+                            : batch.status === "COMPLETED"
+                              ? "bg-blue-100 text-blue-700"
+                              : batch.status === "CANCELLED"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {batch.status || "ACTIVE"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/franchise/batches/${batch._id}`}
+                          className="rounded-lg bg-slate-100 p-2 text-slate-600"
+                        >
+                          <Eye size={15} />
+                        </Link>
+                        <Link
+                          to={`/franchise/batches/${batch._id}/edit`}
+                          className="rounded-lg bg-blue-50 p-2 text-blue-600"
+                        >
+                          <Edit size={15} />
+                        </Link>
+                        <button
+                          onClick={() => setSelectedBatch(batch)}
+                          className="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700"
+                        >
+                          Add student
+                        </button>
+                        <button
+                          onClick={() => removeBatch(batch)}
+                          className="rounded-lg bg-red-50 p-2 text-red-600"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-
-      {/* ==================================================
-          NO SEARCH RESULT
-      ================================================== */}
-      {!loading &&
-        !error &&
-        batches.length > 0 &&
-        filteredBatches.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-slate-100">
-              <Search
-                size={24}
-                className="text-slate-400"
-              />
-            </div>
-
-            <h3 className="mt-4 font-bold text-slate-800">
-              No batches found
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Try searching with a different batch, course or
-              teacher name.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              className="mt-4 rounded-lg bg-blue-50 px-4 py-2 text-sm font-bold text-blue-600 hover:bg-blue-100"
-            >
-              Clear Search
-            </button>
-          </div>
-        )}
-
-      {/* ==================================================
-          ADD STUDENT MODAL
-      ================================================== */}
+        </div>
+      )}
       {selectedBatch && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"

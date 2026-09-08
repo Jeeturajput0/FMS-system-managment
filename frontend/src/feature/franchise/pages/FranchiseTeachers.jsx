@@ -196,6 +196,8 @@ export const FranchiseTeachers = () => {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => setViewing(t)}
+                        title="View teacher"
+                        aria-label="View teacher"
                         className="rounded-lg bg-slate-100 p-2 text-slate-600"
                       >
                         <Eye size={15} />
@@ -214,12 +216,16 @@ export const FranchiseTeachers = () => {
                           });
                           setShowForm(true);
                         }}
+                        title="Edit teacher"
+                        aria-label="Edit teacher"
                         className="rounded-lg bg-blue-50 p-2 text-blue-600"
                       >
                         <Edit size={15} />
                       </button>
                       <button
                         onClick={() => remove(t)}
+                        title="Delete teacher"
+                        aria-label="Delete teacher"
                         className="rounded-lg bg-red-50 p-2 text-red-600"
                       >
                         <Trash2 size={15} />

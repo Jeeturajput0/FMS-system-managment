@@ -81,17 +81,7 @@ export const TopHeader = ({ onMenuClick }) => {
 
         <div>
           {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-0.5 font-medium">
-            <Link to="/admin/dashboard" className="hover:text-orange-600 transition-colors">
-              AI Scholars
-            </Link>
-            {pathParts.map((part, index) => (
-              <React.Fragment key={index}>
-                <ChevronRight className="w-3 h-3 text-slate-400" />
-                <span className="capitalize text-slate-700 font-semibold">{part}</span>
-              </React.Fragment>
-            ))}
-          </div>
+      
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">{currentTitle}</h1>
         </div>
       </div>

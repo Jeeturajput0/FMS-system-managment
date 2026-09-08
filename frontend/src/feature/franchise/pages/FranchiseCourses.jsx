@@ -339,24 +339,25 @@ export const FranchiseCourses = () => {
                   </span>
                 </td>
 
-                {/* Action */}
-                <td className="px-4 py-3.5 text-right">
-                  <Link
-                    to={`/courses/${course._id}`}
-                    className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-600 transition hover:bg-blue-100"
-                  >
-                    <Eye size={13} />
-                    View
-                  </Link>
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
+                      {/* Action */}
+                      <td className="px-5 py-4 text-right">
+                        <Link
+                          to={`/courses/${course._id}`}
+                          title="View course"
+                          aria-label="View course"
+                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-600 transition hover:bg-blue-100"
+                        >
+                          <Eye size={14} />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

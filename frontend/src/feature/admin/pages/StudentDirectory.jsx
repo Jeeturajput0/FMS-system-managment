@@ -1185,15 +1185,17 @@ export const StudentDirectory = () => {
                         <div className="inline-flex items-center gap-1">
                           <Link
                             to={`/admin/students/${student.id}`}
-                            className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors font-bold text-xs inline-flex items-center gap-1"
+                            title="View student"
+                            aria-label="View student"
+                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors font-bold text-xs inline-flex items-center gap-1"
                           >
-                            <Eye className="w-3.5 h-3.5" /> View
+                            <Eye className="w-3.5 h-3.5" />
                           </Link>
-                          <button onClick={() => openEditModal(student)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 inline-flex items-center gap-1" title="Edit">
-                            <Edit className="w-3.5 h-3.5" /> Edit
+                          <button onClick={() => openEditModal(student)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 inline-flex items-center gap-1" title="Edit student">
+                            <Edit className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => deleteStudent(student)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 inline-flex items-center gap-1" title="Deactivate">
-                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          <button onClick={() => deleteStudent(student)} className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 inline-flex items-center gap-1" title="Delete student">
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
