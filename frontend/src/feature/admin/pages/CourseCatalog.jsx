@@ -298,7 +298,7 @@ export const CourseCatalog = () => {
                           <Eye className="w-3.5 h-3.5" />
                         </Link>
                         <Link
-                          to={`/admin/courses/${c.id}/edit`}
+                          to={`/admin/courses/edit/${c._id || c.id}`}
                           title="Edit course"
                           aria-label="Edit course"
                           className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-bold text-xs flex items-center gap-1"
@@ -309,8 +309,9 @@ export const CourseCatalog = () => {
                           type="button"
                           onClick={async () => {
                             if (!window.confirm(`Delete ${c.title}?`)) return;
-                            await apiFetch(`/api/courses/${c.id}`, { method: 'DELETE' });
-                            replaceCourses(courses.filter((course) => course.id !== c.id));
+                            const courseId = c._id || c.id;
+                            await apiFetch(`/api/courses/${courseId}`, { method: 'DELETE' });
+                            replaceCourses(courses.filter((course) => (course._id || course.id) !== courseId));
                           }}
                           title="Delete course"
                           aria-label="Delete course"
