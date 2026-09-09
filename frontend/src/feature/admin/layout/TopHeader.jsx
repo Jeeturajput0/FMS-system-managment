@@ -103,7 +103,7 @@ export const TopHeader = ({ onMenuClick }) => {
         {/* Notifications Dropdown */}
         <div className="relative" ref={notifRef}>
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={() => navigate('/admin/notifications')}
             className="relative p-2.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 border border-slate-200 text-slate-700 transition-colors"
           >
             <Bell className="w-5 h-5" />

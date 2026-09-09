@@ -6,6 +6,7 @@ const StudentDataContext = createContext(null);
 export const StudentDataProvider = ({ children }) => {
   const [data, setData] = useState({
     dashboard: null,
+    certificate: null,
     courses: [],
     fees: [],
     user: null,
@@ -18,17 +19,19 @@ export const StudentDataProvider = ({ children }) => {
 
     const load = async () => {
       try {
-        const [dashboardResponse, coursesResponse, feesResponse, userResponse] =
+        const [dashboardResponse, coursesResponse, feesResponse, userResponse, certificateResponse] =
           await Promise.all([
             apiFetch("/api/portal/dashboard"),
             apiFetch("/api/portal/courses"),
             apiFetch("/api/portal/fees"),
             apiFetch("/api/auth/me"),
+            apiFetch("/api/certificates/me"),
           ]);
 
         if (!cancelled) {
           setData({
             dashboard: dashboardResponse.data || null,
+            certificate: certificateResponse.data || null,
             courses: coursesResponse.data || [],
             fees: feesResponse.data || [],
             user: userResponse.user || null,

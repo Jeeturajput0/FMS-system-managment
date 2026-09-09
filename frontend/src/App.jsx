@@ -23,6 +23,8 @@ import FranchiseForm from "./feature/admin/pages/FranchiseForm";
 
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
 import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
+import AdminReportsPage from "./feature/admin/pages/AdminReportsPage";
+import AdminNotificationsPage from "./feature/admin/pages/AdminNotificationsPage";
 import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
 import AdminManagementPage from "./feature/admin/pages/AdminManagementPage";
 
@@ -262,6 +264,8 @@ function App() {
 
           <Route path="students/:id" element={<StudentDetail />} />
 
+          <Route path="students/:id/certificate" element={<StudentCertificate />} />
+
           {/* ----------------------------------------------------
               FEES
           ---------------------------------------------------- */}
@@ -279,14 +283,14 @@ function App() {
 
           <Route
             path="notifications"
-            element={<AdminPlaceholderPage title="Notifications" />}
+            element={<AdminNotificationsPage />}
           />
 
           <Route path="admins" element={<AdminManagementPage />} />
 
           <Route
             path="reports"
-            element={<AdminPlaceholderPage title="Reports" />}
+            element={<AdminReportsPage />}
           />
 
           <Route path="settings" element={<AdminProfilePage />} />
@@ -370,6 +374,8 @@ function App() {
 
           <Route path="students" element={<TeacherStudents />} />
 
+          <Route path="students/:id/certificate" element={<StudentCertificate />} />
+
           <Route path="courses" element={<TeacherCourses />} />
 
           <Route path="batches" element={<TeacherBatches />} />
@@ -402,6 +408,8 @@ function App() {
           <Route path="students" element={<FranchiseStudents />} />
 
           <Route path="students/:id" element={<FranchiseStudents />} />
+
+          <Route path="students/:id/certificate" element={<StudentCertificate />} />
 
           <Route path="students/add" element={<FranchiseStudentAdd />} />
 

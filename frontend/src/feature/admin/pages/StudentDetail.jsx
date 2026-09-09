@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Edit, Loader2 } from "lucide-react";
+import { ArrowLeft, Award, Edit, Loader2 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
@@ -263,6 +263,13 @@ export const StudentDetail = () => {
           >
             <Edit size={15} />
             Edit
+          </Link>
+
+          <Link
+            to={`${location.pathname}/certificate`}
+            className="inline-flex items-center gap-2 rounded-xl border border-orange-200 px-4 py-2 text-sm font-bold text-orange-600"
+          >
+            <Award size={15} /> Certificate
           </Link>
 
         </div>

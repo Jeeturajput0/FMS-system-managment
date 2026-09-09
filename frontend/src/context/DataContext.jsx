@@ -61,11 +61,14 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const loadBackendData = async () => {
       try {
-        const [courseResponse, studentResponse, feeResponse, coachingResponse] = await Promise.all([
+        const currentUser = JSON.parse(localStorage.getItem('ai_scholars_user') || 'null');
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser?.role);
+        const [courseResponse, studentResponse, feeResponse, coachingResponse, notificationResponse] = await Promise.all([
           apiFetch('/api/courses'),
           apiFetch('/api/students?limit=1000'),
           apiFetch('/api/fees'),
           apiFetch('/api/coaching'),
+          isAdmin ? apiFetch('/api/admin/notifications') : Promise.resolve({ data: [] }),
         ]);
         setCourses((courseResponse.data || []).map((course) => ({
           ...course,
@@ -79,6 +82,7 @@ export const DataProvider = ({ children }) => {
         setFees(feeResponse.data || []);
         setPayments(feeResponse.payments || []);
         setFranchises((coachingResponse.coachings || []).map(normalizeCoaching));
+        setNotifications(notificationResponse.data || []);
       } catch (error) {
         console.warn('Student and fee API unavailable, using local data.', error.message);
       }
@@ -233,13 +237,32 @@ export const DataProvider = ({ children }) => {
   };
 
   // Notification Actions
-  const markNotificationRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markNotificationRead = async (id) => {
+    const response = await apiFetch(`/api/admin/notifications/${id}/read`, { method: 'PATCH' });
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, ...(response.data || {}), read: true } : n));
   };
 
-  const markAllNotificationsRead = () => {
+  const markAllNotificationsRead = async () => {
+    await apiFetch('/api/admin/notifications/read-all', { method: 'PATCH' });
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     showToast("All notifications marked as read");
+  };
+
+  const createNotification = async (payload) => {
+    const response = await apiFetch('/api/admin/notifications', { method: 'POST', body: JSON.stringify(payload) });
+    setNotifications((prev) => [response.data, ...prev]);
+    return response.data;
+  };
+
+  const updateNotification = async (id, payload) => {
+    const response = await apiFetch(`/api/admin/notifications/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    setNotifications((prev) => prev.map((item) => item.id === id ? response.data : item));
+    return response.data;
+  };
+
+  const deleteNotification = async (id) => {
+    await apiFetch(`/api/admin/notifications/${id}`, { method: 'DELETE' });
+    setNotifications((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
@@ -267,7 +290,10 @@ export const DataProvider = ({ children }) => {
         addAdmin,
         issueCertificate,
         markNotificationRead,
-        markAllNotificationsRead
+        markAllNotificationsRead,
+        createNotification,
+        updateNotification,
+        deleteNotification
       }}
     >
       {children}
