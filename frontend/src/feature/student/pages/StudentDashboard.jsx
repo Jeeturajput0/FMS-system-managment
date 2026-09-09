@@ -10,7 +10,7 @@ import {
 import { useStudentData } from "../context/StudentDataContext";
 
 const StudentDashboard = () => {
-  const { dashboard, loading, error } = useStudentData();
+  const { dashboard, certificate, loading, error } = useStudentData();
   const student = dashboard?.recent?.[0];
   const progress = Number(student?.courseProgress || 0);
   const attendance = Number(dashboard?.attendance || student?.attendancePercentage || 0);
@@ -59,7 +59,7 @@ const StudentDashboard = () => {
         <StatCard
           icon={<Award />}
           title="Certificate"
-          value={student?.certificateEligible ? "Eligible" : "Pending"}
+          value={certificate?.certificate ? "Ready" : certificate?.eligibility?.eligible ? "Eligible" : "Pending"}
         />
 
       </div>

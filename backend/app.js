@@ -14,6 +14,7 @@ import topicRoutes from "./routes/topic.routes.js";
 import router from "./routes/coaching.routes.js";
 import portalRoutes from "./routes/portal.routes.js";
 import batchRoutes from "./routes/batchRoutes.js"
+import certificateRoutes from "./routes/certificate.routes.js";
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ app.use("/api/coaching", router);
 app.use("/api/topics", topicRoutes);
 app.use("/api/portal", portalRoutes);
 app.use("/api/batches", batchRoutes);
+app.use("/api/certificates", certificateRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Loader2, Search, Users } from "lucide-react";
+import { Award, Eye, Loader2, Search, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 
 const TeacherStudents = () => {
@@ -69,14 +70,10 @@ const TeacherStudents = () => {
                   <td className="p-4">{s.batchId?.name || "-"}</td>
                   <td className="p-4">{s.attendancePercentage || 0}%</td>
                   <td className="p-4">
-                    <button
-                      onClick={() => setSelected(s)}
-                      title="View student"
-                      aria-label="View student"
-                      className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700"
-                    >
-                      <Eye size={14} />
-                    </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setSelected(s)} title="View student" aria-label="View student" className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700"><Eye size={14} /></button>
+                        <Link to={`/teacher/students/${s._id}/certificate`} title="View certificate" aria-label="View certificate" className="inline-flex items-center gap-1 rounded-lg bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700"><Award size={14} /></Link>
+                      </div>
                   </td>
                 </tr>
               ))}
