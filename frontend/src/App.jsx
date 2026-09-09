@@ -52,12 +52,14 @@ import { PortalLoginPage } from "./feature/portal/PortalLoginPage";
 // =========================
 import { FranchiseLayout } from "./feature/franchise/layout/FranchiseLayout";
 import { FranchiseTeachers } from "./feature/franchise/pages/FranchiseTeachers";
+import FranchiseTeacherView from "./feature/franchise/pages/FranchiseTeacherView";
 import { FranchiseStudents } from "./feature/franchise/pages/FranchiseStudents";
 import { FranchiseDashboard } from "./feature/franchise/pages/FranchiseDashboard";
 import { FranchiseCourses } from "./feature/franchise/pages/FranchiseCourses";
 import { FranchiseBatches } from "./feature/franchise/pages/FranchiseBatches";
 import FranchiseBatchStudents from "./feature/franchise/pages/FranchiseBatchStudents";
 import FranchiseBatchForm from "./feature/franchise/pages/FranchiseBatchForm";
+import FranchiseBatchView from "./feature/franchise/pages/FranchiseBatchView";
 import FranchiseAttendance from "./feature/franchise/pages/FranchiseAttendance";
 import FranchiseFees from "./feature/franchise/pages/FranchiseFees";
 import FranchiseSchedule from "./feature/franchise/pages/FranchiseSchedule";
@@ -423,6 +425,7 @@ function App() {
           {/* TEACHERS */}
 
           <Route path="teachers" element={<FranchiseTeachers />} />
+          <Route path="teachers/:id" element={<FranchiseTeacherView />} />
 
           {/* COURSES */}
 
@@ -436,7 +439,7 @@ function App() {
 
           <Route path="batches/add" element={<FranchiseBatchForm />} />
 
-          <Route path="batches/:id" element={<FranchiseBatches />} />
+          <Route path="batches/:id" element={<FranchiseBatchView />} />
 
           <Route path="batches/:id/edit" element={<FranchiseBatchForm />} />
 

@@ -16,6 +16,13 @@ const coachingSchema = new mongoose.Schema(
       trim: true,
     },
 
+    franchiseId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
+
     ownerName: {
       type: String,
       required: true,

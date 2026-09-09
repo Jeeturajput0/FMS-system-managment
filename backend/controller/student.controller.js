@@ -6,6 +6,7 @@ import Course from "../model/course.model.js";
 import Coaching from "../model/coaching.model.js";
 import Fee from "../model/fee.model.js";
 import Batch from "../model/batches.model.js";
+import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 
 const franchiseRoles = ["FRANCHISE", "FRANCHISE_ADMIN"];
 
@@ -31,8 +32,14 @@ const isOutsideFranchise = async (student, req) => {
 
 const getNextStudentId = async (prefix) => {
   let sequence = 1;
-  while (await Student.exists({ studentId: `${prefix}${String(sequence).padStart(4, "0")}` })) sequence += 1;
-  if (sequence > 9999) throw new Error("Student ID limit reached for this franchise and course");
+  while (
+    await Student.exists({
+      studentId: `${prefix}${String(sequence).padStart(4, "0")}`,
+    })
+  )
+    sequence += 1;
+  if (sequence > 9999)
+    throw new Error("Student ID limit reached for this franchise and course");
   return `${prefix}${String(sequence).padStart(4, "0")}`;
 };
 
@@ -43,13 +50,18 @@ const getCourseCode = (course) => {
   const normalized = title.toLowerCase();
 
   if (normalized.includes("full") && normalized.includes("stack")) return "FS";
-  if (normalized.includes("data") && normalized.includes("analysis")) return "DS";
+  if (normalized.includes("data") && normalized.includes("analysis"))
+    return "DS";
 
   const words = title.split(/\s+/).filter(Boolean);
-  return (words.length > 1
-    ? words.map((word) => word[0]).join("")
-    : title.slice(0, 2)
-  ).toUpperCase().slice(0, 2) || "CO";
+  return (
+    (words.length > 1
+      ? words.map((word) => word[0]).join("")
+      : title.slice(0, 2)
+    )
+      .toUpperCase()
+      .slice(0, 2) || "CO"
+  );
 };
 
 // ======================================================
@@ -146,7 +158,7 @@ export const createStudent = async (req, res) => {
 
     const [course, coaching] = await Promise.all([
       Course.findById(courseId),
-      Coaching.findById(resolvedCoachingId).select("code"),
+      Coaching.findById(resolvedCoachingId).select("code name"),
     ]);
 
     if (!course) {
@@ -163,10 +175,7 @@ export const createStudent = async (req, res) => {
       });
     }
 
-    const franchiseCode = String(coaching.code)
-      .replace(/[^a-zA-Z0-9]/g, "")
-      .toUpperCase();
-    const studentIdPrefix = `${franchiseCode}${getCourseCode(course)}`;
+    const studentIdPrefix = getCenterIdPrefix(coaching.code);
 
     // ==================================================
     // DUPLICATE MOBILE IN SAME COACHING
@@ -231,58 +240,65 @@ export const createStudent = async (req, res) => {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       try {
         student = await Student.create({
-      coachingId: resolvedCoachingId,
+          coachingId: resolvedCoachingId,
 
-      // Generate the ID here and check the unique index. The old model hook
-      // used countDocuments() alone, which can reuse an existing ID when a
-      // record was deleted or when two requests arrive together.
-      studentId: await getNextStudentId(studentIdPrefix),
+          // Generate the ID here and check the unique index. The old model hook
+          // used countDocuments() alone, which can reuse an existing ID when a
+          // record was deleted or when two requests arrive together.
+          studentId: await generateUniqueAutoGenId({
+            model: Student,
+            field: "studentId",
+            prefix: studentIdPrefix,
+            type: "S",
+        filter: { coachingId: resolvedCoachingId },
+        prefixIncludesDate: true,
+          }),
 
-      name: name.trim(),
+          name: name.trim(),
 
-      fatherName: fatherName?.trim() || "",
+          fatherName: fatherName?.trim() || "",
 
-      motherName: motherName?.trim() || "",
+          motherName: motherName?.trim() || "",
 
-      mobile: mobile.trim(),
+          mobile: mobile.trim(),
 
-      email: email?.trim().toLowerCase() || "",
+          email: email?.trim().toLowerCase() || "",
 
-      dob: dob || null,
+          dob: dob || null,
 
-      gender: gender || "Other",
+          gender: gender || "Other",
 
-      address: address?.trim() || "",
+          address: address?.trim() || "",
 
-      city: city?.trim() || "",
+          city: city?.trim() || "",
 
-      state: state?.trim() || "",
+          state: state?.trim() || "",
 
-      pincode: pincode?.trim() || "",
+          pincode: pincode?.trim() || "",
 
-      photo: photo || "",
+          photo: photo || "",
 
-      courseId,
+          courseId,
 
-      batchId: batchId || null,
+          batchId: batchId || null,
 
-      joiningDate: joiningDate || new Date(),
+          joiningDate: joiningDate || new Date(),
 
-      enrollmentDate: new Date(),
+          enrollmentDate: new Date(),
 
-      registrationFee: finalRegistrationFee,
+          registrationFee: finalRegistrationFee,
 
-      courseFee: finalCourseFee,
+          courseFee: finalCourseFee,
 
-      certificateFee: finalCertificateFee,
+          certificateFee: finalCertificateFee,
 
-      totalPaid: 0,
+          totalPaid: 0,
 
-      totalPending: totalFee,
+          totalPending: totalFee,
 
-      status: status || "registered",
+          status: status || "registered",
 
-      createdBy: req.user._id,
+          createdBy: req.user._id,
         });
         break;
       } catch (createError) {
@@ -490,13 +506,21 @@ export const getStudents = async (req, res) => {
       .filter((student) => !student.batchId)
       .map((student) => student._id);
     if (missingBatchStudentIds.length) {
-      const linkedBatches = await Batch.find({ students: { $in: missingBatchStudentIds } })
-        .select("name code course teacher status startDate endDate days room students")
+      const linkedBatches = await Batch.find({
+        students: { $in: missingBatchStudentIds },
+      })
+        .select(
+          "name code course teacher status startDate endDate days room students",
+        )
         .populate("teacher", "name email isActive")
         .populate("course", "title name")
         .lean();
       const batchByStudent = new Map();
-      linkedBatches.forEach((batch) => batch.students.forEach((studentId) => batchByStudent.set(String(studentId), batch)));
+      linkedBatches.forEach((batch) =>
+        batch.students.forEach((studentId) =>
+          batchByStudent.set(String(studentId), batch),
+        ),
+      );
       students.forEach((student) => {
         const batch = batchByStudent.get(String(student._id));
         if (batch) student.batchId = batch;
@@ -573,7 +597,12 @@ export const getStudentById = async (req, res) => {
     }
 
     if (await isOutsideFranchise(student, req)) {
-      return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Student does not belong to your franchise",
+        });
     }
 
     return res.status(200).json({
@@ -622,7 +651,12 @@ export const updateStudent = async (req, res) => {
     }
 
     if (await isOutsideFranchise(student, req)) {
-      return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Student does not belong to your franchise",
+        });
     }
 
     const {
@@ -852,7 +886,12 @@ export const deleteStudent = async (req, res) => {
     }
 
     if (await isOutsideFranchise(student, req)) {
-      return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Student does not belong to your franchise",
+        });
     }
 
     // A delete action must remove the record for franchise users as well.

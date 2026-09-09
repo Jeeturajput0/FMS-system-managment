@@ -7,15 +7,15 @@ import User from "../model/user.model.js";
 import Batch from "../model/batches.model.js";
 import Attendance from "../model/attendance.model.js";
 import bcrypt from "bcryptjs";
+import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 
 const coachingFilter = (user) => user.coachingId ? { coachingId: user.coachingId } : {};
 
 const getTeacherBatchIds = async (user) => {
   if (user.role !== "TEACHER" || !mongoose.isValidObjectId(user._id)) return [];
-  const courseIds = await getTeacherCourseIds(user);
   return Batch.find({
-    ...(user.coachingId ? { franchise: user.coachingId } : {}),
-    $or: [{ teacher: user._id }, ...(courseIds.length ? [{ course: { $in: courseIds } }] : [])],
+    ...(user.coachingId ? { coachingId: user.coachingId } : {}),
+    teacher: user._id,
   }).distinct("_id");
 };
 
@@ -60,8 +60,8 @@ export const getPortalDashboard = async (req, res) => {
     const teacherBatchIds = await getTeacherBatchIds(req.user);
     const teacherCourseIds = await getTeacherCourseIds(req.user);
     const isTeacher = req.user.role === "TEACHER";
-    const filter = isTeacher ? { ...coachingFilter(req.user), $or: [{ batchId: { $in: teacherBatchIds } }, ...(teacherCourseIds.length ? [{ courseId: { $in: teacherCourseIds } }] : [])] } : coachingFilter(req.user);
-    const batchFilter = isTeacher ? { _id: { $in: teacherBatchIds } } : (req.user.coachingId ? { franchise: req.user.coachingId } : {});
+    const filter = isTeacher ? { ...coachingFilter(req.user), batchId: { $in: teacherBatchIds } } : coachingFilter(req.user);
+    const batchFilter = isTeacher ? { _id: { $in: teacherBatchIds } } : (req.user.coachingId ? { coachingId: req.user.coachingId } : {});
     const [students, courses, fees, teachers, franchises, activeBatches, recentBatches, recentStudents] = await Promise.all([
       Student.countDocuments(filter),
       isTeacher ? Course.countDocuments({ _id: { $in: teacherCourseIds }, isActive: true }) : Course.countDocuments({ isActive: true }),
@@ -69,7 +69,7 @@ export const getPortalDashboard = async (req, res) => {
       User.countDocuments({ role: "TEACHER", ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}) }),
       Coaching.countDocuments({ status: "active" }),
       Batch.countDocuments({ ...batchFilter, status: "ACTIVE" }),
-      Batch.find(batchFilter).populate("course", "title name").populate("teacher", "name").sort({ createdAt: -1 }).limit(5).lean(),
+      Batch.find(batchFilter).populate("course", "title name").populate("teacher", "name").populate("students", "_id").sort({ createdAt: -1 }).limit(5).lean(),
       Student.find(filter).populate("courseId", "title name").populate("batchId", "name code").sort({ createdAt: -1 }).limit(5).lean(),
     ]);
     const currentStudent = role === "STUDENT"
@@ -78,7 +78,7 @@ export const getPortalDashboard = async (req, res) => {
     const data = role === "STUDENT"
       ? { students: currentStudent ? 1 : 0, courses: currentStudent?.courseId ? 1 : 0, attendance: currentStudent?.attendancePercentage || 0, pendingFees: currentStudent?.totalPending || 0, recent: currentStudent ? [currentStudent] : [] }
       : role === "TEACHER"
-        ? { students, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: 0, pendingReviews: 0, recent: recentStudents }
+        ? { students, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: 0, pendingReviews: 0, recent: recentStudents, recentBatches }
         : { students, teachers, batches: activeBatches, activeBatches, courses, franchises, pendingFees: fees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0), recent: recentStudents, recentBatches, recentStudents, attendanceToday: 0 };
     return res.json({ success: true, role, data });
   } catch (error) {
@@ -90,7 +90,7 @@ export const getPortalStudents = async (req, res) => {
   try {
     const teacherBatchIds = await getTeacherBatchIds(req.user);
     const teacherCourseIds = await getTeacherCourseIds(req.user);
-    const filter = req.user.role === "TEACHER" ? { ...coachingFilter(req.user), $or: [{ batchId: { $in: teacherBatchIds } }, ...(teacherCourseIds.length ? [{ courseId: { $in: teacherCourseIds } }] : [])] } : coachingFilter(req.user);
+    const filter = req.user.role === "TEACHER" ? { ...coachingFilter(req.user), batchId: { $in: teacherBatchIds } } : coachingFilter(req.user);
     const data = await Student.find(filter).populate("courseId", "title").populate("batchId", "name code").populate("coachingId", "name code").sort({ createdAt: -1 }).lean();
     return res.json({ success: true, data });
   } catch (error) {
@@ -159,10 +159,47 @@ export const getPortalTeachers = async (req, res) => {
       role: "TEACHER",
       ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
     };
-    const data = await User.find(filter).select("name email mobile isActive coachingId assignedCourses createdAt").populate("assignedCourses", "title name").sort({ name: 1 }).lean();
+    const data = await User.find(filter).select("name teacherId email mobile isActive coachingId assignedCourses createdAt").populate("assignedCourses", "title name").sort({ name: 1 }).lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load teachers", error: error.message });
+  }
+};
+
+export const getPortalTeacherById = async (req, res) => {
+  try {
+    const teacher = await User.findOne({
+      _id: req.params.id,
+      role: "TEACHER",
+      ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
+    })
+      .select("name teacherId email mobile isActive coachingId assignedCourses createdAt updatedAt")
+      .populate("assignedCourses", "title name description category")
+      .populate("coachingId", "name code email phone address city state")
+      .lean();
+
+    if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+
+    const batches = await Batch.find({
+      teacher: teacher._id,
+      ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
+    })
+      .select("name code course students startDate endDate startTime endTime days room status maxStudents")
+      .populate("course", "title name")
+      .populate("students", "name studentId mobile status")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        ...teacher,
+        batches,
+        totalStudents: batches.reduce((total, batch) => total + (batch.students?.length || 0), 0),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to load teacher profile", error: error.message });
   }
 };
 
@@ -184,8 +221,18 @@ export const createPortalTeacher = async (req, res) => {
       return res.status(409).json({ success: false, message: "Email is already registered" });
     }
     const validCourseIds = Array.isArray(courseIds) ? courseIds.filter((id) => mongoose.isValidObjectId(id)) : [];
-    const teacher = await User.create({ name: name.trim(), email: email.trim().toLowerCase(), mobile: mobile.trim(), password: await bcrypt.hash(password, 12), role: "TEACHER", coachingId: req.user.coachingId, assignedCourses: validCourseIds });
-    const data = await User.findById(teacher._id).select("name email mobile isActive assignedCourses").populate("assignedCourses", "title name").lean();
+    const coaching = await Coaching.findById(req.user.coachingId).select("code name").lean();
+    if (!coaching) return res.status(400).json({ success: false, message: "Franchise not found" });
+    const teacherId = await generateUniqueAutoGenId({
+      model: User,
+      field: "teacherId",
+      prefix: getCenterIdPrefix(coaching.code),
+      type: "T",
+      filter: { role: "TEACHER", coachingId: req.user.coachingId },
+      prefixIncludesDate: true,
+    });
+    const teacher = await User.create({ name: name.trim(), teacherId, email: email.trim().toLowerCase(), mobile: mobile.trim(), password: await bcrypt.hash(password, 12), role: "TEACHER", coachingId: req.user.coachingId, assignedCourses: validCourseIds });
+    const data = await User.findById(teacher._id).select("name teacherId email mobile isActive assignedCourses").populate("assignedCourses", "title name").lean();
     return res.status(201).json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to create teacher", error: error.message });
@@ -229,7 +276,7 @@ export const getPortalAttendance = async (req, res) => {
     const { batchId, date } = req.query;
     if (!req.user.coachingId || !mongoose.isValidObjectId(batchId) || !date) return res.status(400).json({ success: false, message: "Batch and date are required" });
     const allowedBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
-    const batch = await Batch.findOne({ _id: batchId, franchise: req.user.coachingId, ...(allowedBatchIds ? { _id: { $in: allowedBatchIds } } : {}) }).populate("students", "name studentId").lean();
+    const batch = await Batch.findOne({ _id: batchId, coachingId: req.user.coachingId, ...(allowedBatchIds ? { _id: { $in: allowedBatchIds } } : {}) }).populate("students", "name studentId").lean();
     if (!batch) return res.status(404).json({ success: false, message: "Batch not found" });
     const attendance = await Attendance.findOne({ coachingId: req.user.coachingId, batchId, date: new Date(date) }).lean();
     return res.json({ success: true, data: { batch, attendance } });
@@ -243,7 +290,7 @@ export const savePortalAttendance = async (req, res) => {
     const { batchId, date, records } = req.body;
     if (!req.user.coachingId || !mongoose.isValidObjectId(batchId) || !date || !Array.isArray(records)) return res.status(400).json({ success: false, message: "Batch, date and attendance records are required" });
     const allowedBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
-    const batch = await Batch.findOne({ _id: batchId, franchise: req.user.coachingId, ...(allowedBatchIds ? { _id: { $in: allowedBatchIds } } : {}) }).lean();
+    const batch = await Batch.findOne({ _id: batchId, coachingId: req.user.coachingId, ...(allowedBatchIds ? { _id: { $in: allowedBatchIds } } : {}) }).lean();
     if (!batch) return res.status(404).json({ success: false, message: "Batch not found" });
     const attendance = await Attendance.findOneAndUpdate(
       { coachingId: req.user.coachingId, batchId, date: new Date(date) },

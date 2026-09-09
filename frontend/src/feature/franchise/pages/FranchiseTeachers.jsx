@@ -17,6 +17,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
+import { Link } from "react-router-dom";
 
 const empty = {
   name: "",
@@ -616,17 +617,14 @@ const FranchiseTeachers = () => {
                     {/* Actions */}
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setViewing(teacher)
-                          }
+                        <Link
+                          to={`/franchise/teachers/${teacher._id}`}
                           title="View teacher"
                           aria-label="View teacher"
                           className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800"
                         >
                           <Eye size={14} />
-                        </button>
+                        </Link>
 
                         <button
                           type="button"

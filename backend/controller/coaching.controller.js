@@ -8,6 +8,7 @@ import Attendance from "../model/attendance.model.js";
 import Course from "../model/course.model.js";
 import bcrypt from "bcryptjs";
 import { generateCenterCode, generateUniqueCenterCode, normalizeCenterCode } from "../utils/centerCode.js";
+import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 
 /*
 =========================================
@@ -67,10 +68,18 @@ const createCoaching = async (req, res) => {
     const existingCode = await Coaching.exists({ code: baseCode });
     if (existingCode && centerCodeManuallyEdited) return res.status(409).json({ success: false, message: "Center code already exists. Please choose another code." });
     const centerCode = existingCode ? await generateUniqueCenterCode(Coaching, baseCode) : baseCode;
+    const franchiseId = await generateUniqueAutoGenId({
+      model: Coaching,
+      field: "franchiseId",
+      prefix: getCenterIdPrefix(centerCode),
+      type: "F",
+      prefixIncludesDate: true,
+    });
 
     const coaching = await Coaching.create({
       name,
       code: centerCode,
+      franchiseId,
       ownerName,
       email: normalizedEmail,
       phone,
@@ -441,7 +450,7 @@ const deleteCoaching = async (req, res) => {
       User.deleteMany({ coachingId: coaching._id }),
       Student.deleteMany({ coachingId: coaching._id }),
       Fee.deleteMany({ coachingId: coaching._id }),
-      Batch.deleteMany({ franchise: coaching._id }),
+      Batch.deleteMany({ coachingId: coaching._id }),
       Attendance.deleteMany({ coachingId: coaching._id }),
     ]);
     await Coaching.deleteOne({ _id: coaching._id });

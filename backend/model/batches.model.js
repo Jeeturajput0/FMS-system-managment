@@ -16,13 +16,21 @@ const batchSchema = new mongoose.Schema(
       uppercase: true,
     },
 
+    batchId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      uppercase: true,
+    },
+
     description: {
       type: String,
       trim: true,
       default: "",
     },
 
-    franchise: {
+    coachingId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Coaching",
       required: true,

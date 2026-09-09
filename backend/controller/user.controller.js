@@ -1,4 +1,6 @@
 import bcrypt from "bcryptjs";
+import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
+import { generateCenterCode } from "../utils/centerCode.js";
 import jwt from "jsonwebtoken";
 import User from "../model/user.model.js";
 import Coaching from "../model/coaching.model.js";
@@ -64,9 +66,18 @@ export const registerUser = async (req, res) => {
     });
 
     if (role === "FRANCHISE") {
+      const registeredFranchiseName = franchiseName?.trim() || `${name.trim()} Franchise`;
+      const registeredCenterCode = generateCenterCode(registeredFranchiseName);
       const coaching = await Coaching.create({
-        name: franchiseName?.trim() || `${name.trim()} Franchise`,
-        code: `FR-${Date.now().toString().slice(-6)}`,
+        name: registeredFranchiseName,
+        code: registeredCenterCode,
+        franchiseId: await generateUniqueAutoGenId({
+          model: Coaching,
+          field: "franchiseId",
+          prefix: getCenterIdPrefix(registeredCenterCode),
+          type: "F",
+          prefixIncludesDate: true,
+        }),
         ownerName: name.trim(),
         email: normalizedEmail,
         phone: phone.trim(),

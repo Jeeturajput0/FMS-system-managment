@@ -1,13 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Activity,
   ArrowRight,
   BookOpen,
   CheckCircle2,
-  ClipboardList,
-  Clock3,
-  FileText,
   Layers3,
   Loader2,
   Users,
@@ -219,40 +215,31 @@ const TeacherDashboard = () => {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-orange-100 p-3 text-orange-600">
-              <Activity size={20} />
-            </div>
-
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="font-black text-slate-900">
-                Teaching rhythm
-              </h2>
-
-              <p className="text-xs text-slate-500">
-                Your next useful actions.
-              </p>
+              <h2 className="font-black text-slate-900">My assigned batches</h2>
+              <p className="mt-1 text-xs text-slate-500">Only batches assigned to you.</p>
             </div>
+            <Link to="/teacher/batches" className="text-xs font-bold text-blue-600">View all</Link>
           </div>
 
           <div className="mt-5 space-y-3">
-            <QuickAction
-              to="/teacher/assignments"
-              icon={ClipboardList}
-              label="Review assignments"
-            />
-
-            <QuickAction
-              to="/teacher/exams"
-              icon={FileText}
-              label="Manage exams"
-            />
-
-            <QuickAction
-              to="/teacher/attendance"
-              icon={Clock3}
-              label="Update attendance"
-            />
+            {dashboard?.recentBatches?.length ? dashboard.recentBatches.slice(0, 4).map((batch) => (
+              <Link key={batch._id} to="/teacher/batches" className="block rounded-xl border border-slate-200 p-3 transition hover:border-blue-200 hover:bg-blue-50/40">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-slate-800">{batch.name}</p>
+                    <p className="mt-1 truncate text-xs text-slate-500">{batch.course?.title || batch.course?.name || "Course not assigned"}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">{batch.students?.length || 0} students</span>
+                </div>
+              </Link>
+            )) : (
+              <div className="rounded-xl bg-slate-50 p-6 text-center">
+                <Layers3 className="mx-auto text-slate-300" />
+                <p className="mt-2 text-sm text-slate-500">No batches assigned yet.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

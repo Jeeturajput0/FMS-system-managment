@@ -4,7 +4,7 @@ import User from "../../model/user.model.js";
 import Student from "../../model/student.model.js";
 import Coaching from "../../model/coaching.model.js";
 import Course from "../../model/course.model.js";
-import { generateBatchCode } from "../../utils/batchCode.js";
+import { generateUniqueAutoGenId, getCenterIdPrefix } from "../../utils/index.js";
 
 // ============================================================
 // HELPER
@@ -100,24 +100,19 @@ const createBatch = async (req, res) => {
     }
 
     const [franchiseRecord, courseRecord] = await Promise.all([
-      Coaching.findById(franchise).select("name"),
+      Coaching.findById(franchise).select("name code"),
       Course.findById(course).select("title name"),
     ]);
     if (!franchiseRecord) return res.status(404).json({ success: false, message: "Franchise not found" });
     if (!courseRecord) return res.status(404).json({ success: false, message: "Course not found" });
-    const generatedCode = generateBatchCode({
-      franchiseName: franchiseRecord.name,
-      courseTitle: courseRecord.title || courseRecord.name,
-      startDate,
+    const batchId = await generateUniqueAutoGenId({
+      model: Batch,
+      field: "batchId",
+      prefix: getCenterIdPrefix(franchiseRecord.code),
+      type: "B",
+      filter: { coachingId: franchise },
+      prefixIncludesDate: true,
     });
-
-    let batchCode = generatedCode;
-    let suffix = 2;
-    while (await Batch.exists({ code: batchCode })) {
-      batchCode = `${generatedCode}-${suffix++}`;
-    }
-
-
     const studentList = Array.isArray(students)
       ? [...new Set(students.map(String))]
       : [];
@@ -133,10 +128,11 @@ const createBatch = async (req, res) => {
 
     const batch = await Batch.create({
       name: name.trim(),
-      code: batchCode,
+      code: batchId,
       description: description || "",
+      batchId,
 
-      franchise,
+      coachingId: franchise,
       course,
       teacher: teacher || null,
 
@@ -167,7 +163,7 @@ const createBatch = async (req, res) => {
     }
 
     const populatedBatch = await Batch.findById(batch._id)
-      .populate("franchise", "name email phone")
+      .populate("coachingId", "name email phone")
       .populate("course", "name title")
       .populate("teacher", "name email")
       .populate("students", "name email");
@@ -236,7 +232,7 @@ const getAllBatches = async (req, res) => {
         });
       }
 
-      filter.franchise = franchise;
+      filter.coachingId = franchise;
     }
 
     if (course) {
@@ -267,7 +263,7 @@ const getAllBatches = async (req, res) => {
 
     const [batches, total] = await Promise.all([
       Batch.find(filter)
-        .populate("franchise", "name email phone")
+        .populate("coachingId", "name email phone")
         .populate("course", "name title")
         .populate("teacher", "name email")
         .populate("students", "name email")
@@ -343,7 +339,7 @@ const getFranchiseBatches = async (req, res) => {
     const { search, status, course, teacher, page = 1, limit = 20 } = req.query;
 
     const filter = {
-      franchise: franchiseId,
+      coachingId: franchiseId,
     };
 
     if (search) {
@@ -402,7 +398,7 @@ const getFranchiseBatches = async (req, res) => {
 
     const [batches, total] = await Promise.all([
       Batch.find(filter)
-        .populate("franchise", "name email phone")
+        .populate("coachingId", "name email phone")
         .populate("course", "name title")
         .populate("teacher", "name email")
         .populate("students", "name email")
@@ -451,7 +447,7 @@ const getBatchById = async (req, res) => {
     }
 
     const batch = await Batch.findById(id)
-      .populate("franchise", "name email phone")
+      .populate("coachingId", "name email phone")
       .populate("course", "name title")
       .populate("teacher", "name email")
       .populate("students", "name email mobile studentId status courseId");
@@ -550,7 +546,7 @@ const updateBatch = async (req, res) => {
     }
 
     if (franchise !== undefined) {
-      batch.franchise = franchise;
+      batch.coachingId = franchise;
     }
 
     if (course !== undefined) {
@@ -626,28 +622,30 @@ const updateBatch = async (req, res) => {
     }
 
     const [franchiseRecord, courseRecord] = await Promise.all([
-      Coaching.findById(batch.franchise).select("name"),
+      Coaching.findById(batch.coachingId).select("name code"),
       Course.findById(batch.course).select("title name"),
     ]);
     if (!franchiseRecord) return res.status(404).json({ success: false, message: "Franchise not found" });
     if (!courseRecord) return res.status(404).json({ success: false, message: "Course not found" });
 
-    const generatedCode = generateBatchCode({
-      franchiseName: franchiseRecord.name,
-      courseTitle: courseRecord.title || courseRecord.name,
-      startDate: batch.startDate,
-    });
-    let batchCode = generatedCode;
-    let suffix = 2;
-    while (await Batch.exists({ code: batchCode, _id: { $ne: id } })) {
-      batchCode = `${generatedCode}-${suffix++}`;
+    if (!batch.batchId) {
+      const franchiseRecordForId = await Coaching.findById(batch.coachingId).select("name code").lean();
+      batch.batchId = await generateUniqueAutoGenId({
+        model: Batch,
+        field: "batchId",
+        prefix: getCenterIdPrefix(franchiseRecordForId?.code),
+        type: "B",
+        filter: { coachingId: batch.coachingId },
+        prefixIncludesDate: true,
+      });
     }
-    batch.code = batchCode;
+
+    batch.code = batch.batchId;
 
     await batch.save();
 
     const updatedBatch = await Batch.findById(batch._id)
-      .populate("franchise", "name email phone")
+      .populate("coachingId", "name email phone")
       .populate("course", "name title")
       .populate("teacher", "name email")
       .populate("students", "name email");
@@ -747,7 +745,7 @@ const assignTeacher = async (req, res) => {
         runValidators: true,
       },
     )
-      .populate("franchise", "name")
+      .populate("coachingId", "name")
       .populate("course", "name title")
       .populate("teacher", "name email")
       .populate("students", "name email");
@@ -815,7 +813,7 @@ const addStudentToBatch = async (req, res) => {
 
     const students = await Student.find({
       _id: { $in: requestedStudentIds },
-      coachingId: batch.franchise,
+      coachingId: batch.coachingId,
       courseId: batch.course,
     });
     if (students.length !== requestedStudentIds.length) {
@@ -852,7 +850,7 @@ const addStudentToBatch = async (req, res) => {
     );
 
     const updatedBatch = await Batch.findById(id)
-      .populate("franchise", "name")
+      .populate("coachingId", "name")
       .populate("course", "name title")
       .populate("teacher", "name email")
       .populate("students", "name email mobile studentId status courseId");
@@ -916,7 +914,7 @@ const removeStudentFromBatch = async (req, res) => {
     );
 
     const updatedBatch = await Batch.findById(id)
-      .populate("franchise", "name")
+      .populate("coachingId", "name")
       .populate("course", "name title")
       .populate("teacher", "name email")
       .populate("students", "name email");

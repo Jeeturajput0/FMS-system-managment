@@ -23,10 +23,15 @@ const initials = (value) => {
   return words.map((word) => word[0]).join("").slice(0, 4).toUpperCase();
 };
 
-const previewBatchCode = (franchiseName, courseTitle, startDate) => {
-  const date = startDate ? new Date(`${startDate}T00:00:00`) : new Date();
-  const validDate = Number.isNaN(date.getTime()) ? new Date() : date;
-  return `${initials(franchiseName)}${initials(courseTitle)}${String(validDate.getMonth() + 1).padStart(2, "0")}${String(validDate.getFullYear()).slice(-2)}`;
+const previewBatchCode = (centerCode, serial) => {
+  const value = new Date();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const year = String(value.getFullYear()).slice(-2);
+  const normalizedCode = String(centerCode || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const prefix = normalizedCode.endsWith(`${month}${year}`)
+    ? normalizedCode
+    : `${normalizedCode}${month}${year}`;
+  return `${prefix}B${String(serial).padStart(3, "0")}`;
 };
 
 const FranchiseBatchForm = () => {
@@ -36,7 +41,9 @@ const FranchiseBatchForm = () => {
   const [courses, setCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [franchiseName, setFranchiseName] = useState("");
+  const [franchiseCode, setFranchiseCode] = useState("");
   const [franchiseId, setFranchiseId] = useState("");
+  const [nextBatchSerial, setNextBatchSerial] = useState(1);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -60,15 +67,23 @@ const FranchiseBatchForm = () => {
     Promise.all([
       apiFetch("/api/courses"),
       apiFetch("/api/portal/teachers"),
+      apiFetch("/api/batches/franchise/batches?limit=1000"),
       id ? apiFetch(`/api/batches/${id}`) : Promise.resolve(null),
       storedFranchiseId ? apiFetch(`/api/coaching/${storedFranchiseId}`) : apiFetch("/api/portal/settings"),
     ])
-      .then(([courseResponse, teacherResponse, batchResponse, franchiseResponse]) => {
+      .then(([courseResponse, teacherResponse, batchesResponse, batchResponse, franchiseResponse]) => {
         const franchise = franchiseResponse?.coaching || franchiseResponse?.data || {};
+        const existingBatches = batchesResponse?.batches || batchesResponse?.data || [];
+        const highestSerial = existingBatches.reduce((highest, batch) => {
+          const match = String(batch.batchId || batch.code || "").match(/B(\d{3,})$/i);
+          return match ? Math.max(highest, Number(match[1])) : highest;
+        }, 0);
         setCourses(courseResponse.data || []);
         setTeachers(teacherResponse.data || []);
         setFranchiseId(storedFranchiseId || franchise?._id || "");
         setFranchiseName(franchise.name || user?.coachingName || "");
+        setFranchiseCode(franchise.code || "");
+        setNextBatchSerial(highestSerial + 1);
         if (batchResponse?.batch)
           setForm((current) => ({
             ...current,
@@ -93,18 +108,16 @@ const FranchiseBatchForm = () => {
   }, []);
 
   useEffect(() => {
-    if (id || !franchiseName || !form.course) return;
-    const selectedCourse = courses.find((course) => course._id === form.course);
-    if (!selectedCourse) return;
+    if (id) return;
+    if (!franchiseCode || !form.name.trim() || !form.course) {
+      setForm((current) => (current.code ? { ...current, code: "" } : current));
+      return;
+    }
     setForm((current) => ({
       ...current,
-      code: previewBatchCode(
-        franchiseName,
-        selectedCourse.title || selectedCourse.name,
-        current.startDate,
-      ),
+      code: previewBatchCode(franchiseCode, nextBatchSerial),
     }));
-  }, [courses, franchiseName, form.course, form.startDate, id]);
+  }, [franchiseCode, nextBatchSerial, form.name, form.course, id]);
 
   const update = (event) =>
     setForm({ ...form, [event.target.name]: event.target.value });
