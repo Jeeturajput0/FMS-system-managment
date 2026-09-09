@@ -5,6 +5,7 @@ import Student from "../model/student.model.js";
 import Fee from "../model/fee.model.js";
 import Batch from "../model/batches.model.js";
 import Attendance from "../model/attendance.model.js";
+import Course from "../model/course.model.js";
 import bcrypt from "bcryptjs";
 import { generateCenterCode, generateUniqueCenterCode, normalizeCenterCode } from "../utils/centerCode.js";
 
@@ -32,6 +33,7 @@ const createCoaching = async (req, res) => {
       status,
       joinedDate,
       centerCodeManuallyEdited = false,
+      courseIds = [],
     } = req.body;
 
     if (!name || !ownerName || !email || !phone || !city || !password || password.length < 6) {
@@ -84,6 +86,14 @@ const createCoaching = async (req, res) => {
         : {}),
     });
 
+      const validCourseIds = [...new Set(courseIds)].filter((courseId) => mongoose.isValidObjectId(courseId));
+      if (validCourseIds.length) {
+        await Course.updateMany(
+          { _id: { $in: validCourseIds }, isActive: true },
+          { $addToSet: { availableForFranchises: coaching._id } },
+        );
+      }
+
     try {
       await User.create({
         name: ownerName.trim(),
@@ -102,6 +112,7 @@ const createCoaching = async (req, res) => {
       message: "Franchise created successfully",
       coaching,
       data: coaching,
+        assignedCourseIds: validCourseIds,
     });
   } catch (error) {
     console.error("Create coaching error:", error);
@@ -226,9 +237,15 @@ const getCoachingById = async (req, res) => {
       });
     }
 
+    const assignedCourses = await Course.find({
+      availableForFranchises: coaching._id,
+      isActive: true,
+    }).select("_id");
+
     return res.status(200).json({
       success: true,
       coaching,
+      assignedCourseIds: assignedCourses.map((course) => String(course._id)),
     });
   } catch (error) {
     console.error("Get coaching error:", error);
@@ -264,6 +281,7 @@ const updateCoaching = async (req, res) => {
       logo,
       status,
       joinedDate,
+      courseIds = [],
     } = req.body;
 
     const coaching = await Coaching.findById(req.params.id);
@@ -342,6 +360,18 @@ const updateCoaching = async (req, res) => {
 
     await coaching.save();
 
+    const validCourseIds = [...new Set(courseIds)].filter((courseId) => mongoose.isValidObjectId(courseId));
+    await Course.updateMany(
+      { availableForFranchises: coaching._id },
+      { $pull: { availableForFranchises: coaching._id } },
+    );
+    if (validCourseIds.length) {
+      await Course.updateMany(
+        { _id: { $in: validCourseIds }, isActive: true },
+        { $addToSet: { availableForFranchises: coaching._id } },
+      );
+    }
+
     // Keep the linked franchise login in sync. This also repairs older
     // franchise records that were created before login accounts were added.
     const linkedUser = await User.findOne({ coachingId: coaching._id }).select("+password");
@@ -372,6 +402,7 @@ const updateCoaching = async (req, res) => {
       success: true,
       message: "Franchise updated successfully",
       coaching,
+      assignedCourseIds: validCourseIds,
     });
   } catch (error) {
     console.error("Update coaching error:", error);

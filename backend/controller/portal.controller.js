@@ -121,11 +121,14 @@ export const getPortalCourses = async (req, res) => {
     const data = await Course.find({
       isActive: true,
       ...(teacherCourseIds ? { _id: { $in: teacherCourseIds } } : {}),
-      $or: [
-        { isPublished: true },
-        { isPublished: { $exists: false } },
-        ...(req.user.coachingId ? [{ availableForFranchises: req.user.coachingId }] : []),
-      ],
+      ...(req.user.coachingId
+        ? { availableForFranchises: req.user.coachingId }
+        : {
+            $or: [
+              { isPublished: true },
+              { isPublished: { $exists: false } },
+            ],
+          }),
     }).sort({ category: 1, title: 1 }).lean();
     return res.json({ success: true, data });
   } catch (error) {

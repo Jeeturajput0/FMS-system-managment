@@ -374,7 +374,7 @@ export const StudentDirectory = () => {
   useEffect(() => {
     fetchStudents();
     fetchCourses();
-    setFranchises([]);
+    fetchFranchises();
   }, []);
 
   /* =======================================================
@@ -410,6 +410,8 @@ export const StudentDirectory = () => {
           student.studentId ||
           student._id ||
           student.id,
+
+        mongoId: student._id || student.id,
 
         course:
           getCourseName(
@@ -930,7 +932,7 @@ export const StudentDirectory = () => {
               onClick={() => {
                 fetchStudents();
                 fetchCourses();
-                setFranchises([]);
+                fetchFranchises();
               }}
               className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-orange-600"
               title="Refresh"
@@ -1184,7 +1186,7 @@ export const StudentDirectory = () => {
                       <td className="py-4 px-4 text-right">
                         <div className="inline-flex items-center gap-1">
                           <Link
-                            to={`/admin/students/${student.id}`}
+                            to={`/admin/students/${student.mongoId}`}
                             title="View student"
                             aria-label="View student"
                             className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors font-bold text-xs inline-flex items-center gap-1"

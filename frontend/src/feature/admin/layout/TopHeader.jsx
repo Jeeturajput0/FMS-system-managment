@@ -23,7 +23,8 @@ const titleMap = {
   '/admin/notifications': 'Notification Center',
   '/admin/admins': 'Admin User Management',
   '/admin/reports': 'Analytics & Franchise Performance Reports',
-  '/admin/settings': 'System & Franchise OS Preferences'
+  '/admin/settings': 'System & Franchise OS Preferences',
+  '/admin/search': 'Admin Search'
 };
 
 export const TopHeader = ({ onMenuClick }) => {
@@ -64,7 +65,7 @@ export const TopHeader = ({ onMenuClick }) => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/admin/students?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/admin/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 

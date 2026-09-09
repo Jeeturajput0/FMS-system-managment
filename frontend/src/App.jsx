@@ -27,6 +27,7 @@ import AdminReportsPage from "./feature/admin/pages/AdminReportsPage";
 import AdminNotificationsPage from "./feature/admin/pages/AdminNotificationsPage";
 import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
 import AdminManagementPage from "./feature/admin/pages/AdminManagementPage";
+import AdminSearchPage from "./feature/admin/pages/AdminSearchPage";
 
 import { CourseAdd } from "./feature/admin/pages/CourseAdd";
 import CourseModules from "./feature/admin/pages/CourseModule";
@@ -294,6 +295,8 @@ function App() {
           />
 
           <Route path="settings" element={<AdminProfilePage />} />
+
+          <Route path="search" element={<AdminSearchPage />} />
 
           <Route path="profile" element={<AdminProfilePage />} />
         </Route>
