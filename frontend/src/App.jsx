@@ -56,6 +56,7 @@ import { FranchiseStudents } from "./feature/franchise/pages/FranchiseStudents";
 import { FranchiseDashboard } from "./feature/franchise/pages/FranchiseDashboard";
 import { FranchiseCourses } from "./feature/franchise/pages/FranchiseCourses";
 import { FranchiseBatches } from "./feature/franchise/pages/FranchiseBatches";
+import FranchiseBatchStudents from "./feature/franchise/pages/FranchiseBatchStudents";
 import FranchiseBatchForm from "./feature/franchise/pages/FranchiseBatchForm";
 import FranchiseAttendance from "./feature/franchise/pages/FranchiseAttendance";
 import FranchiseFees from "./feature/franchise/pages/FranchiseFees";
@@ -63,6 +64,7 @@ import FranchiseSchedule from "./feature/franchise/pages/FranchiseSchedule";
 import FranchiseReports from "./feature/franchise/pages/FranchiseReports";
 import FranchiseSettings from "./feature/franchise/pages/FranchiseSettings";
 import FranchiseStudentAdd from "./feature/franchise/pages/FranchiseStudentAdd";
+import FranchiseStudentView from "./feature/franchise/pages/FranchiseStudentView";
 
 // =========================
 // TEACHER
@@ -410,7 +412,7 @@ function App() {
 
           <Route path="students" element={<FranchiseStudents />} />
 
-          <Route path="students/:id" element={<FranchiseStudents />} />
+          <Route path="students/:id" element={<FranchiseStudentView />} />
 
           <Route path="students/:id/certificate" element={<StudentCertificate />} />
 
@@ -429,6 +431,8 @@ function App() {
           {/* BATCHES */}
 
           <Route path="batches" element={<FranchiseBatches />} />
+
+          <Route path="batches/students" element={<FranchiseBatchStudents />} />
 
           <Route path="batches/add" element={<FranchiseBatchForm />} />
 

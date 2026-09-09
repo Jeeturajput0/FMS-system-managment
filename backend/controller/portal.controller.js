@@ -142,7 +142,11 @@ export const getPortalFees = async (req, res) => {
     const teacherBatchIds = await getTeacherBatchIds(req.user);
     const teacherStudents = req.user.role === "TEACHER" ? await Student.find({ ...coachingFilter(req.user), batchId: { $in: teacherBatchIds } }).distinct("_id") : null;
     const filter = student ? { studentId: student._id } : teacherStudents ? { coachingId: req.user.coachingId, studentId: { $in: teacherStudents } } : coachingFilter(req.user);
-    const data = await Fee.find(filter).populate("studentId", "name studentId").populate("courseId", "title").sort({ updatedAt: -1 }).lean();
+    const data = await Fee.find(filter)
+      .populate("studentId", "name studentId mobile email courseFee registrationFee certificateFee")
+      .populate("courseId", "title name courseFee")
+      .sort({ updatedAt: -1 })
+      .lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load fees", error: error.message });
@@ -209,13 +213,12 @@ export const updatePortalTeacher = async (req, res) => {
 
 export const deletePortalTeacher = async (req, res) => {
   try {
-    const teacher = await User.findOneAndUpdate(
+    const teacher = await User.findOneAndDelete(
       { _id: req.params.id, role: "TEACHER", coachingId: req.user.coachingId },
-      { $set: { isActive: false } },
-      { new: true },
-    ).select("name isActive").lean();
+    ).select("name").lean();
     if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
-    return res.json({ success: true, message: "Teacher deactivated successfully", data: teacher });
+    await Batch.updateMany({ teacher: req.params.id }, { $set: { teacher: null } });
+    return res.json({ success: true, message: "Teacher deleted successfully", data: teacher });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to deactivate teacher", error: error.message });
   }

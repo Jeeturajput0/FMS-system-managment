@@ -36,6 +36,7 @@ const FranchiseBatchForm = () => {
   const [courses, setCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [franchiseName, setFranchiseName] = useState("");
+  const [franchiseId, setFranchiseId] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -55,21 +56,29 @@ const FranchiseBatchForm = () => {
   });
 
   useEffect(() => {
-    const franchiseId = user?.coachingId || user?.franchiseId;
+    const storedFranchiseId = user?.coachingId || user?.franchiseId;
     Promise.all([
       apiFetch("/api/courses"),
       apiFetch("/api/portal/teachers"),
       id ? apiFetch(`/api/batches/${id}`) : Promise.resolve(null),
-      franchiseId ? apiFetch(`/api/coaching/${franchiseId}`) : Promise.resolve(null),
+      storedFranchiseId ? apiFetch(`/api/coaching/${storedFranchiseId}`) : apiFetch("/api/portal/settings"),
     ])
       .then(([courseResponse, teacherResponse, batchResponse, franchiseResponse]) => {
+        const franchise = franchiseResponse?.coaching || franchiseResponse?.data || {};
         setCourses(courseResponse.data || []);
         setTeachers(teacherResponse.data || []);
-        setFranchiseName(franchiseResponse?.coaching?.name || user?.coachingName || "");
+        setFranchiseId(storedFranchiseId || franchise?._id || "");
+        setFranchiseName(franchise.name || user?.coachingName || "");
         if (batchResponse?.batch)
           setForm((current) => ({
             ...current,
-            ...batchResponse.batch,
+          ...batchResponse.batch,
+          startDate: batchResponse.batch.startDate
+            ? String(batchResponse.batch.startDate).slice(0, 10)
+            : "",
+          endDate: batchResponse.batch.endDate
+            ? String(batchResponse.batch.endDate).slice(0, 10)
+            : "",
             course:
               batchResponse.batch.course?._id ||
               batchResponse.batch.course ||
@@ -115,7 +124,7 @@ const FranchiseBatchForm = () => {
         method: id ? "PUT" : "POST",
         body: JSON.stringify({
           ...form,
-          franchise: user?.coachingId || user?.franchiseId,
+          franchise: franchiseId || user?.coachingId || user?.franchiseId,
         }),
       });
       navigate("/franchise/batches");

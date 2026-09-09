@@ -39,7 +39,7 @@ export const FranchiseBatches = () => {
       setError("");
 
       const data = await apiFetch(
-        "/api/batches/franchise/batches"
+        "/api/batches/franchise/batches?limit=1000"
       );
 
       setBatches(data?.batches || []);
@@ -700,19 +700,13 @@ export const FranchiseBatches = () => {
                             </Link>
 
                             {/* Add Student */}
-                            <button
-                              type="button"
+                            <Link
+                              to={`/franchise/batches/students?batchId=${batch._id}`}
                               title="Add Student"
-                              onClick={() => {
-                                setSelectedBatch(
-                                  batch
-                                );
-                                setStudentId("");
-                              }}
                               className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-50 text-indigo-600 transition hover:bg-indigo-100"
                             >
                               <Plus size={15} />
-                            </button>
+                            </Link>
 
                             {/* Delete */}
                             <button
