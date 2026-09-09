@@ -1,18 +1,55 @@
 import mongoose from "mongoose";
+import User from "../model/user.model.js";
 
 import Student from "../model/student.model.js";
 import Course from "../model/course.model.js";
+import Coaching from "../model/coaching.model.js";
 import Fee from "../model/fee.model.js";
 import Batch from "../model/batches.model.js";
 
 const franchiseRoles = ["FRANCHISE", "FRANCHISE_ADMIN"];
 
-const getUserCoachingId = (req) =>
-  franchiseRoles.includes(req.user?.role) ? req.user.coachingId : null;
+const getUserCoachingId = async (req) => {
+  if (!franchiseRoles.includes(req.user?.role)) return null;
 
-const isOutsideFranchise = (student, req) => {
-  const coachingId = getUserCoachingId(req);
-  return coachingId && String(student.coachingId) !== String(coachingId);
+  if (req.user?._id && mongoose.Types.ObjectId.isValid(req.user._id)) {
+    const user = await User.findById(req.user._id).select("coachingId").lean();
+    return user?.coachingId || req.user.coachingId || null;
+  }
+
+  return req.user?.coachingId || null;
+};
+
+const isOutsideFranchise = async (student, req) => {
+  const coachingId = await getUserCoachingId(req);
+  // `coachingId` is populated by the single-student endpoint, while it is
+  // kept as an ObjectId by the update/delete endpoints. Always compare the
+  // underlying id so both representations authorize the same student.
+  const studentCoachingId = student.coachingId?._id || student.coachingId;
+  return coachingId && String(studentCoachingId) !== String(coachingId);
+};
+
+const getNextStudentId = async (prefix) => {
+  let sequence = 1;
+  while (await Student.exists({ studentId: `${prefix}${String(sequence).padStart(4, "0")}` })) sequence += 1;
+  if (sequence > 9999) throw new Error("Student ID limit reached for this franchise and course");
+  return `${prefix}${String(sequence).padStart(4, "0")}`;
+};
+
+const getCourseCode = (course) => {
+  const title = String(course?.title || course?.name || "")
+    .replace(/[^a-zA-Z0-9\s]/g, " ")
+    .trim();
+  const normalized = title.toLowerCase();
+
+  if (normalized.includes("full") && normalized.includes("stack")) return "FS";
+  if (normalized.includes("data") && normalized.includes("analysis")) return "DS";
+
+  const words = title.split(/\s+/).filter(Boolean);
+  return (words.length > 1
+    ? words.map((word) => word[0]).join("")
+    : title.slice(0, 2)
+  ).toUpperCase().slice(0, 2) || "CO";
 };
 
 // ======================================================
@@ -53,7 +90,7 @@ export const createStudent = async (req, res) => {
     // REQUIRED VALIDATION
     // ==================================================
 
-    const userCoachingId = getUserCoachingId(req);
+    const userCoachingId = await getUserCoachingId(req);
     const resolvedCoachingId =
       userCoachingId || coachingId || process.env.DEFAULT_COACHING_ID;
 
@@ -107,7 +144,10 @@ export const createStudent = async (req, res) => {
     // CHECK COURSE
     // ==================================================
 
-    const course = await Course.findById(courseId);
+    const [course, coaching] = await Promise.all([
+      Course.findById(courseId),
+      Coaching.findById(resolvedCoachingId).select("code"),
+    ]);
 
     if (!course) {
       return res.status(404).json({
@@ -115,6 +155,18 @@ export const createStudent = async (req, res) => {
         message: "Course not found",
       });
     }
+
+    if (!coaching?.code) {
+      return res.status(404).json({
+        success: false,
+        message: "Franchise code not found",
+      });
+    }
+
+    const franchiseCode = String(coaching.code)
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
+    const studentIdPrefix = `${franchiseCode}${getCourseCode(course)}`;
 
     // ==================================================
     // DUPLICATE MOBILE IN SAME COACHING
@@ -175,8 +227,16 @@ export const createStudent = async (req, res) => {
     // CREATE STUDENT
     // ==================================================
 
-    const student = await Student.create({
+    let student;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        student = await Student.create({
       coachingId: resolvedCoachingId,
+
+      // Generate the ID here and check the unique index. The old model hook
+      // used countDocuments() alone, which can reuse an existing ID when a
+      // record was deleted or when two requests arrive together.
+      studentId: await getNextStudentId(studentIdPrefix),
 
       name: name.trim(),
 
@@ -223,7 +283,12 @@ export const createStudent = async (req, res) => {
       status: status || "registered",
 
       createdBy: req.user._id,
-    });
+        });
+        break;
+      } catch (createError) {
+        if (createError?.code !== 11000 || attempt === 4) throw createError;
+      }
+    }
 
     try {
       await Fee.create({
@@ -285,7 +350,7 @@ export const getStudents = async (req, res) => {
     // COACHING FILTER
     // ==================================================
 
-    const userCoachingId = getUserCoachingId(req);
+    const userCoachingId = await getUserCoachingId(req);
 
     if (userCoachingId) {
       if (!mongoose.Types.ObjectId.isValid(userCoachingId)) {
@@ -507,7 +572,7 @@ export const getStudentById = async (req, res) => {
       });
     }
 
-    if (isOutsideFranchise(student, req)) {
+    if (await isOutsideFranchise(student, req)) {
       return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
     }
 
@@ -556,7 +621,7 @@ export const updateStudent = async (req, res) => {
       });
     }
 
-    if (isOutsideFranchise(student, req)) {
+    if (await isOutsideFranchise(student, req)) {
       return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
     }
 
@@ -786,27 +851,25 @@ export const deleteStudent = async (req, res) => {
       });
     }
 
-    if (isOutsideFranchise(student, req)) {
+    if (await isOutsideFranchise(student, req)) {
       return res.status(403).json({ success: false, message: "Student does not belong to your franchise" });
     }
 
-    const isAdmin = ["SUPER_ADMIN", "ADMIN", "AI_SCHOLAR_ADMIN"].includes(req.user?.role);
-
-    if (isAdmin) {
-      await Promise.all([
-        Student.deleteOne({ _id: student._id }),
-        Fee.deleteMany({ studentId: student._id }),
-      ]);
-    } else {
-      student.status = "inactive";
-      student.updatedBy = req.user._id;
-      await student.save();
-    }
+    // A delete action must remove the record for franchise users as well.
+    // Keep references consistent so deleted students do not remain in batches.
+    await Promise.all([
+      Student.deleteOne({ _id: student._id }),
+      Fee.deleteMany({ studentId: student._id }),
+      Batch.updateMany(
+        { students: student._id },
+        { $pull: { students: student._id } },
+      ),
+    ]);
 
     return res.status(200).json({
       success: true,
 
-      message: isAdmin ? "Student deleted successfully" : "Student deactivated successfully",
+      message: "Student deleted successfully",
     });
   } catch (error) {
     console.error("Delete Student Error:", error);
@@ -864,7 +927,7 @@ export const updateStudentStatus = async (req, res) => {
       });
     }
 
-    if (isOutsideFranchise(student, req)) {
+    if (await isOutsideFranchise(student, req)) {
       return res.status(403).json({
         success: false,
         message: "Student does not belong to your franchise",

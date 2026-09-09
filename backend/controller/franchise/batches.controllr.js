@@ -14,6 +14,18 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getRequestFranchiseId = async (req) => {
+  const userFranchiseId = req.user?.coachingId || req.user?.franchise || req.user?.franchiseId;
+  if (userFranchiseId) return userFranchiseId;
+  if (req.user?._id && isValidObjectId(req.user._id)) {
+    const user = await User.findById(req.user._id).select("coachingId").lean();
+    return user?.coachingId || null;
+  }
+  return null;
+};
+
 // ============================================================
 // CREATE BATCH
 // POST /api/batches
@@ -24,7 +36,7 @@ const createBatch = async (req, res) => {
     const {
       name,
       description,
-      franchise,
+      franchise: requestedFranchise,
       course,
       teacher,
       students,
@@ -44,6 +56,9 @@ const createBatch = async (req, res) => {
         message: "Batch name is required",
       });
     }
+
+    const accountFranchise = await getRequestFranchiseId(req);
+    const franchise = accountFranchise || requestedFranchise;
 
     if (!franchise) {
       return res.status(400).json({
@@ -80,6 +95,10 @@ const createBatch = async (req, res) => {
       });
     }
 
+    if (accountFranchise && requestedFranchise && String(accountFranchise) !== String(requestedFranchise)) {
+      return res.status(403).json({ success: false, message: "You can only create batches for your franchise" });
+    }
+
     const [franchiseRecord, courseRecord] = await Promise.all([
       Coaching.findById(franchise).select("name"),
       Course.findById(course).select("title name"),
@@ -92,16 +111,12 @@ const createBatch = async (req, res) => {
       startDate,
     });
 
-    const existingBatch = await Batch.findOne({
-      code: generatedCode,
-    });
-
-    if (existingBatch) {
-      return res.status(409).json({
-        success: false,
-        message: "Batch code already exists",
-      });
+    let batchCode = generatedCode;
+    let suffix = 2;
+    while (await Batch.exists({ code: batchCode })) {
+      batchCode = `${generatedCode}-${suffix++}`;
     }
+
 
     const studentList = Array.isArray(students)
       ? [...new Set(students.map(String))]
@@ -118,7 +133,7 @@ const createBatch = async (req, res) => {
 
     const batch = await Batch.create({
       name: name.trim(),
-      code: generatedCode,
+      code: batchCode,
       description: description || "",
 
       franchise,
@@ -196,13 +211,13 @@ const getAllBatches = async (req, res) => {
       filter.$or = [
         {
           name: {
-            $regex: search,
+            $regex: escapeRegex(search),
             $options: "i",
           },
         },
         {
           code: {
-            $regex: search,
+            $regex: escapeRegex(search),
             $options: "i",
           },
         },
@@ -247,7 +262,7 @@ const getAllBatches = async (req, res) => {
     }
 
     const currentPage = Math.max(Number(page), 1);
-    const perPage = Math.min(Math.max(Number(limit), 1), 100);
+    const perPage = Math.min(Math.max(Number(limit), 1), 1000);
     const skip = (currentPage - 1) * perPage;
 
     const [batches, total] = await Promise.all([
@@ -332,19 +347,26 @@ const getFranchiseBatches = async (req, res) => {
     };
 
     if (search) {
+      const searchRegex = new RegExp(escapeRegex(search), "i");
+      const [matchingCourses, matchingTeachers] = await Promise.all([
+        Course.find({ $or: [{ title: searchRegex }, { name: searchRegex }] }).select("_id").lean(),
+        User.find({ role: "TEACHER", $or: [{ name: searchRegex }, { email: searchRegex }] }).select("_id").lean(),
+      ]);
       filter.$or = [
         {
           name: {
-            $regex: search,
+            $regex: escapeRegex(search),
             $options: "i",
           },
         },
         {
           code: {
-            $regex: search,
+            $regex: escapeRegex(search),
             $options: "i",
           },
         },
+        { course: { $in: matchingCourses.map((item) => item._id) } },
+        { teacher: { $in: matchingTeachers.map((item) => item._id) } },
       ];
     }
 
@@ -375,7 +397,7 @@ const getFranchiseBatches = async (req, res) => {
     }
 
     const currentPage = Math.max(Number(page), 1);
-    const perPage = Math.min(Math.max(Number(limit), 1), 100);
+    const perPage = Math.min(Math.max(Number(limit), 1), 1000);
     const skip = (currentPage - 1) * perPage;
 
     const [batches, total] = await Promise.all([
@@ -432,7 +454,7 @@ const getBatchById = async (req, res) => {
       .populate("franchise", "name email phone")
       .populate("course", "name title")
       .populate("teacher", "name email")
-      .populate("students", "name email");
+      .populate("students", "name email mobile studentId status courseId");
 
     if (!batch) {
       return res.status(404).json({
@@ -615,9 +637,12 @@ const updateBatch = async (req, res) => {
       courseTitle: courseRecord.title || courseRecord.name,
       startDate: batch.startDate,
     });
-    const existingBatch = await Batch.findOne({ code: generatedCode, _id: { $ne: id } });
-    if (existingBatch) return res.status(409).json({ success: false, message: "Batch code already exists" });
-    batch.code = generatedCode;
+    let batchCode = generatedCode;
+    let suffix = 2;
+    while (await Batch.exists({ code: batchCode, _id: { $ne: id } })) {
+      batchCode = `${generatedCode}-${suffix++}`;
+    }
+    batch.code = batchCode;
 
     await batch.save();
 
@@ -668,7 +693,10 @@ const deleteBatch = async (req, res) => {
       });
     }
 
-    await Batch.findByIdAndDelete(id);
+    await Promise.all([
+      Batch.findByIdAndDelete(id),
+      Student.updateMany({ batchId: id }, { $set: { batchId: null } }),
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -755,7 +783,12 @@ const assignTeacher = async (req, res) => {
 const addStudentToBatch = async (req, res) => {
   try {
     const { id } = req.params;
-    const { studentId } = req.body;
+    const { studentId, studentIds } = req.body;
+    const requestedStudentIds = Array.isArray(studentIds)
+      ? [...new Set(studentIds.map(String))]
+      : studentId
+        ? [String(studentId)]
+        : [];
 
     if (!isValidObjectId(id)) {
       return res.status(400).json({
@@ -764,10 +797,10 @@ const addStudentToBatch = async (req, res) => {
       });
     }
 
-    if (!studentId || !isValidObjectId(studentId)) {
+    if (!requestedStudentIds.length || requestedStudentIds.some((value) => !isValidObjectId(value))) {
       return res.status(400).json({
         success: false,
-        message: "Valid student ID is required",
+        message: "At least one valid student ID is required",
       });
     }
 
@@ -780,39 +813,53 @@ const addStudentToBatch = async (req, res) => {
       });
     }
 
-    const student = await Student.findOne({ _id: studentId, coachingId: batch.franchise });
-    if (!student) {
-      return res.status(404).json({ success: false, message: "Student does not belong to this franchise" });
-    }
-
-    if (batch.students.some((student) => student.toString() === studentId)) {
-      return res.status(409).json({
-        success: false,
-        message: "Student is already assigned to this batch",
-      });
-    }
-
-    if (batch.students.length >= batch.maxStudents) {
+    const students = await Student.find({
+      _id: { $in: requestedStudentIds },
+      coachingId: batch.franchise,
+      courseId: batch.course,
+    });
+    if (students.length !== requestedStudentIds.length) {
       return res.status(400).json({
         success: false,
-        message: "Batch has reached maximum capacity",
+        message: "Select students from this batch's course only",
       });
     }
 
-    batch.students.push(studentId);
+    const assignedIds = new Set(batch.students.map((value) => String(value)));
+    const studentsToAdd = students.filter(
+      (student) => !assignedIds.has(String(student._id)),
+    );
+    if (!studentsToAdd.length) {
+      return res.status(409).json({
+        success: false,
+        message: "Selected students are already assigned to this batch",
+      });
+    }
+
+    if (batch.students.length + studentsToAdd.length > batch.maxStudents) {
+      return res.status(400).json({
+        success: false,
+        message: `Only ${Math.max(batch.maxStudents - batch.students.length, 0)} student slot(s) are available`,
+      });
+    }
+
+    batch.students.push(...studentsToAdd.map((student) => student._id));
 
     await batch.save();
-    await Student.updateOne({ _id: student._id }, { $set: { batchId: batch._id } });
+    await Student.updateMany(
+      { _id: { $in: studentsToAdd.map((student) => student._id) } },
+      { $set: { batchId: batch._id } },
+    );
 
     const updatedBatch = await Batch.findById(id)
       .populate("franchise", "name")
       .populate("course", "name title")
       .populate("teacher", "name email")
-      .populate("students", "name email");
+      .populate("students", "name email mobile studentId status courseId");
 
     return res.status(200).json({
       success: true,
-      message: "Student added to batch successfully",
+      message: `${studentsToAdd.length} student(s) added to batch successfully`,
       batch: updatedBatch,
     });
   } catch (error) {
