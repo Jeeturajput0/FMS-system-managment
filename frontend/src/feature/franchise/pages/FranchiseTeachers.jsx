@@ -17,6 +17,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
+import { NAME_PATTERN } from "../../../utils/name";
 import { Link } from "react-router-dom";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { sanitizeNameInput } from "../../../utils/name";
@@ -761,6 +762,7 @@ const FranchiseTeachers = () => {
 
                   <input
                     required
+                    pattern={NAME_PATTERN}
                     placeholder="Enter teacher name"
                     value={form.name}
                     onChange={(e) =>
@@ -829,6 +831,7 @@ const FranchiseTeachers = () => {
                       required
                       minLength={6}
                       type="password"
+                      autoComplete="new-password"
                       placeholder="Minimum 6 characters"
                       value={form.password}
                       onChange={(e) =>

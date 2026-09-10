@@ -5,6 +5,7 @@ import Student from "../../model/student.model.js";
 import Coaching from "../../model/coaching.model.js";
 import Course from "../../model/course.model.js";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../../utils/index.js";
+import { isValidName, nameValidationMessage } from "../../utils/name.js";
 
 // ============================================================
 // HELPER
@@ -15,6 +16,21 @@ const isValidObjectId = (id) => {
 };
 
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const parseDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const validateBatchDates = (startDate, endDate) => {
+  const start = parseDate(startDate);
+  const end = parseDate(endDate);
+  if (startDate && !start) return "Start date is invalid";
+  if (endDate && !end) return "End date is invalid";
+  if (start && end && end < start) return "End date cannot be before start date";
+  return "";
+};
 
 const getRequestFranchiseId = async (req) => {
   const userFranchiseId = req.user?.coachingId || req.user?.franchise || req.user?.franchiseId;
@@ -50,11 +66,15 @@ const createBatch = async (req, res) => {
       status,
     } = req.body;
 
-    if (!name) {
+    if (!name?.trim()) {
       return res.status(400).json({
         success: false,
         message: "Batch name is required",
       });
+    }
+
+    if (!isValidName(name)) {
+      return res.status(400).json({ success: false, message: nameValidationMessage });
     }
 
     const accountFranchise = await getRequestFranchiseId(req);
@@ -72,6 +92,14 @@ const createBatch = async (req, res) => {
         success: false,
         message: "Course is required",
       });
+    }
+
+    const dateError = validateBatchDates(startDate, endDate);
+    if (dateError) return res.status(400).json({ success: false, message: dateError });
+
+    const capacity = Number(maxStudents ?? 30);
+    if (!Number.isInteger(capacity) || capacity < 1) {
+      return res.status(400).json({ success: false, message: "Maximum students must be a positive whole number" });
     }
 
     if (!isValidObjectId(franchise)) {
@@ -116,8 +144,6 @@ const createBatch = async (req, res) => {
     const studentList = Array.isArray(students)
       ? [...new Set(students.map(String))]
       : [];
-
-    const capacity = maxStudents ? Number(maxStudents) : 30;
 
     if (studentList.length > capacity) {
       return res.status(400).json({
@@ -538,6 +564,9 @@ const updateBatch = async (req, res) => {
     }
 
     if (name !== undefined) {
+      if (!name.trim() || !isValidName(name)) {
+        return res.status(400).json({ success: false, message: nameValidationMessage });
+      }
       batch.name = name.trim();
     }
 
@@ -565,7 +594,10 @@ const updateBatch = async (req, res) => {
         });
       }
 
-      const uniqueStudents = [...new Set(students.map(String))];
+      const uniqueStudents = [...new Set(students.map((student) => String(student?._id || student)))];
+      if (uniqueStudents.some((studentId) => !isValidObjectId(studentId))) {
+        return res.status(400).json({ success: false, message: "Students contain an invalid ID" });
+      }
 
       const capacity =
         maxStudents !== undefined ? Number(maxStudents) : batch.maxStudents;
@@ -581,10 +613,14 @@ const updateBatch = async (req, res) => {
     }
 
     if (startDate !== undefined) {
+      const dateError = validateBatchDates(startDate, endDate !== undefined ? endDate : batch.startDate);
+      if (dateError) return res.status(400).json({ success: false, message: dateError });
       batch.startDate = startDate || null;
     }
 
     if (endDate !== undefined) {
+      const dateError = validateBatchDates(startDate !== undefined ? startDate : batch.startDate, endDate);
+      if (dateError) return res.status(400).json({ success: false, message: dateError });
       batch.endDate = endDate || null;
     }
 
@@ -606,6 +642,10 @@ const updateBatch = async (req, res) => {
 
     if (maxStudents !== undefined) {
       const capacity = Number(maxStudents);
+
+      if (!Number.isInteger(capacity) || capacity < 1) {
+        return res.status(400).json({ success: false, message: "Maximum students must be a positive whole number" });
+      }
 
       if (batch.students.length > capacity) {
         return res.status(400).json({

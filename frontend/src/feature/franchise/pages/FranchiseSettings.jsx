@@ -75,6 +75,11 @@ const FranchiseSettings = () => {
               />
             ) : (
               <input
+                type={key === "email" ? "email" : "text"}
+                required={['name', 'ownerName', 'email', 'phone'].includes(key)}
+                inputMode={key === "phone" || key === "pincode" ? "numeric" : undefined}
+                maxLength={key === "phone" ? 10 : key === "pincode" ? 6 : undefined}
+                pattern={key === "phone" ? "[0-9]{10}" : key === "pincode" ? "[0-9]{6}" : undefined}
                 value={form[key] || ""}
                 onChange={(event) =>
                   setForm({ ...form, [key]: event.target.value })

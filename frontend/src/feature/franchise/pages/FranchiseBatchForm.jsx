@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import { NAME_PATTERN } from "../../../utils/name";
 
 const week = [
   "MONDAY",
@@ -130,6 +131,25 @@ const FranchiseBatchForm = () => {
     });
   const submit = async (event) => {
     event.preventDefault();
+    const trimmedName = form.name.trim();
+    const capacity = Number(form.maxStudents);
+
+    if (!new RegExp(`^${NAME_PATTERN}$`, "u").test(trimmedName)) {
+      setError("Batch name may contain letters, spaces, apostrophes, dots, and hyphens only");
+      return;
+    }
+    if (!form.course) {
+      setError("Please select a course");
+      return;
+    }
+    if (!Number.isInteger(capacity) || capacity < 1) {
+      setError("Maximum students must be a positive whole number");
+      return;
+    }
+    if (form.startDate && form.endDate && form.endDate < form.startDate) {
+      setError("End date cannot be before start date");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -137,6 +157,11 @@ const FranchiseBatchForm = () => {
         method: id ? "PUT" : "POST",
         body: JSON.stringify({
           ...form,
+          name: trimmedName,
+          maxStudents: capacity,
+          students: id
+            ? (form.students || []).map((student) => student?._id || student)
+            : [],
           franchise: franchiseId || user?.coachingId || user?.franchiseId,
         }),
       });
@@ -317,7 +342,7 @@ const FranchiseBatchForm = () => {
             disabled={saving}
             className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white disabled:opacity-50"
           >
-            {saving ? "Creating..." : "Create batch"}
+            {saving ? (id ? "Updating..." : "Creating...") : id ? "Update batch" : "Create batch"}
           </button>
         </div>
       </form>

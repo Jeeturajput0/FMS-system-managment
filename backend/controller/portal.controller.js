@@ -9,6 +9,7 @@ import Attendance from "../model/attendance.model.js";
 import bcrypt from "bcryptjs";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
+import { isValidName, nameValidationMessage } from "../utils/name.js";
 const coachingFilter = (user) => user.coachingId ? { coachingId: user.coachingId } : {};
 
 const getTeacherBatchIds = async (user) => {
@@ -217,9 +218,9 @@ export const createPortalTeacher = async (req, res) => {
     if (!name?.trim() || !email?.trim() || !mobile?.trim() || !password || password.length < 6) {
       return res.status(400).json({ success: false, message: "Name, mobile, email and password of 6+ characters are required" });
     }
-    if (!isValidPhoneNumber(mobile)) {
-      return res.status(400).json({ success: false, message: phoneValidationMessage });
-    }
+    if (!isValidName(name)) return res.status(400).json({ success: false, message: nameValidationMessage });
+    if (!isValidPhoneNumber(mobile)) return res.status(400).json({ success: false, message: phoneValidationMessage });
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return res.status(400).json({ success: false, message: "Enter a valid email address" });
     if (await User.exists({ email: email.trim().toLowerCase() })) {
       return res.status(409).json({ success: false, message: "Email is already registered" });
     }
@@ -253,6 +254,9 @@ export const updatePortalTeacher = async (req, res) => {
       return res.status(400).json({ success: false, message: phoneValidationMessage });
     }
     if (mobile?.trim()) teacher.mobile = mobile.trim();
+    if (name !== undefined && (!name.trim() || !isValidName(name))) return res.status(400).json({ success: false, message: nameValidationMessage });
+    if (mobile !== undefined && !isValidPhoneNumber(mobile)) return res.status(400).json({ success: false, message: phoneValidationMessage });
+    if (email !== undefined && !/^\S+@\S+\.\S+$/.test(email.trim())) return res.status(400).json({ success: false, message: "Enter a valid email address" });
     if (qualification !== undefined) teacher.qualification = qualification.trim();
     if (specialization !== undefined) teacher.specialization = specialization.trim();
     if (experience !== undefined) teacher.experience = experience.trim();
@@ -331,6 +335,11 @@ export const updatePortalSettings = async (req, res) => {
     if (!req.user.coachingId) return res.status(400).json({ success: false, message: "Franchise ID not found" });
     const allowed = ["name", "ownerName", "email", "phone", "address", "city", "state", "pincode", "logo"];
     const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
+    if (updates.name !== undefined && !isValidName(updates.name)) return res.status(400).json({ success: false, message: `Franchise name: ${nameValidationMessage}` });
+    if (updates.ownerName !== undefined && !isValidName(updates.ownerName)) return res.status(400).json({ success: false, message: `Owner name: ${nameValidationMessage}` });
+    if (updates.phone !== undefined && !isValidPhoneNumber(updates.phone)) return res.status(400).json({ success: false, message: phoneValidationMessage });
+    if (updates.email !== undefined && !/^\S+@\S+\.\S+$/.test(String(updates.email).trim())) return res.status(400).json({ success: false, message: "Enter a valid email address" });
+    if (updates.pincode !== undefined && updates.pincode && !/^\d{6}$/.test(String(updates.pincode).trim())) return res.status(400).json({ success: false, message: "Pincode must be exactly 6 digits" });
     const coaching = await Coaching.findByIdAndUpdate(req.user.coachingId, updates, { new: true, runValidators: true }).lean();
     if (!coaching) return res.status(404).json({ success: false, message: "Franchise not found" });
     return res.json({ success: true, message: "Settings updated successfully", data: coaching });
