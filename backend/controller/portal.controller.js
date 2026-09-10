@@ -74,7 +74,16 @@ export const getPortalDashboard = async (req, res) => {
       Student.find(filter).populate("courseId", "title name").populate("batchId", "name code").sort({ createdAt: -1 }).limit(5).lean(),
     ]);
     const currentStudent = role === "STUDENT"
-      ? await Student.findOne({ email: req.user.email }).populate("courseId", "title").lean()
+      ? await Student.findOne({
+          ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
+          $or: [
+            ...(mongoose.isValidObjectId(req.user._id) ? [{ userId: req.user._id }] : []),
+            ...(req.user.email ? [{ email: req.user.email.toLowerCase() }] : []),
+          ],
+        })
+          .populate("courseId", "title name description shortDescription")
+          .populate("batchId", "name code course startDate endDate startTime endTime days status")
+          .lean()
       : null;
     const data = role === "STUDENT"
       ? { students: currentStudent ? 1 : 0, courses: currentStudent?.courseId ? 1 : 0, attendance: currentStudent?.attendancePercentage || 0, pendingFees: currentStudent?.totalPending || 0, recent: currentStudent ? [currentStudent] : [] }

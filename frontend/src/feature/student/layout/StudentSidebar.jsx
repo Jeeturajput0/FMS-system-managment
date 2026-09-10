@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,19 +12,13 @@ import {
   User,
   Settings,
   LogOut,
-  ChevronDown,
   GraduationCap,
 } from "lucide-react";
-import { useStudentData } from "../context/StudentDataContext";
 
 const StudentSidebar = ({ open, onClose }) => {
-  const [openMenu, setOpenMenu] = useState("course");
   const navigate = useNavigate();
-  const { courses } = useStudentData();
 
-  const toggleMenu = (menu) => {
-    setOpenMenu((prev) => (prev === menu ? "" : menu));
-  };
+  const handleNavigation = () => onClose?.();
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
@@ -33,16 +27,10 @@ const StudentSidebar = ({ open, onClose }) => {
         : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
     }`;
 
-  const subLinkClass = ({ isActive }) =>
-    `block px-4 py-2 ml-8 rounded-lg text-xs font-medium transition ${
-      isActive
-        ? "text-amber-300 bg-slate-800"
-        : "text-slate-400 hover:text-slate-100"
-    }`;
-
   const handleLogout = () => {
     localStorage.removeItem("ai_scholars_token");
     localStorage.removeItem("ai_scholars_user");
+    localStorage.removeItem("studentData");
     navigate("/log", { replace: true });
   };
 
@@ -56,417 +44,98 @@ const StudentSidebar = ({ open, onClose }) => {
           className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 min-h-screen flex-col bg-[#0F172A] text-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 min-h-screen flex-col bg-[#0F172A] text-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        {/* Logo */}
+        <div className="px-6 py-5 border-b border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
+              <GraduationCap className="w-6 h-6" />
+            </div>
 
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-slate-800/80">
+            <div>
+              <h1 className="font-extrabold text-lg">AI SCHOLAR</h1>
 
-        <div className="flex items-center gap-3">
-
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
-            <GraduationCap className="w-6 h-6" />
+              <p className="text-[10px] text-slate-400">
+                Learn Today, Build Tomorrow
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h1 className="font-extrabold text-lg">
-              AI SCHOLAR
-            </h1>
-
-            <p className="text-[10px] text-slate-400">
-              Learn Today, Build Tomorrow
-            </p>
-          </div>
-
+          <p className="text-xs font-bold text-amber-400 mt-5">
+            Student Portal
+          </p>
         </div>
 
-        <p className="text-xs font-bold text-amber-400 mt-5">
-          Student Portal
-        </p>
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-2">
+          {/* Dashboard */}
+          <NavLink to="/student/dashboard" className={linkClass} onClick={handleNavigation}>
+            <LayoutDashboard className="w-5 h-5" />
+            Dashboard
+          </NavLink>
 
-      </div>
+          <NavLink to="/student/courses" className={linkClass} onClick={handleNavigation}>
+            <BookOpen className="w-5 h-5" />
+            My Course
+          </NavLink>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-2">
+          <NavLink to="/student/assignments" className={linkClass} onClick={handleNavigation}>
+            <ClipboardList className="w-5 h-5" />
+            Assignments
+          </NavLink>
 
-        {/* Dashboard */}
-        <NavLink
-          to="/student/dashboard"
-          className={linkClass}
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          Dashboard
-        </NavLink>
+          <NavLink to="/student/tests" className={linkClass} onClick={handleNavigation}>
+            <FlaskConical className="w-5 h-5" />
+            Tests & Exams
+          </NavLink>
 
-        {/* My Course */}
-        <div>
+          <NavLink to="/student/progress" className={linkClass} onClick={handleNavigation}>
+            <BarChart3 className="w-5 h-5" />
+            My Progress
+          </NavLink>
 
+          <NavLink to="/student/fees" className={linkClass} onClick={handleNavigation}>
+            <CreditCard className="w-5 h-5" />
+            Fees
+          </NavLink>
+
+          <NavLink to="/student/certificate" className={linkClass} onClick={handleNavigation}>
+            <Award className="w-5 h-5" />
+            Certificate
+          </NavLink>
+
+          {/* Notifications */}
+          <NavLink to="/student/notifications" className={linkClass} onClick={handleNavigation}>
+            <Bell className="w-5 h-5" />
+            Notifications
+          </NavLink>
+
+          {/* Profile */}
+          <NavLink to="/student/profile" className={linkClass} onClick={handleNavigation}>
+            <User className="w-5 h-5" />
+            My Profile
+          </NavLink>
+
+          {/* Settings */}
+          <NavLink to="/student/settings" className={linkClass} onClick={handleNavigation}>
+            <Settings className="w-5 h-5" />
+            Settings
+          </NavLink>
+        </nav>
+
+        {/* Logout */}
+        <div className="p-3 border-t border-slate-800/80">
           <button
-            onClick={() => toggleMenu("course")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-slate-800/60"
           >
-
-            <span className="flex items-center gap-3">
-              <BookOpen className="w-5 h-5" />
-              My Course
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 transition ${
-                openMenu === "course" ? "rotate-180" : ""
-              }`}
-            />
-
+            <LogOut className="w-5 h-5" />
+            Logout
           </button>
-
-          {openMenu === "course" && (
-            <div className="mt-1 space-y-1">
-
-              <NavLink
-                to="/student/courses"
-                className={subLinkClass}
-              >
-                Course Overview
-              </NavLink>
-
-              {courses.map((course) => (
-                <div
-                  key={course._id}
-                  className="ml-8 truncate px-4 py-2 text-xs font-bold text-amber-300"
-                  title={course.title}
-                >
-                  {course.title}
-                </div>
-              ))}
-
-              <NavLink
-                to="/student/courses/modules"
-                className={subLinkClass}
-              >
-                Modules
-              </NavLink>
-
-              <NavLink
-                to="/student/courses/topics"
-                className={subLinkClass}
-              >
-                Topics
-              </NavLink>
-
-              <NavLink
-                to="/student/courses/material"
-                className={subLinkClass}
-              >
-                Study Material
-              </NavLink>
-
-            </div>
-          )}
-
         </div>
-
-        {/* Assignments */}
-        <div>
-
-          <button
-            onClick={() => toggleMenu("assignments")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
-          >
-
-            <span className="flex items-center gap-3">
-              <ClipboardList className="w-5 h-5" />
-              Assignments
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 ${
-                openMenu === "assignments"
-                  ? "rotate-180"
-                  : ""
-              }`}
-            />
-
-          </button>
-
-          {openMenu === "assignments" && (
-            <div className="mt-1 space-y-1">
-
-              <NavLink
-                to="/student/assignments"
-                className={subLinkClass}
-              >
-                All Assignments
-              </NavLink>
-
-              <NavLink
-                to="/student/assignments/pending"
-                className={subLinkClass}
-              >
-                Pending
-              </NavLink>
-
-              <NavLink
-                to="/student/assignments/submitted"
-                className={subLinkClass}
-              >
-                Submitted
-              </NavLink>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Tests */}
-        <div>
-
-          <button
-            onClick={() => toggleMenu("tests")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
-          >
-
-            <span className="flex items-center gap-3">
-              <FlaskConical className="w-5 h-5" />
-              Tests & Exams
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 ${
-                openMenu === "tests"
-                  ? "rotate-180"
-                  : ""
-              }`}
-            />
-
-          </button>
-
-          {openMenu === "tests" && (
-            <div className="mt-1 space-y-1">
-
-              <NavLink
-                to="/student/tests"
-                className={subLinkClass}
-              >
-                Upcoming Tests
-              </NavLink>
-
-              <NavLink
-                to="/student/tests/attempt"
-                className={subLinkClass}
-              >
-                Attempt Test
-              </NavLink>
-
-              <NavLink
-                to="/student/tests/results"
-                className={subLinkClass}
-              >
-                Results
-              </NavLink>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Progress */}
-        <div>
-
-          <button
-            onClick={() => toggleMenu("progress")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
-          >
-
-            <span className="flex items-center gap-3">
-              <BarChart3 className="w-5 h-5" />
-              My Progress
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 ${
-                openMenu === "progress"
-                  ? "rotate-180"
-                  : ""
-              }`}
-            />
-
-          </button>
-
-          {openMenu === "progress" && (
-            <div className="mt-1 space-y-1">
-
-              <NavLink
-                to="/student/progress"
-                className={subLinkClass}
-              >
-                Course Progress
-              </NavLink>
-
-              <NavLink
-                to="/student/attendance"
-                className={subLinkClass}
-              >
-                Attendance
-              </NavLink>
-
-              <NavLink
-                to="/student/performance"
-                className={subLinkClass}
-              >
-                Performance
-              </NavLink>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Fees */}
-        <div>
-
-          <button
-            onClick={() => toggleMenu("fees")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
-          >
-
-            <span className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5" />
-              Fees
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 ${
-                openMenu === "fees"
-                  ? "rotate-180"
-                  : ""
-              }`}
-            />
-
-          </button>
-
-          {openMenu === "fees" && (
-            <div className="mt-1 space-y-1">
-
-              <NavLink
-                to="/student/fees"
-                className={subLinkClass}
-              >
-                Fee Details
-              </NavLink>
-
-              <NavLink
-                to="/student/fees/history"
-                className={subLinkClass}
-              >
-                Payment History
-              </NavLink>
-
-              <NavLink
-                to="/student/fees/pending"
-                className={subLinkClass}
-              >
-                Pending Fees
-              </NavLink>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Certificate */}
-        <div>
-
-          <button
-            onClick={() => toggleMenu("certificate")}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
-          >
-
-            <span className="flex items-center gap-3">
-              <Award className="w-5 h-5" />
-              Certificate
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 ${
-                openMenu === "certificate"
-                  ? "rotate-180"
-                  : ""
-              }`}
-            />
-
-          </button>
-
-          {openMenu === "certificate" && (
-            <div className="mt-1 space-y-1">
-
-              <NavLink
-                to="/student/certificate/eligibility"
-                className={subLinkClass}
-              >
-                Eligibility
-              </NavLink>
-
-              <NavLink
-                to="/student/certificate"
-                className={subLinkClass}
-              >
-                Certificate
-              </NavLink>
-
-              <NavLink
-                to="/student/certificate/verify"
-                className={subLinkClass}
-              >
-                Verify Certificate
-              </NavLink>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Notifications */}
-        <NavLink
-          to="/student/notifications"
-          className={linkClass}
-        >
-          <Bell className="w-5 h-5" />
-          Notifications
-        </NavLink>
-
-        {/* Profile */}
-        <NavLink
-          to="/student/profile"
-          className={linkClass}
-        >
-          <User className="w-5 h-5" />
-          My Profile
-        </NavLink>
-
-        {/* Settings */}
-        <NavLink
-          to="/student/settings"
-          className={linkClass}
-        >
-          <Settings className="w-5 h-5" />
-          Settings
-        </NavLink>
-
-      </nav>
-
-      {/* Logout */}
-      <div className="p-3 border-t border-slate-800/80">
-
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-slate-800/60"
-        >
-          <LogOut className="w-5 h-5" />
-          Logout
-        </button>
-
-      </div>
-
-    </aside>
+      </aside>
     </>
   );
 };

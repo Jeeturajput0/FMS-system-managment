@@ -1,6 +1,13 @@
 import React from "react";
+import { useStudentData } from "../context/StudentDataContext";
 
 const StudentAssignments = () => {
+  const { dashboard, loading, error } = useStudentData();
+  const student = dashboard?.recent?.[0];
+
+  if (loading) return <p className="text-sm text-slate-500">Loading assignments...</p>;
+  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-600">{error}</p>;
+
   return (
     <div className="space-y-6">
 
@@ -15,19 +22,11 @@ const StudentAssignments = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 p-6">
-
-        <p className="text-sm font-bold">
-          React Todo Application
+        <p className="text-sm text-slate-600">
+          {student?.courseId?.title
+            ? `No assignments have been assigned for ${student.courseId.title} yet.`
+            : "No assignments have been assigned to you yet."}
         </p>
-
-        <p className="text-xs text-slate-500 mt-1">
-          Due: 10 September 2026
-        </p>
-
-        <span className="inline-block mt-4 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold">
-          Pending
-        </span>
-
       </div>
 
     </div>

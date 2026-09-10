@@ -1,6 +1,13 @@
 import React from "react";
+import { useStudentData } from "../context/StudentDataContext";
 
 const StudentTests = () => {
+  const { dashboard, loading, error } = useStudentData();
+  const student = dashboard?.recent?.[0];
+
+  if (loading) return <p className="text-sm text-slate-500">Loading tests...</p>;
+  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-600">{error}</p>;
+
   return (
     <div className="space-y-6">
 
@@ -15,19 +22,11 @@ const StudentTests = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 p-6">
-
-        <h2 className="font-bold">
-          JavaScript Fundamentals Test
-        </h2>
-
-        <p className="text-xs text-slate-500 mt-2">
-          25 Questions • 30 Minutes
+        <p className="text-sm text-slate-600">
+          {student?.courseId?.title
+            ? `No tests have been assigned for ${student.courseId.title} yet.`
+            : "No tests have been assigned to you yet."}
         </p>
-
-        <button className="mt-5 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold">
-          Start Test
-        </button>
-
       </div>
 
     </div>

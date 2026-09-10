@@ -84,7 +84,7 @@ const StudentDashboard = () => {
                 </p>
 
                 <p className="text-xs text-slate-500 mt-1">
-                  React • Node.js • Express • MongoDB
+                  Batch: {student?.batchId?.name || student?.batchId?.code || "Not assigned"}
                 </p>
               </div>
 
