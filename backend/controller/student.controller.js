@@ -8,6 +8,9 @@ import Fee from "../model/fee.model.js";
 import Batch from "../model/batches.model.js";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
+import { isValidName, nameValidationMessage } from "../utils/name.js";
+
+const isValidEmail = (value) => /^\S+@\S+\.\S+$/.test(String(value || "").trim());
 
 const franchiseRoles = ["FRANCHISE", "FRANCHISE_ADMIN"];
 
@@ -121,6 +124,10 @@ export const createStudent = async (req, res) => {
       });
     }
 
+    if (!isValidName(name)) {
+      return res.status(400).json({ success: false, message: nameValidationMessage });
+    }
+
     if (!mobile?.trim()) {
       return res.status(400).json({
         success: false,
@@ -130,6 +137,10 @@ export const createStudent = async (req, res) => {
 
     if (!isValidPhoneNumber(mobile)) {
       return res.status(400).json({ success: false, message: phoneValidationMessage });
+    }
+
+    if (!email?.trim() || !isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: "Enter a valid email address" });
     }
 
     if (!courseId) {
@@ -695,6 +706,9 @@ export const updateStudent = async (req, res) => {
     // ==================================================
 
     if (name !== undefined) {
+      if (!name.trim() || !isValidName(name)) {
+        return res.status(400).json({ success: false, message: nameValidationMessage });
+      }
       student.name = name.trim();
     }
 
@@ -732,6 +746,9 @@ export const updateStudent = async (req, res) => {
     }
 
     if (email !== undefined) {
+      if (!email.trim() || !isValidEmail(email)) {
+        return res.status(400).json({ success: false, message: "Enter a valid email address" });
+      }
       student.email = email.trim().toLowerCase();
     }
 

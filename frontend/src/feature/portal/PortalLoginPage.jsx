@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/api";
 import { sanitizePhoneInput } from "../../utils/phone";
 import { sanitizeNameInput } from "../../utils/name";
+import logo from "../../../assist/logo.png";
 
 const roleOptions = [
   { value: "FRANCHISE", label: "Franchise" },
@@ -71,13 +72,10 @@ export const PortalLoginPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-[#eef4ff] px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid-cols-[.9fr_1.1fr]">
         <section className="hidden bg-blue-600 p-10 text-white lg:block">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 text-xl font-black">
-            AS
+          <div className="grid h-30 w-80 place-items-center rounded-2xl  text-xl font-black">
+           <img src={logo} alt="ghj" />
           </div>
-          <p className="mt-16 text-sm font-bold uppercase tracking-[.25em] text-blue-100">
-            AI Scholar
-          </p>
-          <h1 className="mt-4 text-4xl font-black leading-tight">
+          <h1 className=" text-4xl font-black leading-tight">
             Learn, teach and grow in one place.
           </h1>
           <p className="mt-5 max-w-sm text-sm leading-7 text-blue-100">

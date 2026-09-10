@@ -23,6 +23,7 @@ const FranchiseStudentAdd = () => {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [form, setForm] = useState({
     name: "",
@@ -79,6 +80,37 @@ const FranchiseStudentAdd = () => {
       ...prev,
       [name]: name === "mobile" ? sanitizePhoneInput(value) : name === "name" ? sanitizeNameInput(value) : value,
     }));
+    setFieldErrors((current) => ({ ...current, [name]: "" }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    const name = form.name.trim();
+    const email = form.email.trim();
+
+    if (!name) {
+      errors.name = "Student name is required.";
+    } else if (!new RegExp(`^${NAME_PATTERN}$`, "u").test(name)) {
+      errors.name = "Use letters, spaces, apostrophes, dots, or hyphens only.";
+    } else if (name.length < 2) {
+      errors.name = "Student name must be at least 2 characters.";
+    }
+
+    if (!/^\d{10}$/.test(form.mobile.trim())) {
+      errors.mobile = "Mobile number must be exactly 10 digits.";
+    }
+
+    if (!email) {
+      errors.email = "Email address is required.";
+    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+      errors.email = "Enter a valid email address.";
+    }
+
+    if (!form.courseId) {
+      errors.courseId = "Please select a course.";
+    }
+
+    return errors;
   };
 
   // =========================
@@ -86,6 +118,15 @@ const FranchiseStudentAdd = () => {
   // =========================
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const errors = validateForm();
+    setFieldErrors(errors);
+
+    // Do not make a create/update API request until every required field is valid.
+    if (Object.keys(errors).length) {
+      setMessage("Please correct the highlighted fields and try again.");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -175,6 +216,7 @@ const FranchiseStudentAdd = () => {
       ========================= */}
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
       >
         {/* Form Header */}
@@ -206,11 +248,14 @@ const FranchiseStudentAdd = () => {
               type="text"
               required
               pattern={NAME_PATTERN}
+              aria-invalid={Boolean(fieldErrors.name)}
+              aria-describedby={fieldErrors.name ? "name-error" : undefined}
               value={form.name}
               onChange={handleChange}
               placeholder="Enter student name"
-              className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className={getInputClass(fieldErrors.name)}
             />
+            <FieldError id="name-error" message={fieldErrors.name} />
           </div>
 
           {/* Mobile */}
@@ -231,11 +276,14 @@ const FranchiseStudentAdd = () => {
               inputMode="numeric"
               maxLength={10}
               pattern="[0-9]{10}"
+              aria-invalid={Boolean(fieldErrors.mobile)}
+              aria-describedby={fieldErrors.mobile ? "mobile-error" : undefined}
               value={form.mobile}
               onChange={handleChange}
               placeholder="Enter mobile number"
-              className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className={getInputClass(fieldErrors.mobile)}
             />
+            <FieldError id="mobile-error" message={fieldErrors.mobile} />
           </div>
 
           {/* Email */}
@@ -252,12 +300,16 @@ const FranchiseStudentAdd = () => {
               id="email"
               name="email"
               type="email"
+              required
               inputMode="email"
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? "email-error" : undefined}
               value={form.email}
               onChange={handleChange}
               placeholder="Enter email address"
-              className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className={getInputClass(fieldErrors.email)}
             />
+            <FieldError id="email-error" message={fieldErrors.email} />
           </div>
 
           {/* Course */}
@@ -277,7 +329,9 @@ const FranchiseStudentAdd = () => {
               value={form.courseId}
               onChange={handleChange}
               disabled={loadingCourses}
-              className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-50"
+              aria-invalid={Boolean(fieldErrors.courseId)}
+              aria-describedby={fieldErrors.courseId ? "course-error" : undefined}
+              className={`${getInputClass(fieldErrors.courseId)} disabled:cursor-not-allowed disabled:bg-slate-50`}
             >
               <option value="">
                 {loadingCourses ? "Loading courses..." : "Select course"}
@@ -289,6 +343,7 @@ const FranchiseStudentAdd = () => {
                 </option>
               ))}
             </select>
+            <FieldError id="course-error" message={fieldErrors.courseId} />
           </div>
         </div>
 
@@ -325,5 +380,19 @@ const FranchiseStudentAdd = () => {
     </div>
   );
 };
+
+const getInputClass = (hasError) =>
+  `mt-2 h-12 w-full rounded-xl border bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
+    hasError
+      ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
+      : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
+  }`;
+
+const FieldError = ({ id, message }) =>
+  message ? (
+    <p id={id} className="mt-1.5 text-xs font-medium text-red-600" role="alert">
+      {message}
+    </p>
+  ) : null;
 
 export default FranchiseStudentAdd;
