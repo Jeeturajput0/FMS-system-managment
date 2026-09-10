@@ -35,30 +35,75 @@ const empty = {
 const TeacherProfile = () => {
   const [formData, setFormData] = useState(empty);
   const [courses, setCourses] = useState([]);
+  const [savedFormData, setSavedFormData] = useState(empty);
+  const [teacherId, setTeacherId] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [loadingCourses, setLoadingCourses] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  
   useEffect(() => {
-    const loadCourses = async () => {
+    const loadProfile = async () => {
       try {
-        setLoadingCourses(true);
+        setProfileLoading(true);
+        setError("");
 
-        const response = await apiFetch("/api/courses");
+        // `/api/auth/me` is the actual current-user endpoint. Its `user.id`
+        // is then used with the existing populated teacher-profile endpoint.
+        const currentUserResponse = await apiFetch("/api/auth/me");
+        const currentTeacherId = currentUserResponse?.user?.id;
 
-        setCourses(response.data || []);
+        if (!currentTeacherId) {
+          throw new Error("Unable to identify the current teacher account.");
+        }
+
+        const profileResponse = await apiFetch(
+          `/api/portal/teachers/${currentTeacherId}`,
+        );
+        const teacher = profileResponse?.data;
+
+        if (!teacher) {
+          throw new Error("Teacher profile was not found.");
+        }
+
+        const assignedCourses = Array.isArray(teacher.assignedCourses)
+          ? teacher.assignedCourses
+          : [];
+
+        const nextFormData = {
+          name: teacher.name || "",
+          mobile: teacher.mobile || "",
+          email: teacher.email || "",
+          password: "",
+          qualification: teacher.qualification || "",
+          specialization: teacher.specialization || "",
+          experience: teacher.experience || "",
+          joiningDate: teacher.joiningDate
+            ? String(teacher.joiningDate).slice(0, 10)
+            : "",
+          address: teacher.address || "",
+          emergencyContact: teacher.emergencyContact || "",
+          // `courseIds` is the PUT request field; the persisted field is
+          // `assignedCourses`, which this endpoint has already populated.
+          courseIds: assignedCourses.map((course) =>
+            String(course?._id || course),
+          ),
+        };
+
+        setTeacherId(currentTeacherId);
+        setCourses(assignedCourses);
+        setFormData(nextFormData);
+        setSavedFormData(nextFormData);
       } catch (err) {
-        console.error("LOAD COURSES:", err);
-        setError(err.message || "Unable to load courses.");
+        console.error("LOAD TEACHER PROFILE:", err);
+        setError(err.message || "Unable to load your teacher profile.");
       } finally {
-        setLoadingCourses(false);
+        setProfileLoading(false);
       }
     };
 
-    loadCourses();
+    loadProfile();
   }, []);
 
   const handleChange = (event) => {
@@ -73,37 +118,46 @@ const TeacherProfile = () => {
     setMessage("");
   };
 
-  const handleCourseChange = (courseId) => {
-    setFormData((prev) => {
-      const alreadySelected = prev.courseIds.includes(courseId);
-
-      return {
-        ...prev,
-        courseIds: alreadySelected
-          ? prev.courseIds.filter((id) => id !== courseId)
-          : [...prev.courseIds, courseId],
-      };
-    });
-
-    setError("");
-    setMessage("");
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!teacherId) {
+      setError("Teacher profile is still loading. Please try again.");
+      return;
+    }
 
     try {
       setLoading(true);
       setError("");
       setMessage("");
 
-      
+      const payload = {
+        name: formData.name.trim(),
+        mobile: formData.mobile.trim(),
+        email: formData.email.trim(),
+        qualification: formData.qualification.trim(),
+        specialization: formData.specialization.trim(),
+        experience: formData.experience.trim(),
+        joiningDate: formData.joiningDate || null,
+        address: formData.address.trim(),
+        emergencyContact: formData.emergencyContact.trim(),
+        // Preserve the franchise-assigned courses. The backend expects this
+        // exact request field when updating a teacher.
+        courseIds: formData.courseIds,
+      };
 
-      console.log("PROFILE DATA:", formData);
+      if (formData.password.trim()) {
+        payload.password = formData.password;
+      }
 
-      setMessage(
-        "Profile data is ready. Connect your teacher update API endpoint."
-      );
+      await apiFetch(`/api/portal/teachers/${teacherId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      setFormData((current) => ({ ...current, password: "" }));
+      setSavedFormData((current) => ({ ...current, password: "" }));
+      setMessage("Profile updated successfully.");
     } catch (err) {
       console.error("SAVE PROFILE:", err);
       setError(err.message || "Unable to save profile.");
@@ -148,6 +202,14 @@ const TeacherProfile = () => {
           </div>
         )}
 
+        {profileLoading ? (
+          <div className="flex min-h-[360px] items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center gap-3 text-sm font-semibold text-slate-500">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              Loading your teacher profile...
+            </div>
+          </div>
+        ) : !teacherId ? null : (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* PROFILE HEADER CARD */}
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -261,6 +323,7 @@ const TeacherProfile = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter new password"
+                    autoComplete="new-password"
                     className={`${inputClass} pr-11`}
                   />
 
@@ -427,7 +490,7 @@ const TeacherProfile = () => {
                   </h2>
 
                   <p className="text-xs text-slate-500">
-                    Select the courses assigned to this teacher.
+                    Courses assigned to you by your franchise.
                   </p>
                 </div>
               </div>
@@ -437,21 +500,16 @@ const TeacherProfile = () => {
               </span>
             </div>
 
-            {loadingCourses ? (
-              <div className="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 p-8 text-sm text-slate-500">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading courses...
-              </div>
-            ) : courses.length === 0 ? (
+            {courses.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
                 <BookOpen className="mx-auto h-8 w-8 text-slate-300" />
 
                 <p className="mt-3 text-sm font-semibold text-slate-600">
-                  No courses available
+                  No courses assigned
                 </p>
 
                 <p className="mt-1 text-xs text-slate-400">
-                  Create courses first to assign them to teachers.
+                  Your franchise has not assigned any courses to this account yet.
                 </p>
               </div>
             ) : (
@@ -462,22 +520,17 @@ const TeacherProfile = () => {
                   );
 
                   return (
-                    <label
+                    <article
                       key={course._id}
-                      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
+                      className={`flex items-start gap-3 rounded-2xl border p-4 ${
                         selected
                           ? "border-blue-300 bg-blue-50"
-                          : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
+                          : "border-slate-200 bg-white"
                       }`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={() =>
-                          handleCourseChange(course._id)
-                        }
-                        className="mt-0.5 h-4 w-4 accent-blue-600"
-                      />
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-blue-600 text-[10px] font-black text-white">
+                        ✓
+                      </span>
 
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-slate-800">
@@ -490,7 +543,7 @@ const TeacherProfile = () => {
                             : "Course"}
                         </p>
                       </div>
-                    </label>
+                    </article>
                   );
                 })}
               </div>
@@ -502,7 +555,7 @@ const TeacherProfile = () => {
             <button
               type="button"
               onClick={() => {
-                setFormData(empty);
+                setFormData(savedFormData);
                 setMessage("");
                 setError("");
               }}
@@ -530,6 +583,7 @@ const TeacherProfile = () => {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );
