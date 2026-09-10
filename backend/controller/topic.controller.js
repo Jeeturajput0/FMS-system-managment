@@ -1,10 +1,32 @@
 import Topic from "../model/topic.model.js";
 import Module from "../model/module.model.js";
+import Student from "../model/student.model.js";
+import Course from "../model/course.model.js";
+
+const studentCanAccessModule = async (user, moduleId) => {
+  if (user.role !== "STUDENT") return true;
+  const module = await Module.findById(moduleId).select("courseId").lean();
+  if (!module) return false;
+  const courseId = module.courseId || (await Course.findOne({ modules: moduleId }).select("_id").lean())?._id;
+  const student = await Student.findOne({
+    ...(user.coachingId ? { coachingId: user.coachingId } : {}),
+    $or: [
+      ...(user._id ? [{ userId: user._id }] : []),
+      ...(user.email ? [{ email: user.email.toLowerCase() }] : []),
+    ],
+  }).select("courseId").lean();
+  return String(student?.courseId || "") === String(courseId || "");
+};
 
 export const getTopics = async (req, res) => {
   try {
     const filter = { isActive: true };
-    if (req.query.moduleId) filter.moduleId = req.query.moduleId;
+    if (req.query.moduleId) {
+      if (!(await studentCanAccessModule(req.user, req.query.moduleId))) {
+        return res.status(403).json({ success: false, message: "This module is not assigned to you" });
+      }
+      filter.moduleId = req.query.moduleId;
+    }
     const topics = await Topic.find(filter).populate({
       path: "moduleId",
       select: "title courseId",

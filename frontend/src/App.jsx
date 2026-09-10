@@ -351,6 +351,8 @@ function App() {
 
           <Route path="courses/:id" element={<StudentCourseDetail />} />
 
+          <Route path="courses/:courseId/modules/:moduleId/topics" element={<StudentTopics />} />
+
           <Route path="assignments" element={<StudentAssignments />} />
 
           <Route path="assignments/pending" element={<StudentAssignments />} />
