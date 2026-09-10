@@ -4,6 +4,7 @@ import { generateCenterCode } from "../utils/centerCode.js";
 import jwt from "jsonwebtoken";
 import User from "../model/user.model.js";
 import Coaching from "../model/coaching.model.js";
+import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 
 const secret = () => process.env.JWT_SECRET || "ai-scholars-dev-secret";
 const toPublicUser = (user) => ({
@@ -55,6 +56,9 @@ export const registerUser = async (req, res) => {
         success: false,
         message: "Phone number is required for franchise registration",
       });
+    }
+    if (role === "FRANCHISE" && !isValidPhoneNumber(phone)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
     }
 
     const user = await User.create({

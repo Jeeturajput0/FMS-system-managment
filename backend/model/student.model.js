@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 
 const studentSchema = new mongoose.Schema(
   {
@@ -62,6 +63,10 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: [true, "Mobile number is required"],
       trim: true,
+      validate: {
+        validator: isValidPhoneNumber,
+        message: phoneValidationMessage,
+      },
     },
 
     email: {

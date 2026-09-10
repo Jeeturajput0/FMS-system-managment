@@ -9,6 +9,7 @@ import Course from "../model/course.model.js";
 import bcrypt from "bcryptjs";
 import { generateCenterCode, generateUniqueCenterCode, normalizeCenterCode } from "../utils/centerCode.js";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
+import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 
 /*
 =========================================
@@ -42,6 +43,10 @@ const createCoaching = async (req, res) => {
         success: false,
         message: "Name, owner name, email, phone, city and a password of 6+ characters are required",
       });
+    }
+
+    if (!isValidPhoneNumber(phone)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -304,6 +309,10 @@ const updateCoaching = async (req, res) => {
 
     if (!name?.trim() || !ownerName?.trim() || !email?.trim() || !phone?.trim() || !city?.trim()) {
       return res.status(400).json({ success: false, message: "Name, owner name, email, phone and city are required" });
+    }
+
+    if (!isValidPhoneNumber(phone)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
     }
 
     if (email && email !== coaching.email) {

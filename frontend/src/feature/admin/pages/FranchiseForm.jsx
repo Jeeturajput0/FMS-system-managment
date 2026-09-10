@@ -3,6 +3,7 @@ import { ArrowLeft, Building2, Loader2, Save, Wand2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useData } from "../../../context/DataContext";
 import { apiFetch } from "../../../utils/api";
+import { sanitizePhoneInput } from "../../../utils/phone";
 
 const emptyForm = {
   name: "",
@@ -101,6 +102,7 @@ export default function FranchiseForm() {
 
   const change = (event) => {
     const { name, value } = event.target;
+    const nextValue = name === "phone" ? sanitizePhoneInput(value) : value;
     if (name === "name") {
       setForm((prev) => ({
         ...prev,
@@ -114,7 +116,7 @@ export default function FranchiseForm() {
     if (name === "code") setCenterCodeManuallyEdited(true);
     setForm((prev) => ({
       ...prev,
-      [name]: name === "code" ? value.toUpperCase() : value,
+      [name]: name === "code" ? nextValue.toUpperCase() : nextValue,
     }));
   };
 
@@ -264,6 +266,10 @@ export default function FranchiseForm() {
             value={form.phone}
             onChange={change}
             required
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            pattern="[0-9]{10}"
           />
           <Field
             label="City *"
@@ -395,6 +401,9 @@ function Field({
   type = "text",
   required = false,
   minLength,
+  maxLength,
+  pattern,
+  inputMode,
   placeholder = "",
 }) {
   return (
@@ -409,6 +418,9 @@ function Field({
         onChange={onChange}
         required={required}
         minLength={minLength}
+        maxLength={maxLength}
+        pattern={pattern}
+        inputMode={inputMode}
         placeholder={placeholder}
         className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
       />

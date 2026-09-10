@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
+import { sanitizePhoneInput } from "../../../utils/phone";
 
 const FranchiseStudentAdd = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const FranchiseStudentAdd = () => {
 
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "mobile" ? sanitizePhoneInput(value) : value,
     }));
   };
 
@@ -225,6 +226,9 @@ const FranchiseStudentAdd = () => {
               name="mobile"
               type="tel"
               required
+              inputMode="numeric"
+              maxLength={10}
+              pattern="[0-9]{10}"
               value={form.mobile}
               onChange={handleChange}
               placeholder="Enter mobile number"

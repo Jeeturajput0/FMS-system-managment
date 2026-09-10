@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 import { apiFetch } from "../../../utils/api";
+import { sanitizePhoneInput } from "../../../utils/phone";
 
 /* =========================================================
    API ENDPOINTS
@@ -539,7 +540,7 @@ export const StudentDirectory = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "mobile" ? sanitizePhoneInput(value) : value,
     }));
   };
 
@@ -1323,9 +1324,12 @@ export const StudentDirectory = () => {
                   </label>
 
                   <input
-                    type="text"
+                    type="tel"
                     name="mobile"
                     required
+                    inputMode="numeric"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
                     placeholder="9876500000"
                     value={
                       formData.mobile

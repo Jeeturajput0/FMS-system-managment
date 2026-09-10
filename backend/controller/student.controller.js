@@ -7,6 +7,7 @@ import Coaching from "../model/coaching.model.js";
 import Fee from "../model/fee.model.js";
 import Batch from "../model/batches.model.js";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
+import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 
 const franchiseRoles = ["FRANCHISE", "FRANCHISE_ADMIN"];
 
@@ -125,6 +126,10 @@ export const createStudent = async (req, res) => {
         success: false,
         message: "Mobile number is required",
       });
+    }
+
+    if (!isValidPhoneNumber(mobile)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
     }
 
     if (!courseId) {
@@ -702,6 +707,10 @@ export const updateStudent = async (req, res) => {
     }
 
     if (mobile !== undefined) {
+      if (!isValidPhoneNumber(mobile)) {
+        return res.status(400).json({ success: false, message: phoneValidationMessage });
+      }
+
       const duplicate = await Student.findOne({
         coachingId: student.coachingId,
 
