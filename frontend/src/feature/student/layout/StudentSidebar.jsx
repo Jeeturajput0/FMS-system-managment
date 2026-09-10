@@ -141,3 +141,4 @@ const StudentSidebar = ({ open, onClose }) => {
 };
 
 export default StudentSidebar;
+mere student ke sidebar course card ko sahi se view krao aur course  pe click krne pe course ke module show kraye module pe click krne pe topic show kraye
