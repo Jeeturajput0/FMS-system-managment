@@ -83,7 +83,6 @@ import TeacherAssignments from "./feature/teacher/pages/TeacherAssignments";
 import TeacherExams from "./feature/teacher/pages/TeacherExams";
 import TeacherResults from "./feature/teacher/pages/TeacherResults";
 import TeacherProfile from "./feature/teacher/pages/TeacherProfile";
-import TeacherFees from "./feature/teacher/pages/TeacherFees";
 
 // =========================
 // STUDENT PORTAL
@@ -423,7 +422,6 @@ function App() {
 
           <Route path="results" element={<TeacherResults />} />
 
-          <Route path="fees" element={<TeacherFees />} />
 
           <Route path="profile" element={<TeacherProfile />} />
         </Route>
