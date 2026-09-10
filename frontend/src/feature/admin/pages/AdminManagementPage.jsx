@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Edit, Plus, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
+import { sanitizeNameInput } from "../../../utils/name";
 
 const emptyForm = { name: "", email: "", password: "", role: "ADMIN" };
 
@@ -26,7 +27,7 @@ export default function AdminManagementPage() {
 
   useEffect(() => { loadAdmins(); }, []);
 
-  const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.name === "name" ? sanitizeNameInput(event.target.value) : event.target.value }));
   const reset = () => { setForm(emptyForm); setEditingId(""); };
 
   const submit = async (event) => {

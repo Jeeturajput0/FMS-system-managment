@@ -83,9 +83,11 @@ export const CourseCatalog = () => {
   }, []);
 
   const filteredCourses = courses.filter((c) => {
+    const title = String(c?.title || c?.name || "").toLowerCase();
+    const category = String(c?.category || "").toLowerCase();
+    const query = search.toLowerCase();
     const matchesSearch =
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.category.toLowerCase().includes(search.toLowerCase());
+      title.includes(query) || category.includes(query);
     const matchesStatus = statusFilter === "All" || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });

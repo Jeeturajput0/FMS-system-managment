@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 import { Link } from "react-router-dom";
+import { sanitizePhoneInput } from "../../../utils/phone";
+import { sanitizeNameInput } from "../../../utils/name";
 
 const empty = {
   name: "",
@@ -764,7 +766,7 @@ const FranchiseTeachers = () => {
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        name: e.target.value,
+                        name: sanitizeNameInput(e.target.value),
                       })
                     }
                     className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium outline-none transition focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100"

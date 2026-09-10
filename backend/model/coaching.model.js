@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
+import { isValidName, nameValidationMessage } from "../utils/name.js";
 
 const coachingSchema = new mongoose.Schema(
   {
@@ -7,6 +8,7 @@ const coachingSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      validate: { validator: isValidName, message: nameValidationMessage },
     },
 
     code: {
@@ -28,6 +30,7 @@ const coachingSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      validate: { validator: isValidName, message: nameValidationMessage },
     },
 
     email: {

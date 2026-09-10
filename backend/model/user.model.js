@@ -1,8 +1,15 @@
 import mongoose from "mongoose";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
+import { isValidName, nameValidationMessage } from "../utils/name.js";
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true, maxlength: 100 },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+      validate: { validator: isValidName, message: nameValidationMessage },
+    },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     mobile: {
       type: String,

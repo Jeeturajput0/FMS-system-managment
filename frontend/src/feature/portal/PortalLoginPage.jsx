@@ -3,6 +3,7 @@ import { ArrowRight, Lock, Mail, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/api";
 import { sanitizePhoneInput } from "../../utils/phone";
+import { sanitizeNameInput } from "../../utils/name";
 
 const roleOptions = [
   { value: "FRANCHISE", label: "Franchise" },
@@ -35,7 +36,9 @@ export const PortalLoginPage = () => {
       ...current,
       [event.target.name]: event.target.name === "phone"
         ? sanitizePhoneInput(event.target.value)
-        : event.target.value,
+        : event.target.name === "name" || event.target.name === "franchiseName"
+          ? sanitizeNameInput(event.target.value)
+          : event.target.value,
     }));
   const submit = async (event) => {
     event.preventDefault();

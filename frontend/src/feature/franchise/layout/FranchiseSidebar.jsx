@@ -10,10 +10,11 @@ import {
   BarChart3,
   UserRound,
   Settings,
+  LogOut,
   X,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../../../../assist/logo.png";
 
 const menuItems = [
@@ -65,6 +66,12 @@ const menuItems = [
 ];
 
 export const FranchiseSidebar = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
+  const logout = () => {
+    localStorage.removeItem("ai_scholars_token");
+    localStorage.removeItem("ai_scholars_user");
+    navigate("/log", { replace: true });
+  };
   return (
     <>
       {/* Mobile Overlay */}
@@ -158,6 +165,9 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
             <Settings size={19} />
             Settings
           </NavLink>
+          <button type="button" onClick={logout} className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-400 hover:bg-red-950/40 hover:text-red-300">
+            <LogOut size={19} /> Logout
+          </button>
         </div>
       </aside>
     </>

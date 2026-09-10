@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
+import { isValidName, nameValidationMessage } from "../utils/name.js";
 
 const studentSchema = new mongoose.Schema(
   {
@@ -45,18 +46,21 @@ const studentSchema = new mongoose.Schema(
       trim: true,
       minlength: 2,
       maxlength: 100,
+      validate: { validator: isValidName, message: nameValidationMessage },
     },
 
     fatherName: {
       type: String,
       trim: true,
       default: "",
+      validate: { validator: (value) => !value || isValidName(value), message: nameValidationMessage },
     },
 
     motherName: {
       type: String,
       trim: true,
       default: "",
+      validate: { validator: (value) => !value || isValidName(value), message: nameValidationMessage },
     },
 
     mobile: {

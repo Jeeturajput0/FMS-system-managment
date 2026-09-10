@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
+import { sanitizeNameInput } from "../../../utils/name";
 
 const FranchiseStudentAdd = () => {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ const FranchiseStudentAdd = () => {
 
     setForm((prev) => ({
       ...prev,
-      [name]: name === "mobile" ? sanitizePhoneInput(value) : value,
+      [name]: name === "mobile" ? sanitizePhoneInput(value) : name === "name" ? sanitizeNameInput(value) : value,
     }));
   };
 

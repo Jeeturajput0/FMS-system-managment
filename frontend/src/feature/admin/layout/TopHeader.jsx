@@ -219,7 +219,7 @@ export const TopHeader = ({ onMenuClick }) => {
               <div className="border-t border-slate-100 my-1"></div>
               <Link
                 to="/login"
-                onClick={() => setShowProfileMenu(false)}
+                onClick={() => { localStorage.removeItem('ai_scholars_token'); localStorage.removeItem('ai_scholars_user'); setShowProfileMenu(false); }}
                 className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
               >
                 <LogOut className="w-4 h-4" /> Sign Out

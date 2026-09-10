@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useData } from "../../../context/DataContext";
 import { apiFetch } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
+import { sanitizeNameInput } from "../../../utils/name";
 
 const emptyForm = {
   name: "",
@@ -102,11 +103,11 @@ export default function FranchiseForm() {
 
   const change = (event) => {
     const { name, value } = event.target;
-    const nextValue = name === "phone" ? sanitizePhoneInput(value) : value;
+    const nextValue = name === "phone" ? sanitizePhoneInput(value) : ["name", "ownerName"].includes(name) ? sanitizeNameInput(value) : value;
     if (name === "name") {
       setForm((prev) => ({
         ...prev,
-        name: value,
+        name: nextValue,
         ...(!centerCodeManuallyEdited
           ? { code: generateCenterCode(value) }
           : {}),

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { isValidName, nameValidationMessage } from "../utils/name.js";
 
 const batchSchema = new mongoose.Schema(
   {
@@ -6,6 +7,7 @@ const batchSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      validate: { validator: isValidName, message: nameValidationMessage },
     },
 
     code: {

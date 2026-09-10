@@ -5,6 +5,8 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import { useEffect } from "react";
+import { sanitizeNameInput } from "./utils/name";
 
 import { AdminLayout } from "../src/feature/admin/layout/AdminLayout";
 
@@ -178,9 +180,25 @@ const ProtectedPortalRoute = ({ role }) => {
 // APP
 // ============================================================
 
+function NameInputGuard() {
+  useEffect(() => {
+    const nameFields = new Set(["name", "ownerName", "fatherName", "motherName", "franchiseName", "studentName", "teacherName", "adminName"]);
+    const handleInput = (event) => {
+      const input = event.target;
+      if (!input?.matches?.("input, textarea") || !nameFields.has(input.name)) return;
+      const sanitized = sanitizeNameInput(input.value);
+      if (sanitized !== input.value) input.value = sanitized;
+    };
+    document.addEventListener("input", handleInput, true);
+    return () => document.removeEventListener("input", handleInput, true);
+  }, []);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <NameInputGuard />
       <Routes>
         {/* ======================================================
             PUBLIC ROUTES
