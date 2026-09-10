@@ -1,10 +1,24 @@
 import mongoose from "mongoose";
-
+import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 100 },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    mobile: { type: String, trim: true, default: "" },
+    mobile: {
+      type: String,
+      trim: true,
+      default: "",
+      validate: {
+        validator: (value) => !value || isValidPhoneNumber(value),
+        message: phoneValidationMessage,
+      },
+    },
+    qualification: { type: String, trim: true, default: "" },
+    specialization: { type: String, trim: true, default: "" },
+    experience: { type: String, trim: true, default: "" },
+    joiningDate: { type: Date, default: null },
+    address: { type: String, trim: true, default: "" },
+    emergencyContact: { type: String, trim: true, default: "" },
     teacherId: { type: String, unique: true, sparse: true, trim: true },
     password: { type: String, required: true, select: false },
     role: {

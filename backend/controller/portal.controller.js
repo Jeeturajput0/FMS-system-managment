@@ -8,7 +8,7 @@ import Batch from "../model/batches.model.js";
 import Attendance from "../model/attendance.model.js";
 import bcrypt from "bcryptjs";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
-
+import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 const coachingFilter = (user) => user.coachingId ? { coachingId: user.coachingId } : {};
 
 const getTeacherBatchIds = async (user) => {
@@ -159,7 +159,7 @@ export const getPortalTeachers = async (req, res) => {
       role: "TEACHER",
       ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
     };
-    const data = await User.find(filter).select("name teacherId email mobile isActive coachingId assignedCourses createdAt").populate("assignedCourses", "title name").sort({ name: 1 }).lean();
+    const data = await User.find(filter).select("name teacherId email mobile qualification specialization experience joiningDate address emergencyContact isActive coachingId assignedCourses createdAt").populate("assignedCourses", "title name").sort({ name: 1 }).lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load teachers", error: error.message });
@@ -173,7 +173,7 @@ export const getPortalTeacherById = async (req, res) => {
       role: "TEACHER",
       ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
     })
-      .select("name teacherId email mobile isActive coachingId assignedCourses createdAt updatedAt")
+      .select("name teacherId email mobile qualification specialization experience joiningDate address emergencyContact isActive coachingId assignedCourses createdAt updatedAt")
       .populate("assignedCourses", "title name description category")
       .populate("coachingId", "name code email phone address city state")
       .lean();
@@ -213,9 +213,12 @@ export const getPortalTeacherBatches = async (req, res) => {
 
 export const createPortalTeacher = async (req, res) => {
   try {
-    const { name, email, mobile, password, courseIds = [] } = req.body;
+    const { name, email, mobile, password, courseIds = [], qualification = "", specialization = "", experience = "", joiningDate = null, address = "", emergencyContact = "" } = req.body;
     if (!name?.trim() || !email?.trim() || !mobile?.trim() || !password || password.length < 6) {
       return res.status(400).json({ success: false, message: "Name, mobile, email and password of 6+ characters are required" });
+    }
+    if (!isValidPhoneNumber(mobile)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
     }
     if (await User.exists({ email: email.trim().toLowerCase() })) {
       return res.status(409).json({ success: false, message: "Email is already registered" });
@@ -231,8 +234,8 @@ export const createPortalTeacher = async (req, res) => {
       filter: { role: "TEACHER", coachingId: req.user.coachingId },
       prefixIncludesDate: true,
     });
-    const teacher = await User.create({ name: name.trim(), teacherId, email: email.trim().toLowerCase(), mobile: mobile.trim(), password: await bcrypt.hash(password, 12), role: "TEACHER", coachingId: req.user.coachingId, assignedCourses: validCourseIds });
-    const data = await User.findById(teacher._id).select("name teacherId email mobile isActive assignedCourses").populate("assignedCourses", "title name").lean();
+    const teacher = await User.create({ name: name.trim(), teacherId, email: email.trim().toLowerCase(), mobile: mobile.trim(), qualification: qualification.trim(), specialization: specialization.trim(), experience: experience.trim(), joiningDate: joiningDate || null, address: address.trim(), emergencyContact: emergencyContact.trim(), password: await bcrypt.hash(password, 12), role: "TEACHER", coachingId: req.user.coachingId, assignedCourses: validCourseIds });
+    const data = await User.findById(teacher._id).select("name teacherId email mobile qualification specialization experience joiningDate address emergencyContact isActive assignedCourses").populate("assignedCourses", "title name").lean();
     return res.status(201).json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to create teacher", error: error.message });
@@ -241,17 +244,26 @@ export const createPortalTeacher = async (req, res) => {
 
 export const updatePortalTeacher = async (req, res) => {
   try {
-    const { name, email, mobile, password, courseIds = [], isActive } = req.body;
+    const { name, email, mobile, password, courseIds = [], isActive, qualification, specialization, experience, joiningDate, address, emergencyContact } = req.body;
     const teacher = await User.findOne({ _id: req.params.id, role: "TEACHER", coachingId: req.user.coachingId });
     if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
     if (name?.trim()) teacher.name = name.trim();
     if (email?.trim()) teacher.email = email.trim().toLowerCase();
+    if (mobile !== undefined && !isValidPhoneNumber(mobile)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
+    }
     if (mobile?.trim()) teacher.mobile = mobile.trim();
+    if (qualification !== undefined) teacher.qualification = qualification.trim();
+    if (specialization !== undefined) teacher.specialization = specialization.trim();
+    if (experience !== undefined) teacher.experience = experience.trim();
+    if (joiningDate !== undefined) teacher.joiningDate = joiningDate || null;
+    if (address !== undefined) teacher.address = address.trim();
+    if (emergencyContact !== undefined) teacher.emergencyContact = emergencyContact.trim();
     if (Array.isArray(courseIds)) teacher.assignedCourses = courseIds.filter((id) => mongoose.isValidObjectId(id));
     if (typeof isActive === "boolean") teacher.isActive = isActive;
     if (password) teacher.password = await bcrypt.hash(password, 12);
     await teacher.save();
-    const data = await User.findById(teacher._id).select("name email mobile isActive assignedCourses createdAt").populate("assignedCourses", "title name").lean();
+    const data = await User.findById(teacher._id).select("name email mobile qualification specialization experience joiningDate address emergencyContact isActive assignedCourses createdAt").populate("assignedCourses", "title name").lean();
     return res.json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to update teacher", error: error.message });

@@ -55,14 +55,17 @@ const FranchiseTeacherView = () => {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[[Phone, "Mobile", teacher.mobile || "Not provided"], [BookOpen, "Assigned courses", courses.length], [CalendarDays, "Joined", formatDate(teacher.createdAt)], [Users, "Batch students", teacher.totalStudents || 0]].map(([Icon, label, value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><Icon size={18} className="text-blue-600" /><p className="mt-3 text-xs font-semibold text-slate-500">{label}</p><p className="mt-1 truncate text-sm font-black text-slate-900">{value}</p></div>)}
+        {[[Phone, "Mobile", teacher.mobile || "Not provided"], [BookOpen, "Assigned courses", courses.length], [CalendarDays, "Joined", formatDate(teacher.joiningDate || teacher.createdAt)], [Users, "Batch students", teacher.totalStudents || 0]].map(([Icon, label, value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><Icon size={18} className="text-blue-600" /><p className="mt-3 text-xs font-semibold text-slate-500">{label}</p><p className="mt-1 truncate text-sm font-black text-slate-900">{value}</p></div>)}
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black text-slate-900">Contact & franchise details</h2>
+          <h2 className="text-lg font-black text-slate-900">Contact & professional details</h2>
           <div className="mt-4 space-y-4">
             {[[Mail, "Email", teacher.email], [Phone, "Mobile", teacher.mobile], [MapPin, "Franchise", teacher.coachingId?.name], [CalendarDays, "Profile created", formatDate(teacher.createdAt)]].map(([Icon, label, value]) => <div key={label} className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-50 text-blue-600"><Icon size={16} /></div><div><p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</p><p className="text-sm font-semibold text-slate-700">{value || "-"}</p></div></div>)}
+            <div className="grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+              {[["Qualification", teacher.qualification], ["Specialization", teacher.specialization], ["Experience", teacher.experience], ["Emergency contact", teacher.emergencyContact], ["Address", teacher.address]].map(([label, value]) => <div key={label} className="min-w-0"><p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</p><p className="mt-1 break-words text-sm font-semibold text-slate-700">{value || "-"}</p></div>)}
+            </div>
           </div>
         </section>
 

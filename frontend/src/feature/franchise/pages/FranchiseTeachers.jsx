@@ -24,6 +24,12 @@ const empty = {
   mobile: "",
   email: "",
   password: "",
+  qualification: "",
+  specialization: "",
+  experience: "",
+  joiningDate: "",
+  address: "",
+  emergencyContact: "",
   courseIds: [],
 };
 
@@ -136,6 +142,12 @@ const FranchiseTeachers = () => {
       mobile: teacher?.mobile || "",
       email: teacher?.email || "",
       password: "",
+      qualification: teacher?.qualification || "",
+      specialization: teacher?.specialization || "",
+      experience: teacher?.experience || "",
+      joiningDate: teacher?.joiningDate ? teacher.joiningDate.slice(0, 10) : "",
+      address: teacher?.address || "",
+      emergencyContact: teacher?.emergencyContact || "",
       courseIds: (teacher?.assignedCourses || []).map(
         (course) => course._id
       ),
@@ -768,12 +780,15 @@ const FranchiseTeachers = () => {
                   <input
                     required
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
                     placeholder="Enter mobile number"
                     value={form.mobile}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        mobile: e.target.value,
+                        mobile: sanitizePhoneInput(e.target.value),
                       })
                     }
                     className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium outline-none transition focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100"
@@ -824,6 +839,59 @@ const FranchiseTeachers = () => {
                     />
                   </div>
                 )}
+              </div>
+
+              {/* Professional and personal details */}
+              <div className="border-t border-slate-100 pt-4">
+                <div className="mb-3">
+                  <p className="text-xs font-black text-slate-800">Additional Details</p>
+                  <p className="text-[10px] text-slate-400">Add the teacher&apos;s professional and contact information.</p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    ["qualification", "Qualification", "e.g. M.Sc, B.Ed"],
+                    ["specialization", "Subject / Specialization", "e.g. Mathematics"],
+                    ["experience", "Teaching Experience", "e.g. 5 years"],
+                    ["emergencyContact", "Emergency Contact", "Name and phone number"],
+                  ].map(([key, label, placeholder]) => (
+                    <div key={key}>
+                      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        {label}
+                      </label>
+                      <input
+                        value={form[key]}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                        placeholder={placeholder}
+                        className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium outline-none transition focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100"
+                      />
+                    </div>
+                  ))}
+
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Joining Date
+                    </label>
+                    <input
+                      type="date"
+                      value={form.joiningDate}
+                      onChange={(e) => setForm({ ...form, joiningDate: e.target.value })}
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium outline-none transition focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Address
+                    </label>
+                    <input
+                      value={form.address}
+                      onChange={(e) => setForm({ ...form, address: e.target.value })}
+                      placeholder="Residential address"
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium outline-none transition focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Courses */}
