@@ -182,10 +182,20 @@ const ProtectedPortalRoute = ({ role }) => {
 
 function NameInputGuard() {
   useEffect(() => {
-    const nameFields = new Set(["name", "ownerName", "fatherName", "motherName", "franchiseName", "studentName", "teacherName", "adminName"]);
+    const nameFields = new Set([
+      "name",
+      "ownerName",
+      "fatherName",
+      "motherName",
+      "franchiseName",
+      "studentName",
+      "teacherName",
+      "adminName",
+    ]);
     const handleInput = (event) => {
       const input = event.target;
-      if (!input?.matches?.("input, textarea") || !nameFields.has(input.name)) return;
+      if (!input?.matches?.("input, textarea") || !nameFields.has(input.name))
+        return;
       const sanitized = sanitizeNameInput(input.value);
       if (sanitized !== input.value) input.value = sanitized;
     };
@@ -287,7 +297,10 @@ function App() {
 
           <Route path="students/:id" element={<StudentDetail />} />
 
-          <Route path="students/:id/certificate" element={<StudentCertificate />} />
+          <Route
+            path="students/:id/certificate"
+            element={<StudentCertificate />}
+          />
 
           {/* ----------------------------------------------------
               FEES
@@ -304,17 +317,11 @@ function App() {
             element={<AdminPlaceholderPage title="Certificates" />}
           />
 
-          <Route
-            path="notifications"
-            element={<AdminNotificationsPage />}
-          />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
 
           <Route path="admins" element={<AdminManagementPage />} />
 
-          <Route
-            path="reports"
-            element={<AdminReportsPage />}
-          />
+          <Route path="reports" element={<AdminReportsPage />} />
 
           <Route path="settings" element={<AdminProfilePage />} />
 
@@ -399,7 +406,10 @@ function App() {
 
           <Route path="students" element={<TeacherStudents />} />
 
-          <Route path="students/:id/certificate" element={<StudentCertificate />} />
+          <Route
+            path="students/:id/certificate"
+            element={<StudentCertificate />}
+          />
 
           <Route path="courses" element={<TeacherCourses />} />
 
@@ -434,7 +444,10 @@ function App() {
 
           <Route path="students/:id" element={<FranchiseStudentView />} />
 
-          <Route path="students/:id/certificate" element={<StudentCertificate />} />
+          <Route
+            path="students/:id/certificate"
+            element={<StudentCertificate />}
+          />
 
           <Route path="students/add" element={<FranchiseStudentAdd />} />
 

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
-import { sanitizeNameInput } from "../../../utils/name";
+import { NAME_PATTERN, sanitizeNameInput } from "../../../utils/name";
 
 const FranchiseStudentAdd = () => {
   const navigate = useNavigate();
@@ -205,6 +205,7 @@ const FranchiseStudentAdd = () => {
               name="name"
               type="text"
               required
+              pattern={NAME_PATTERN}
               value={form.name}
               onChange={handleChange}
               placeholder="Enter student name"
@@ -251,6 +252,7 @@ const FranchiseStudentAdd = () => {
               id="email"
               name="email"
               type="email"
+              inputMode="email"
               value={form.email}
               onChange={handleChange}
               placeholder="Enter email address"
