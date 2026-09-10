@@ -52,7 +52,7 @@ export const DashboardOverview = () => {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold border border-orange-500/30 mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> AI Scholar Admin OS v3.4
+              <Sparkles className="w-3.5 h-3.5" /> AI Scholar Admin 
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Welcome, {JSON.parse(localStorage.getItem('ai_scholars_user') || 'null')?.name || 'Admin'}
