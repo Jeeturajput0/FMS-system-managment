@@ -54,9 +54,7 @@ const StudentSidebar = ({ open, onClose }) => {
             <div>
               <img src={logo} alt="AI Scholars" className="h-12 w-auto max-w-[190px] object-contain" />
 
-              <p className="text-[10px] text-slate-400">
-                Learn Today, Build Tomorrow
-              </p>
+              
             </div>
           </div>
 
