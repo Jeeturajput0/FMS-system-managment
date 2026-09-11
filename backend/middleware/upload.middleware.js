@@ -1,20 +1,24 @@
 import multer from "multer";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDirectory = path.join(__dirname, "../upload");
+const allowedImageTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
 
-fs.mkdirSync(uploadDirectory, { recursive: true });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+  fileFilter: (_req, file, callback) => {
+    if (!allowedImageTypes.has(file.mimetype)) {
+      return callback(
+        new multer.MulterError("LIMIT_UNEXPECTED_FILE", "images"),
+      );
+    }
 
-const storage = multer.diskStorage({
-  destination: uploadDirectory,
-  filename: (_req, file, callback) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    callback(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${extension}`);
+    callback(null, true);
   },
 });
 
-export const courseUpload = multer({ storage }).array("images", 5);
+export const courseUpload = upload.array("images", 5);

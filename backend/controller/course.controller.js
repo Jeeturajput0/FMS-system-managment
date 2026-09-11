@@ -1,6 +1,9 @@
 import Course from "../model/course.model.js";
 import Module from "../model/module.model.js";
 import mongoose from "mongoose";
+import path from "path";
+import { randomUUID } from "crypto";
+import { getImageKit } from "../config/imagekit.js";
 
 const getDuration = (duration) =>
   typeof duration === "string" ? JSON.parse(duration) : duration;
@@ -22,6 +25,63 @@ const hasRequiredData = (course) =>
   course.description &&
   course.duration?.value &&
   !Number.isNaN(course.courseFee);
+
+const imageExtensions = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+};
+
+const hasValidImageSignature = (file) => {
+  const bytes = file.buffer;
+  if (!bytes?.length) return false;
+
+  if (file.mimetype === "image/jpeg") {
+    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (file.mimetype === "image/png") {
+    return bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  }
+  if (file.mimetype === "image/gif") {
+    return bytes.subarray(0, 6).toString("ascii") === "GIF87a" || bytes.subarray(0, 6).toString("ascii") === "GIF89a";
+  }
+  if (file.mimetype === "image/webp") {
+    return bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP";
+  }
+  return false;
+};
+
+const uploadCourseImages = async (files) => {
+  if (files.some((file) => !hasValidImageSignature(file))) {
+    const error = new Error("One or more uploaded files are not valid images");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  try {
+    const imagekit = getImageKit();
+    const uploads = await Promise.all(
+      files.map((file) => {
+        const extension = imageExtensions[file.mimetype] || path.extname(file.originalname).toLowerCase();
+        return imagekit.upload({
+          file: file.buffer.toString("base64"),
+          fileName: `course-${Date.now()}-${randomUUID()}${extension}`,
+          folder: "/courses",
+          useUniqueFileName: false,
+        });
+      }),
+    );
+
+    return uploads.map((upload) => upload.url);
+  } catch (error) {
+    if (error.statusCode) throw error;
+    const uploadError = new Error("Failed to upload image to ImageKit");
+    uploadError.statusCode = 502;
+    uploadError.cause = error;
+    throw uploadError;
+  }
+};
 
 export const listCourses = async (_req, res) => {
   const courses = await Course.find({ isActive: true }).sort({ createdAt: -1 });
@@ -118,6 +178,13 @@ export const createCourse = async (req, res) => {
       });
     }
 
+    if (!req.files?.length) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one course image is required",
+      });
+    }
+
     const titleAlreadyUsed = await Course.exists({ title: data.title });
     if (titleAlreadyUsed) {
       return res.status(409).json({
@@ -126,17 +193,22 @@ export const createCourse = async (req, res) => {
       });
     }
 
-    const uploadedImages = (req.files || []).map(
-      (file) => `/upload/${file.filename}`,
-    );
-
-    const course = await Course.create({
-      ...data,
-      images: uploadedImages,
-      thumbnail: uploadedImages[0] || "",
-      isPublished: true,
-      createdBy: req.user._id,
-    });
+    const uploadedImages = await uploadCourseImages(req.files);
+    let course;
+    try {
+      course = await Course.create({
+        ...data,
+        images: uploadedImages,
+        thumbnail: uploadedImages[0],
+        isPublished: true,
+        createdBy: req.user._id,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Image uploaded, but the course could not be saved to MongoDB",
+      });
+    }
     return res.status(201).json({
       success: true,
       data: course,
@@ -148,7 +220,10 @@ export const createCourse = async (req, res) => {
         success: false,
         message: "A course with this title already exists",
       });
-    throw error;
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "Failed to create course",
+    });
   }
 };
 
@@ -156,7 +231,7 @@ export const updateCourse = async (req, res) => {
   try {
     const updates = getCourseData(req.body);
     if (req.files?.length) {
-      updates.images = req.files.map((file) => `/upload/${file.filename}`);
+      updates.images = await uploadCourseImages(req.files);
       updates.thumbnail = updates.images[0];
     }
 
@@ -164,11 +239,19 @@ export const updateCourse = async (req, res) => {
       updates.updatedBy = req.user._id;
     }
 
-    const course = await Course.findOneAndUpdate(
-      { _id: req.params.id, isActive: true },
-      { $set: updates },
-      { new: true, runValidators: true },
-    );
+    let course;
+    try {
+      course = await Course.findOneAndUpdate(
+        { _id: req.params.id, isActive: true },
+        { $set: updates },
+        { new: true, runValidators: true },
+      );
+    } catch (databaseError) {
+      return res.status(500).json({
+        success: false,
+        message: "Course could not be saved to MongoDB",
+      });
+    }
 
     if (!course) {
       return res
@@ -182,7 +265,7 @@ export const updateCourse = async (req, res) => {
       message: "Course updated successfully",
     });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    return res.status(error.statusCode || 400).json({ success: false, message: error.message });
   }
 };
 

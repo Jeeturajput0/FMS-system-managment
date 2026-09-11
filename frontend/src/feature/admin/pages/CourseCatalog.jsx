@@ -111,7 +111,7 @@ export const CourseCatalog = () => {
       body.append('registrationFee', String(1000));
       body.append('certificateFee', String(3000));
       body.append('duration', JSON.stringify({ value: 4, unit: 'months' }));
-      if (formData.thumbnail) body.append('thumbnail', formData.thumbnail);
+      if (formData.thumbnail) body.append('images', formData.thumbnail);
 
       const response = await apiUpload('/api/courses', body);
       addCourse({
@@ -123,6 +123,7 @@ export const CourseCatalog = () => {
         feePriceNum: Number(response.data?.courseFee || formData.feePriceNum),
         description: response.data?.description || formData.description,
         level: response.data?.level || formData.level,
+        image: response.data?.thumbnail || response.data?.images?.[0] || '',
         status: 'Published',
         enrolledStudents: 0,
       });

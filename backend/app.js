@@ -59,6 +59,18 @@ app.get("/", (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error("Unhandled API error:", err);
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({
+      success: false,
+      message: "Image must be 5 MB or smaller",
+    });
+  }
+  if (err.code === "LIMIT_UNEXPECTED_FILE") {
+    return res.status(400).json({
+      success: false,
+      message: "Only JPEG, PNG, WebP, and GIF images are allowed",
+    });
+  }
   res.status(500).json({
     success: false,
     message: err.message || "Internal server error",
