@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import logo from "../../../../assist/logo.png";
 
 const menuItems = [
   ["Dashboard", "/teacher", LayoutDashboard],
@@ -47,9 +48,9 @@ const TeacherSidebar = () => {
   };
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-slate-800 bg-[#0F172A] text-slate-300 md:flex md:flex-col">
-      <div className="flex h-16 items-center border-b border-slate-800/80 px-6">
+      <div className="flex h-20 items-center border-b border-slate-800/80 px-5">
         <div>
-          <h1 className="text-xl font-black text-white">AI SCHOLAR</h1>
+          <img src={logo} alt="AI Scholars" className="h-12 w-auto max-w-[190px] object-contain" />
           <p className="text-xs font-semibold text-amber-400">Teacher Portal</p>
         </div>
       </div>

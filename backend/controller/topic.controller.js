@@ -62,6 +62,10 @@ export const createTopic = async (req, res) => {
 
 export const getTopicById = async (req, res) => {
   try {
+    const moduleAccess = await studentCanAccessModule(req.user, (await Topic.findById(req.params.id).select("moduleId").lean())?.moduleId);
+    if (!moduleAccess) {
+      return res.status(403).json({ success: false, message: "This topic is not assigned to you" });
+    }
     const topic = await Topic.findOne({ _id: req.params.id, isActive: true })
       .populate({
         path: "moduleId",

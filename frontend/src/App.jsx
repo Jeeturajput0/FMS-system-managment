@@ -57,6 +57,9 @@ import { StudentDetail } from "./feature/admin/pages/StudentDetail";
 // ============================================================
 
 import { PortalLoginPage } from "./feature/portal/PortalLoginPage";
+import PortalCourseDetail from "./feature/portal/PortalCourseDetail";
+import PortalModuleTopics from "./feature/portal/PortalModuleTopics";
+import PortalTopicDetail from "./feature/portal/PortalTopicDetail";
 
 // ============================================================
 // FRANCHISE
@@ -580,6 +583,9 @@ function App() {
             element={<StudentCourseDetail />}
           />
 
+          <Route path="courses/:courseId/modules/:moduleId/topics" element={<PortalModuleTopics />} />
+          <Route path="courses/:courseId/modules/:moduleId/topics/:topicId" element={<PortalTopicDetail />} />
+
           <Route
             path="assignments"
             element={<StudentAssignments />}
@@ -686,7 +692,7 @@ function App() {
 
         <Route
           path="/teacher"
-          element={<TeacherLayout />}
+          element={<ProtectedPortalRoute role="TEACHER" />}
         >
 
           {/* Dashboard */}
@@ -723,8 +729,11 @@ function App() {
 
           <Route
             path="courses/:id"
-            element={<CourseDetail />}
+            element={<PortalCourseDetail />}
           />
+
+          <Route path="courses/:courseId/modules/:moduleId/topics" element={<PortalModuleTopics />} />
+          <Route path="courses/:courseId/modules/:moduleId/topics/:topicId" element={<PortalTopicDetail />} />
 
 
           {/* Batches */}
@@ -854,8 +863,11 @@ function App() {
 
           <Route
             path="courses/:id"
-            element={<CourseDetail />}
+            element={<PortalCourseDetail />}
           />
+
+          <Route path="courses/:courseId/modules/:moduleId/topics" element={<PortalModuleTopics />} />
+          <Route path="courses/:courseId/modules/:moduleId/topics/:topicId" element={<PortalTopicDetail />} />
 
 
           {/* ==================================================

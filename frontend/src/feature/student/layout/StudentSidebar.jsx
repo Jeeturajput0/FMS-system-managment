@@ -14,6 +14,7 @@ import {
   LogOut,
   GraduationCap,
 } from "lucide-react";
+import logo from "../../../../assist/logo.png";
 
 const StudentSidebar = ({ open, onClose }) => {
   const navigate = useNavigate();
@@ -50,12 +51,8 @@ const StudentSidebar = ({ open, onClose }) => {
         {/* Logo */}
         <div className="px-6 py-5 border-b border-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
-              <GraduationCap className="w-6 h-6" />
-            </div>
-
             <div>
-              <h1 className="font-extrabold text-lg">AI SCHOLAR</h1>
+              <img src={logo} alt="AI Scholars" className="h-12 w-auto max-w-[190px] object-contain" />
 
               <p className="text-[10px] text-slate-400">
                 Learn Today, Build Tomorrow
