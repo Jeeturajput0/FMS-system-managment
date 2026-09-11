@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { apiFetch } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
+import { Pagination } from "../../../components/Pagination";
 
 /* =========================================================
    API ENDPOINTS
@@ -135,6 +136,8 @@ export const StudentDirectory = () => {
   const [showAddModal, setShowAddModal] =
     useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   /* =======================================================
      FORM DATA
@@ -532,6 +535,12 @@ export const StudentDirectory = () => {
      INPUT CHANGE
   ======================================================= */
 
+    const pageStudents = filteredStudents.slice((page - 1) * pageSize, page * pageSize);
+
+    useEffect(() => {
+      setPage(1);
+    }, [search, courseFilter, franchiseFilter, statusFilter]);
+
   const handleInputChange = (e) => {
     const {
       name,
@@ -667,6 +676,7 @@ export const StudentDirectory = () => {
     setCourseFilter("All");
     setFranchiseFilter("All");
     setStatusFilter("All");
+    setPage(1);
   };
 
   /* =======================================================
@@ -1040,7 +1050,7 @@ export const StudentDirectory = () => {
               ) : (
                 /* STUDENTS */
 
-                filteredStudents.map(
+                pageStudents.map(
                   (student) => (
                     <tr
                       key={
@@ -1210,6 +1220,8 @@ export const StudentDirectory = () => {
           </table>
         </div>
       </div>
+
+      <Pagination page={page} pageCount={Math.ceil(filteredStudents.length / pageSize)} onPageChange={setPage} totalItems={filteredStudents.length} pageSize={pageSize} />
 
       {/* =================================================
           ADD STUDENT MODAL

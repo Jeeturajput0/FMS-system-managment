@@ -15,7 +15,6 @@ import { AdminLayout } from "../src/feature/admin/layout/AdminLayout";
 // =========================
 import { DashboardOverview } from "./feature/admin/pages/DashboardOverview";
 import { CourseCatalog } from "./feature/admin/pages/CourseCatalog";
-import { CourseDetail } from "./feature/admin/pages/CourseDetail";
 import { LoginPage } from "./feature/admin/pages/LoginPage";
 import LandingPage from "./feature/admin/pages/LandingPage";
 
@@ -26,6 +25,7 @@ import FranchiseForm from "./feature/admin/pages/FranchiseForm";
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
 import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
 import AdminReportsPage from "./feature/admin/pages/AdminReportsPage";
+import AdminReportView from "./feature/admin/pages/AdminReportView";
 import AdminNotificationsPage from "./feature/admin/pages/AdminNotificationsPage";
 import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
 import AdminManagementPage from "./feature/admin/pages/AdminManagementPage";
@@ -110,6 +110,7 @@ import StudentAssignmentDetail from "./feature/student/pages/StudentAssignmentDe
 import StudentProfile from "./feature/student/pages/StudentProfile";
 import StudentSettings from "./feature/student/pages/StudentSettings";
 import StudentNotifications from "./feature/student/pages/StudentNotifications";
+import { CourseDetail } from "./feature/admin/pages/CourseDetail";
 
 // ============================================================
 // PROTECTED ADMIN ROUTE
@@ -286,7 +287,7 @@ function App() {
 
           <Route path="courses/:id" element={<CourseDetail />} />
 
-          <Route path="course/:id" element={<CourseDetail />} />
+          {/* <Route path="course/:id" element={<CourseDetail />} /> */}
 
           {/* ----------------------------------------------------
               STUDENTS
@@ -321,6 +322,8 @@ function App() {
           <Route path="admins" element={<AdminManagementPage />} />
 
           <Route path="reports" element={<AdminReportsPage />} />
+
+          <Route path="reports/:id" element={<AdminReportView />} />
 
           <Route path="settings" element={<AdminProfilePage />} />
 
@@ -461,6 +464,8 @@ function App() {
           {/* COURSES */}
 
           <Route path="courses" element={<FranchiseCourses />} />
+
+          <Route path="courses/:id" element={<CourseDetail />} />
 
           {/* BATCHES */}
 

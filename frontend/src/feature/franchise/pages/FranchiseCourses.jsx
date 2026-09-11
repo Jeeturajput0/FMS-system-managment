@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { BookOpen, Eye, Loader2, Search, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { apiFetch, assetUrl } from "../../../utils/api";
+import { Pagination } from "../../../components/Pagination";
 
 const getDuration = (duration) => {
   if (!duration) return "-";
@@ -43,6 +44,8 @@ export const FranchiseCourses = () => {
   const [level, setLevel] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -110,6 +113,7 @@ export const FranchiseCourses = () => {
       return matchesSearch && matchesCategory && matchesLevel;
     });
   }, [courses, search, category, level]);
+  const pageCourses = filteredCourses.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-6">
@@ -137,7 +141,7 @@ export const FranchiseCourses = () => {
 
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => { setSearch(event.target.value); setPage(1); }}
             placeholder="Search course, category, level..."
             className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
           />
@@ -146,7 +150,7 @@ export const FranchiseCourses = () => {
         {/* Category */}
         <select
           value={category}
-          onChange={(event) => setCategory(event.target.value)}
+          onChange={(event) => { setCategory(event.target.value); setPage(1); }}
           className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500"
         >
           {categories.map((item) => (
@@ -159,7 +163,7 @@ export const FranchiseCourses = () => {
         {/* Level */}
         <select
           value={level}
-          onChange={(event) => setLevel(event.target.value)}
+          onChange={(event) => { setLevel(event.target.value); setPage(1); }}
           className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500"
         >
           {levels.map((item) => (
@@ -258,7 +262,7 @@ export const FranchiseCourses = () => {
           </tr>
         ) : (
           /* Courses */
-          filteredCourses.map((course) => {
+          pageCourses.map((course) => {
             const courseLevel = course.level || "Beginner";
 
             return (
@@ -342,7 +346,7 @@ export const FranchiseCourses = () => {
                       {/* Action */}
                       <td className="px-5 py-4 text-right">
                         <Link
-                          to={`/courses/${course._id}`}
+                          to={`/franchise/courses/${course._id}`}
                           title="View course"
                           aria-label="View course"
                           className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-600 transition hover:bg-blue-100"
@@ -358,6 +362,7 @@ export const FranchiseCourses = () => {
           </table>
         </div>
       </div>
+      <Pagination page={page} pageCount={Math.ceil(filteredCourses.length / pageSize)} onPageChange={setPage} totalItems={filteredCourses.length} pageSize={pageSize} />
     </div>
   );
 };

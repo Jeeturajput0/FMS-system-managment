@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import { Pagination } from "../../../components/Pagination";
 
 const courseName = (course) =>
   course?.title || course?.name || "Not assigned";
@@ -69,6 +70,8 @@ export const FranchiseStudents = () => {
   const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   const { id } = useParams();
 
@@ -150,6 +153,7 @@ export const FranchiseStudents = () => {
       return matchesCourse && matchesSearch;
     });
   }, [students, search, selectedCourse]);
+  const pageStudents = useMemo(() => filteredStudents.slice((page - 1) * pageSize, page * pageSize), [filteredStudents, page]);
 
   const stats = useMemo(() => {
     const active = students.filter((student) =>
@@ -329,7 +333,7 @@ export const FranchiseStudents = () => {
 
             <input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => { setSearch(event.target.value); setPage(1); }}
               placeholder="Search name, phone, email or student ID..."
               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
             />
@@ -343,9 +347,7 @@ export const FranchiseStudents = () => {
 
             <select
               value={selectedCourse}
-              onChange={(event) =>
-                setSelectedCourse(event.target.value)
-              }
+              onChange={(event) => { setSelectedCourse(event.target.value); setPage(1); }}
               className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-8 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
             >
               <option value="">All courses</option>
@@ -468,7 +470,7 @@ export const FranchiseStudents = () => {
                   </td>
                 </tr>
               ) : (
-                filteredStudents.map((student, index) => (
+                pageStudents.map((student, index) => (
                   <tr
                     key={student._id}
                     className="border-b border-slate-100 last:border-0 transition hover:bg-blue-50/30"
@@ -599,6 +601,7 @@ export const FranchiseStudents = () => {
             </Link>
           </div>
         )}
+        <Pagination page={page} pageCount={Math.ceil(filteredStudents.length / pageSize)} onPageChange={setPage} totalItems={filteredStudents.length} pageSize={pageSize} />
       </div>
 
       {/* Profile reference */}
