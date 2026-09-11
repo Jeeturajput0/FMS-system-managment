@@ -13,11 +13,11 @@ import { AdminLayout } from "../src/feature/admin/layout/AdminLayout";
 // =========================
 // ADMIN PAGES
 // =========================
-import { DashboardOverview } from "./feature/admin/pages/DashboardOverview";
+        <Route path="/courses/:id" element={<Navigate to="/log" replace />} />
 import { CourseCatalog } from "./feature/admin/pages/CourseCatalog";
 import { LoginPage } from "./feature/admin/pages/LoginPage";
 import LandingPage from "./feature/admin/pages/LandingPage";
-
+import courseDetail from "./feature/admin/pages/CourseDetail";
 import { FranchiseList } from "./feature/admin/pages/FranchiseList";
 import { FranchiseDetail } from "./feature/admin/pages/FranchiseDetail";
 import FranchiseForm from "./feature/admin/pages/FranchiseForm";
@@ -25,7 +25,7 @@ import FranchiseForm from "./feature/admin/pages/FranchiseForm";
 import { FeesOverview } from "./feature/admin/pages/FeesOverview";
 import { AdminPlaceholderPage } from "./feature/admin/pages/AdminPlaceholderPage";
 import AdminReportsPage from "./feature/admin/pages/AdminReportsPage";
-import AdminReportView from "./feature/admin/pages/AdminReportView";
+// import AdminReportView from "./feature/admin/pages/AdminReportView";
 import AdminNotificationsPage from "./feature/admin/pages/AdminNotificationsPage";
 import AdminProfilePage from "./feature/admin/pages/AdminProfilePage";
 import AdminManagementPage from "./feature/admin/pages/AdminManagementPage";
@@ -48,7 +48,7 @@ import { StudentDetail } from "./feature/admin/pages/StudentDetail";
 // PORTAL LOGIN
 // =========================
 import { PortalLoginPage } from "./feature/portal/PortalLoginPage";
-import PortalCourseDetail from "./feature/portal/PortalCourseDetail";
+// import PortalCourseDetail from "./feature/portal/PortalCourseDetail";
 
 // =========================
 // FRANCHISE
@@ -77,9 +77,9 @@ import FranchiseStudentView from "./feature/franchise/pages/FranchiseStudentView
 import TeacherLayout from "./feature/teacher/layout/TeacherLayout";
 import TeacherDashboard from "./feature/teacher/pages/TeacherDashboard";
 import TeacherStudents from "./feature/teacher/pages/TeacherStudents";
-import TeacherCourses from "./feature/teacher/pages/TeacherCourses";
+          <Route path="courses/:id" element={<PortalCourseDetail />} />
 import TeacherBatches from "./feature/teacher/pages/TeacherBatches";
-import TeacherBatchesTable from "./feature/teacher/pages/TeacherBatchesTable";
+// import TeacherBatchesTable from "./feature/teacher/pages/TeacherBatchesTable";
 import TeacherAttendance from "./feature/teacher/pages/TeacherAttendance";
 import TeacherAssignments from "./feature/teacher/pages/TeacherAssignments";
 import TeacherExams from "./feature/teacher/pages/TeacherExams";
@@ -112,7 +112,9 @@ import StudentAssignmentDetail from "./feature/student/pages/StudentAssignmentDe
 import StudentProfile from "./feature/student/pages/StudentProfile";
 import StudentSettings from "./feature/student/pages/StudentSettings";
 import StudentNotifications from "./feature/student/pages/StudentNotifications";
-import { CourseDetail } from "./feature/admin/pages/CourseDetail";
+// import { CourseDetail } from "./feature/admin/pages/CourseDetail";
+import { DashboardOverview } from "./feature/admin/pages/DashboardOverview";
+import TeacherCourses from "./feature/teacher/pages/TeacherCourses";
 
 // ============================================================
 // PROTECTED ADMIN ROUTE
@@ -222,7 +224,7 @@ function App() {
 
         <Route path="/courses" element={<CourseCatalog />} />
 
-        <Route path="/courses/:id" element={<CourseDetail />} />
+        <Route path="/courses/:id" element={<Navigate to="/log" replace />} />
 
         <Route path="/login/admin" element={<LoginPage />} />
 
@@ -257,10 +259,6 @@ function App() {
 
           <Route path="franchises/teachers" element={<FranchiseTeachers />} />
 
-          {/* ----------------------------------------------------
-              COURSES
-          ---------------------------------------------------- */}
-
           <Route path="courses" element={<CourseCatalog />} />
 
           <Route path="course-add" element={<CourseAdd />} />
@@ -289,7 +287,7 @@ function App() {
 
           <Route path="courses/:id" element={<CourseDetail />} />
 
-          {/* <Route path="course/:id" element={<CourseDetail />} /> */}
+          <Route path="course/:id" element={<CourseDetail />} />
 
           {/* ----------------------------------------------------
               STUDENTS
@@ -325,7 +323,7 @@ function App() {
 
           <Route path="reports" element={<AdminReportsPage />} />
 
-          <Route path="reports/:id" element={<AdminReportView />} />
+          {/* <Route path="reports/:id" element={<AdminReportView />} /> */}
 
           <Route path="settings" element={<AdminProfilePage />} />
 
@@ -356,7 +354,7 @@ function App() {
 
           <Route path="courses/:id" element={<StudentCourseDetail />} />
 
-          <Route path="courses/:courseId/modules/:moduleId/topics" element={<StudentTopics />} />
+          {/* <Route path="courses/:courseId/modules/:moduleId/topics" element={<StudentTopics />} /> */}
 
           <Route path="assignments" element={<StudentAssignments />} />
 
@@ -407,7 +405,7 @@ function App() {
             TEACHER ROUTES
         ====================================================== */}
 
-        <Route path="/teacher" element={<ProtectedPortalRoute role="TEACHER" />}>
+        <Route path="/teacher" element={<TeacherLayout/>}>
           <Route index element={<TeacherDashboard />} />
 
           <Route path="students" element={<TeacherStudents />} />
@@ -416,12 +414,13 @@ function App() {
             path="students/:id/certificate"
             element={<StudentCertificate />}
           />
+          {/* <Route path="courses/:id" */}
 
           <Route path="courses" element={<TeacherCourses />} />
 
-          <Route path="courses/:id" element={<PortalCourseDetail />} />
+          <Route path="courses/:id" element={<CourseDetail />} />
 
-          <Route path="batches" element={<TeacherBatchesTable />} />
+          <Route path="batches" element={<TeacherBatches />} />
 
           <Route path="attendance" element={<TeacherAttendance />} />
 
@@ -464,13 +463,11 @@ function App() {
 
           <Route path="teachers" element={<FranchiseTeachers />} />
 
-          <Route path="teachers/add" element={<FranchiseTeachers />} />
           <Route path="teachers/:id" element={<FranchiseTeacherView />} />
 
           {/* COURSES */}
 
           <Route path="courses" element={<FranchiseCourses />} />
-
           <Route path="courses/:id" element={<PortalCourseDetail />} />
 
           {/* BATCHES */}

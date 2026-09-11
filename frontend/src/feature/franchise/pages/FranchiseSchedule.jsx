@@ -56,6 +56,7 @@ const FranchiseSchedule = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedDay, setSelectedDay] = useState("ALL");
   const [viewBatch, setViewBatch] = useState(null);
 
   // =====================================================
@@ -94,9 +95,11 @@ const FranchiseSchedule = () => {
   const filteredBatches = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    if (!query) return batches;
+    if (!query && selectedDay === "ALL") return batches;
 
     return batches.filter((batch) => {
+      const matchesDay = selectedDay === "ALL" || (batch?.days || []).includes(selectedDay);
+      if (!matchesDay) return false;
       const values = [
         batch?.name,
         batch?.batchName,
@@ -120,7 +123,7 @@ const FranchiseSchedule = () => {
           .includes(query)
       );
     });
-  }, [batches, search]);
+  }, [batches, search, selectedDay]);
 
   // =====================================================
   // TOTAL SCHEDULED DAYS
@@ -488,6 +491,11 @@ const FranchiseSchedule = () => {
               schedule entries
             </p>
 
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+            <button type="button" onClick={() => setSelectedDay("ALL")} className={`rounded-lg px-3 py-2 text-xs font-bold ${selectedDay === "ALL" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"}`}>All Week</button>
+            {DAYS.map((day) => <button key={day} type="button" onClick={() => setSelectedDay(day)} className={`rounded-lg px-3 py-2 text-xs font-bold ${selectedDay === day ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"}`}>{day.charAt(0) + day.slice(1).toLowerCase()}</button>)}
           </div>
 
         </div>

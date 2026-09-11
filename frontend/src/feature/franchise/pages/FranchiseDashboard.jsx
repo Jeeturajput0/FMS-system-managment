@@ -20,8 +20,8 @@ import { apiFetch } from "../../../utils/api";
 
 const cards = [
   {
-    key: "students",
-    label: "Total Students",
+    key: "activeStudents",
+    label: "Active Students",
     path: "/franchise/students",
     icon: Users,
     color: "blue",

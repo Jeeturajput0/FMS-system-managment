@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowRight, Lock, Mail, UserPlus } from "lucide-react";
+import { ArrowRight, Lock, Mail, UserPlus, Building2, GraduationCap, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/api";
 import { sanitizePhoneInput } from "../../utils/phone";
@@ -7,9 +7,9 @@ import { sanitizeNameInput } from "../../utils/name";
 import logo from "../../../assist/logo.png";
 
 const roleOptions = [
-  { value: "FRANCHISE", label: "Franchise" },
-  { value: "TEACHER", label: "Teacher" },
-  { value: "STUDENT", label: "Student" },
+  { value: "FRANCHISE", label: "Franchise", icon: Building2 },
+  { value: "TEACHER", label: "Teacher", icon: GraduationCap },
+  { value: "STUDENT", label: "Student", icon: UserRound },
 ];
 
 const routeFor = (role) =>
@@ -114,21 +114,12 @@ export const PortalLoginPage = () => {
                 {form.role === "FRANCHISE" && <><label className="block text-sm font-bold text-slate-700">Franchise name<input name="franchiseName" value={form.franchiseName} onChange={update} required className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-blue-500" placeholder="Your centre name" /></label><label className="block text-sm font-bold text-slate-700">Phone number<input name="phone" type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={form.phone} onChange={update} required className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-blue-500" placeholder="10 digit phone number" /></label></>}
               </>
             )}
-            <label className="block text-sm font-bold text-slate-700">
-              Role
-              <select
-                name="role"
-                value={form.role}
-                onChange={update}
-                className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none focus:border-blue-500"
-              >
-                {roleOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div>
+              <p className="text-sm font-bold text-slate-700">Choose workspace</p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {roleOptions.map((option) => { const Icon = option.icon; return <button key={option.value} type="button" onClick={() => setForm((current) => ({ ...current, role: option.value }))} className={`flex h-16 flex-col items-center justify-center gap-1 rounded-xl border text-xs font-bold transition ${form.role === option.value ? "border-blue-600 bg-blue-600 text-white shadow-md" : "border-slate-200 bg-white text-slate-600 hover:border-blue-300"}`}><Icon size={18} />{option.label}</button>; })}
+              </div>
+            </div>
             <label className="block text-sm font-bold text-slate-700">
               <span className="flex items-center gap-2">
                 <Mail size={15} />

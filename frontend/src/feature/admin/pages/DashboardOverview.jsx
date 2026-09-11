@@ -67,7 +67,7 @@ export const DashboardOverview = () => {
               to="/admin/courses"
               className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition-all flex items-center gap-2"
             >
-              <BookOpen className="w-4 h-4 text-orange-400" /> Catalog
+              <BookOpen className="w-4 h-4 text-orange-400" /> Course Catalog
             </Link>
             <Link
               to="/admin/franchises/add"

@@ -72,8 +72,9 @@ export const getPortalDashboard = async (req, res) => {
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(todayStart);
     todayEnd.setDate(todayEnd.getDate() + 1);
-    const [students, courses, fees, teachers, franchises, activeBatches, recentBatches, recentStudents, todayAttendance] = await Promise.all([
+    const [students, activeStudents, courses, fees, teachers, franchises, activeBatches, recentBatches, recentStudents, todayAttendance] = await Promise.all([
       Student.countDocuments(filter),
+      Student.countDocuments({ ...filter, status: "active" }),
       Course.countDocuments(courseFilter),
       Fee.find(filter).select("totalPending totalPaid totalAmount").lean(),
       User.countDocuments({ role: "TEACHER", ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}) }),
@@ -125,8 +126,8 @@ export const getPortalDashboard = async (req, res) => {
       const data = role === "STUDENT"
         ? { students: currentStudent ? 1 : 0, courses: currentStudent?.courseId ? 1 : 0, attendance: currentStudent?.attendancePercentage || 0, pendingFees: currentStudent?.totalPending || 0, recent: currentStudent ? [currentStudent] : [] }
       : role === "TEACHER"
-        ? { students, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: attendanceTotals.total ? Math.round((attendanceTotals.present / attendanceTotals.total) * 100) : 0, pendingReviews: 0, recent: recentStudents, recentBatches: batchesWithAttendance, attendanceByBatch: batchesWithAttendance }
-        : { students, teachers, batches: activeBatches, activeBatches, courses, franchises, pendingFees: fees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0), recent: recentStudents, recentBatches: batchesWithAttendance, recentStudents, attendanceToday: attendanceTotals.total ? Math.round((attendanceTotals.present / attendanceTotals.total) * 100) : 0, attendanceByBatch: batchesWithAttendance };
+        ? { students, activeStudents, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: attendanceTotals.total ? Math.round((attendanceTotals.present / attendanceTotals.total) * 100) : 0, pendingReviews: 0, recent: recentStudents, recentBatches: batchesWithAttendance, attendanceByBatch: batchesWithAttendance }
+        : { students, activeStudents, teachers, batches: activeBatches, activeBatches, courses, franchises, pendingFees: fees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0), recent: recentStudents, recentBatches: batchesWithAttendance, recentStudents, attendanceToday: attendanceTotals.total ? Math.round((attendanceTotals.present / attendanceTotals.total) * 100) : 0, attendanceByBatch: batchesWithAttendance };
     return res.json({ success: true, role, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load portal dashboard", error: error.message });
