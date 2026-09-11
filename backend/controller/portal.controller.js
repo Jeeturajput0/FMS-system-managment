@@ -68,7 +68,11 @@ export const getPortalDashboard = async (req, res) => {
       : req.user.role === "FRANCHISE"
         ? { isActive: true, isPublished: true, availableForFranchises: req.user.coachingId }
         : { isActive: true };
-    const [students, courses, fees, teachers, franchises, activeBatches, recentBatches, recentStudents] = await Promise.all([
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    const [students, courses, fees, teachers, franchises, activeBatches, recentBatches, recentStudents, todayAttendance] = await Promise.all([
       Student.countDocuments(filter),
       Course.countDocuments(courseFilter),
       Fee.find(filter).select("totalPending totalPaid totalAmount").lean(),
@@ -77,7 +81,35 @@ export const getPortalDashboard = async (req, res) => {
       Batch.countDocuments({ ...batchFilter, status: "ACTIVE" }),
       Batch.find(batchFilter).populate("course", "title name").populate("teacher", "name").populate("students", "_id").sort({ createdAt: -1 }).limit(5).lean(),
       Student.find(filter).populate("courseId", "title name").populate("batchId", "name code").sort({ createdAt: -1 }).limit(5).lean(),
+      req.user.coachingId
+        ? Attendance.find({ coachingId: req.user.coachingId, date: { $gte: todayStart, $lt: todayEnd } }).lean()
+        : [],
     ]);
+    const attendanceByBatch = new Map(todayAttendance.map((attendance) => [String(attendance.batchId), attendance]));
+    const batchesWithAttendance = recentBatches.map((batch) => {
+      const attendance = attendanceByBatch.get(String(batch._id));
+      const records = attendance?.records || [];
+      const present = records.filter((record) => record.status === "PRESENT").length;
+      const absent = records.filter((record) => record.status === "ABSENT").length;
+      const late = records.filter((record) => record.status === "LATE").length;
+      return {
+        ...batch,
+        attendance: {
+          present,
+          absent,
+          late,
+          marked: records.length,
+          total: batch.students?.length || 0,
+          percentage: records.length ? Math.round((present / records.length) * 100) : 0,
+        },
+      };
+    });
+    const attendanceTotals = batchesWithAttendance.reduce((totals, batch) => ({
+      total: totals.total + batch.attendance.total,
+      present: totals.present + batch.attendance.present,
+      absent: totals.absent + batch.attendance.absent,
+      late: totals.late + batch.attendance.late,
+    }), { total: 0, present: 0, absent: 0, late: 0 });
     const currentStudent = role === "STUDENT"
       ? await Student.findOne({
           ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
@@ -93,8 +125,8 @@ export const getPortalDashboard = async (req, res) => {
       const data = role === "STUDENT"
         ? { students: currentStudent ? 1 : 0, courses: currentStudent?.courseId ? 1 : 0, attendance: currentStudent?.attendancePercentage || 0, pendingFees: currentStudent?.totalPending || 0, recent: currentStudent ? [currentStudent] : [] }
       : role === "TEACHER"
-        ? { students, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: 0, pendingReviews: 0, recent: recentStudents, recentBatches }
-        : { students, teachers, batches: activeBatches, activeBatches, courses, franchises, pendingFees: fees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0), recent: recentStudents, recentBatches, recentStudents, attendanceToday: 0 };
+        ? { students, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: attendanceTotals.total ? Math.round((attendanceTotals.present / attendanceTotals.total) * 100) : 0, pendingReviews: 0, recent: recentStudents, recentBatches: batchesWithAttendance, attendanceByBatch: batchesWithAttendance }
+        : { students, teachers, batches: activeBatches, activeBatches, courses, franchises, pendingFees: fees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0), recent: recentStudents, recentBatches: batchesWithAttendance, recentStudents, attendanceToday: attendanceTotals.total ? Math.round((attendanceTotals.present / attendanceTotals.total) * 100) : 0, attendanceByBatch: batchesWithAttendance };
     return res.json({ success: true, role, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load portal dashboard", error: error.message });

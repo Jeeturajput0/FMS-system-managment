@@ -13,6 +13,7 @@ import { apiFetch } from "../../../utils/api";
 
 const TeacherDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
+  const [courseContent, setCourseContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -29,6 +30,24 @@ const TeacherDashboard = () => {
         )
       )
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/api/portal/courses")
+      .then(async (response) => {
+        const courses = response.data || [];
+        const content = await Promise.all(courses.map(async (course) => {
+          const moduleResponse = await apiFetch(`/api/modules/course/${course._id}`);
+          const modules = moduleResponse.data || [];
+          return { ...course, modules, topicCount: modules.reduce((total, module) => total + (module.topics?.length || 0), 0) };
+        }));
+        if (!cancelled) setCourseContent(content);
+      })
+      .catch(() => {
+        if (!cancelled) setCourseContent([]);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   const stats = [
@@ -146,6 +165,11 @@ const TeacherDashboard = () => {
             </Link>
           )
         )}
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-5 py-4"><div><h2 className="font-black text-slate-900">Assigned Courses</h2><p className="mt-1 text-xs text-slate-500">Courses, modules and topics available to you.</p></div><Link to="/teacher/courses" className="text-xs font-bold text-blue-600">View all</Link></div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead className="bg-white text-xs uppercase text-slate-500"><tr><th className="px-5 py-4">Course</th><th className="px-5 py-4">Category</th><th className="px-5 py-4">Modules</th><th className="px-5 py-4">Topics</th><th className="px-5 py-4 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{courseContent.map((course) => <tr key={course._id} className="hover:bg-slate-50"><td className="px-5 py-4 font-black text-slate-900">{course.title || course.name}</td><td className="px-5 py-4 text-slate-600">{course.category || "General"}</td><td className="px-5 py-4 font-bold text-blue-700">{course.modules.length}</td><td className="px-5 py-4 font-bold text-emerald-700">{course.topicCount}</td><td className="px-5 py-4 text-right"><Link to={`/teacher/courses/${course._id}`} className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700">View modules</Link></td></tr>)}{!courseContent.length && <tr><td colSpan={5} className="px-5 py-8 text-center text-xs text-slate-500">No assigned courses found.</td></tr>}</tbody></table></div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.3fr_.7fr]">

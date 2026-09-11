@@ -9,6 +9,7 @@ import {
   Layers3,
   BarChart3,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { apiFetch, assetUrl } from "../../../utils/api";
 
@@ -362,13 +363,13 @@ const TeacherCourses = () => {
 
                       
                       {/* Open Course */}
-                      <a
-                        href={`/courses/${course?._id}`}
+                      <Link
+                        to={`/teacher/courses/${course?._id}`}
                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-blue-700"
                       >
                         Open Full Course
                         <ChevronRight size={16} />
-                      </a>
+                      </Link>
 
                     </div>
                   )}
