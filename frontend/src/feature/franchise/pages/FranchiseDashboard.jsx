@@ -533,6 +533,21 @@ const FranchiseDashboard = () => {
         </section>
       </div>
 
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
+          <h2 className="text-sm font-black text-slate-900">Batch Attendance</h2>
+          <p className="mt-1 text-[9px] text-slate-400">Today&apos;s teacher and student attendance by batch</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-xs">
+            <thead className="bg-slate-50 text-[10px] uppercase text-slate-500"><tr><th className="px-4 py-3">Batch</th><th className="px-4 py-3">Course</th><th className="px-4 py-3">Teacher</th><th className="px-4 py-3">Students</th><th className="px-4 py-3">Present</th><th className="px-4 py-3">Absent</th><th className="px-4 py-3">Attendance</th></tr></thead>
+            <tbody className="divide-y divide-slate-100">
+              {summary.recentBatches.length ? summary.recentBatches.map((batch) => <tr key={batch._id} className="hover:bg-slate-50"><td className="px-4 py-3 font-bold text-slate-800">{batch.name || "Unnamed batch"}</td><td className="px-4 py-3 text-slate-600">{batch.course?.title || batch.course?.name || "-"}</td><td className="px-4 py-3 text-slate-600">{batch.teacher?.name || "Unassigned"}</td><td className="px-4 py-3 font-bold text-slate-700">{batch.attendance?.total ?? batch.students?.length ?? 0}</td><td className="px-4 py-3 font-bold text-emerald-600">{batch.attendance?.present || 0}</td><td className="px-4 py-3 font-bold text-rose-600">{batch.attendance?.absent || 0}</td><td className="px-4 py-3"><span className="rounded-full bg-blue-50 px-2 py-1 font-bold text-blue-700">{batch.attendance?.percentage || 0}%</span></td></tr>) : <tr><td colSpan={7} className="px-4 py-8 text-center text-xs text-slate-500">No batch attendance available today.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* =================================================
           QUICK ACTIONS
       ================================================= */}

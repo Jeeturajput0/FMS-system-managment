@@ -9,6 +9,7 @@ import {
   BarChart3,
   Eye,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { apiFetch } from "../../../utils/api";
 
@@ -290,6 +291,92 @@ const TeacherCourses = () => {
                     Courses available for your teaching account
                   </p>
 
+                  {/* Stats */}
+                  <div className="mt-5 grid grid-cols-2 gap-3">
+
+                    {/* Modules */}
+                    <div className="rounded-2xl bg-slate-50 p-3">
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <Layers3 size={15} />
+
+                        <span className="text-[10px] font-black uppercase tracking-wider">
+                          Modules
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-black text-slate-800">
+                        {modules || "View course"}
+                      </p>
+                    </div>
+
+                    {/* Topics */}
+                    <div className="rounded-2xl bg-slate-50 p-3">
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <BarChart3 size={15} />
+
+                        <span className="text-[10px] font-black uppercase tracking-wider">
+                          Topics
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-black text-slate-800">
+                        {topics || "View course"}
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  {/* =========================
+                      EXPANDED CONTENT
+                  ========================= */}
+                  {open === course?._id && (
+                    <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Course Description
+                        </p>
+
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {description}
+                        </p>
+                      </div>
+
+                      
+                      {/* Open Course */}
+                      <Link
+                        to={`/teacher/courses/${course?._id}`}
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-blue-700"
+                      >
+                        Open Full Course
+                        <ChevronRight size={16} />
+                      </Link>
+
+                    </div>
+                  )}
+
+                  {/* =========================
+                      FOOTER
+                  ========================= */}
+                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                        Teaching Access
+                      </p>
+
+                      <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-black text-emerald-600">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        Assigned to you
+                      </span>
+                    </div>
+
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition group-hover:bg-blue-50 group-hover:text-blue-600">
+                      <Users size={17} />
+                    </div>
+
+                  </div>
                 </div>
 
               </div>

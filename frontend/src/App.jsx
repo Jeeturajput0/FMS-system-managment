@@ -48,6 +48,7 @@ import { StudentDetail } from "./feature/admin/pages/StudentDetail";
 // PORTAL LOGIN
 // =========================
 import { PortalLoginPage } from "./feature/portal/PortalLoginPage";
+import PortalCourseDetail from "./feature/portal/PortalCourseDetail";
 
 // =========================
 // FRANCHISE
@@ -418,6 +419,8 @@ function App() {
 
           <Route path="courses" element={<TeacherCourses />} />
 
+          <Route path="courses/:id" element={<PortalCourseDetail />} />
+
           <Route path="batches" element={<TeacherBatchesTable />} />
 
           <Route path="attendance" element={<TeacherAttendance />} />
@@ -468,7 +471,7 @@ function App() {
 
           <Route path="courses" element={<FranchiseCourses />} />
 
-          <Route path="courses/:id" element={<CourseDetail />} />
+          <Route path="courses/:id" element={<PortalCourseDetail />} />
 
           {/* BATCHES */}
 
