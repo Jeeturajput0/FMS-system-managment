@@ -1,6 +1,19 @@
 import Module from "../model/module.model.js";
 import Course from "../model/course.model.js";
 import Topic from "../model/topic.model.js";
+import Student from "../model/student.model.js";
+
+const studentHasCourse = async (user, courseId) => {
+  if (user.role !== "STUDENT") return true;
+  const student = await Student.findOne({
+    ...(user.coachingId ? { coachingId: user.coachingId } : {}),
+    $or: [
+      ...(user._id ? [{ userId: user._id }] : []),
+      ...(user.email ? [{ email: user.email.toLowerCase() }] : []),
+    ],
+  }).select("courseId").lean();
+  return String(student?.courseId || "") === String(courseId);
+};
 
 // ======================================================
 // CREATE MODULE
@@ -28,7 +41,7 @@ export const createModule = async (req, res) => {
 
     const lastModule = await Module.findOne({ isActive: true }).sort({ order: -1 });
     const module = await Module.create({
-      courseId: null,
+          courseId: courseId || null,
       title: title.trim(),
       description: description?.trim() || "",
       order: Number(order) > 0 ? Number(order) : (lastModule?.order || 0) + 1,
@@ -122,6 +135,10 @@ export const getModules = async (req, res) => {
 export const getModulesByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
+
+    if (!(await studentHasCourse(req.user, courseId))) {
+      return res.status(403).json({ success: false, message: "This course is not assigned to you" });
+    }
 
     const course = await Course.findOne({
       _id: courseId,

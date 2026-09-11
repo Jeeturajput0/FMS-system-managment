@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch, apiUpload, assetUrl } from "../../../utils/api";
+import { Pagination } from "../../../components/Pagination";
 
 export const CourseCatalog = () => {
   const { courses, addCourse, replaceCourses } = useData();
@@ -30,6 +31,8 @@ export const CourseCatalog = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   const [formData, setFormData] = useState({
     title: "",
@@ -91,6 +94,7 @@ export const CourseCatalog = () => {
     const matchesStatus = statusFilter === "All" || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const pageCourses = filteredCourses.slice((page - 1) * pageSize, page * pageSize);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,7 +187,7 @@ export const CourseCatalog = () => {
             type="text"
             placeholder="Search catalog by title or category..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:bg-white transition-all"
           />
         </div>
@@ -195,7 +199,7 @@ export const CourseCatalog = () => {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
           >
             <option value="All">All Statuses</option>
@@ -238,7 +242,7 @@ export const CourseCatalog = () => {
                   </td>
                 </tr>
               ) : (
-                filteredCourses.map((c) => (
+                pageCourses.map((c) => (
                   <tr
                     key={c.id}
                     className="hover:bg-slate-50/80 transition-colors"
@@ -330,6 +334,7 @@ export const CourseCatalog = () => {
           </table>
         </div>
       </div>
+      <Pagination page={page} pageCount={Math.ceil(filteredCourses.length / pageSize)} onPageChange={setPage} totalItems={filteredCourses.length} pageSize={pageSize} />
 
       {/* Create Course Modal */}
       <AnimatePresence>

@@ -85,8 +85,8 @@ export const getPortalDashboard = async (req, res) => {
           .populate("batchId", "name code course startDate endDate startTime endTime days status")
           .lean()
       : null;
-    const data = role === "STUDENT"
-      ? { students: currentStudent ? 1 : 0, courses: currentStudent?.courseId ? 1 : 0, attendance: currentStudent?.attendancePercentage || 0, pendingFees: currentStudent?.totalPending || 0, recent: currentStudent ? [currentStudent] : [] }
+      const data = role === "STUDENT"
+        ? { students: currentStudent ? 1 : 0, courses: currentStudent?.courseId ? 1 : 0, attendance: currentStudent?.attendancePercentage || 0, pendingFees: currentStudent?.totalPending || 0, recent: currentStudent ? [currentStudent] : [] }
       : role === "TEACHER"
         ? { students, courses, teachers: 1, batches: teacherBatchIds.length, activeBatches, attendance: 0, pendingReviews: 0, recent: recentStudents, recentBatches }
         : { students, teachers, batches: activeBatches, activeBatches, courses, franchises, pendingFees: fees.reduce((sum, fee) => sum + Number(fee.totalPending || 0), 0), recent: recentStudents, recentBatches, recentStudents, attendanceToday: 0 };

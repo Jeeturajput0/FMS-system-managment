@@ -21,6 +21,7 @@ import { NAME_PATTERN } from "../../../utils/name";
 import { Link } from "react-router-dom";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { sanitizeNameInput } from "../../../utils/name";
+import { Pagination } from "../../../components/Pagination";
 
 const empty = {
   name: "",
@@ -47,6 +48,8 @@ const FranchiseTeachers = () => {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   // =====================================================
   // LOAD DATA
@@ -100,6 +103,7 @@ const FranchiseTeachers = () => {
         .includes(query)
     );
   }, [teachers, search]);
+  const pageTeachers = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   // =====================================================
   // STATS
@@ -438,7 +442,7 @@ const FranchiseTeachers = () => {
 
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search teacher, mobile, email or course..."
             className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-9 text-xs font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100"
           />
@@ -527,7 +531,7 @@ const FranchiseTeachers = () => {
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {filtered.map((teacher, index) => (
+                {pageTeachers.map((teacher, index) => (
                   <tr
                     key={teacher._id}
                     className="group transition hover:bg-slate-50/70"
@@ -698,6 +702,7 @@ const FranchiseTeachers = () => {
                 )}
               </div>
             )}
+            <Pagination page={page} pageCount={Math.ceil(filtered.length / pageSize)} onPageChange={setPage} totalItems={filtered.length} pageSize={pageSize} />
           </div>
         </div>
       )}
