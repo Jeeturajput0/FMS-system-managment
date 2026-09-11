@@ -23,6 +23,15 @@ export const CourseDetail = () => {
   const { id } = useParams();
   const location = useLocation();
   const isAdminView = location.pathname.startsWith("/admin/");
+  const isTeacherView = location.pathname.startsWith("/teacher/");
+  const isFranchiseView = location.pathname.startsWith("/franchise/");
+  const backPath = isAdminView
+    ? "/admin/courses"
+    : isTeacherView
+    ? "/teacher/courses"
+    : isFranchiseView
+    ? "/franchise/courses"
+    : "/courses";
   const { students } = useData();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,10 +41,18 @@ export const CourseDetail = () => {
     "MOD-2",
     "MOD-201",
   ]);
+  const [expandedModules, setExpandedModules] = useState([]);
 
   useEffect(() => {
     apiFetch(`/api/courses/${id}`)
       .then((response) => setCourse(response.data))
+      .then((response) => {
+        const courseData = response.data;
+        setCourse(courseData);
+        if (courseData?.modules?.length) {
+          setExpandedModules(courseData.modules.map((m) => m._id || m.id));
+        }
+      })
       .catch(() => setCourse(null))
       .finally(() => setLoading(false));
   }, [id]);
@@ -67,7 +84,7 @@ export const CourseDetail = () => {
     <div className="space-y-6 pb-12">
       {/* Back Button */}
       <Link
-        to={isAdminView ? "/admin/courses" : "/courses"}
+        to={backPath}
         className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-orange-600 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> Back to Courses
@@ -176,30 +193,87 @@ export const CourseDetail = () => {
                     key={moduleId}
                     className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs"
                   >
-                    <Link
-                      to={`/admin/modules/${moduleId}/topics`}
-                      className="w-full p-4 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between transition-colors text-left"
+                    {isAdminView ? (
+                      <Link
+                        to={`/admin/modules/${moduleId}/topics`}
+                        className="w-full p-4 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                            <Layers className="w-4 h-4" />
+                          </div>
+                          <div className="pt-0.5">
+                            <h4 className="font-bold text-slate-900 text-sm hover:text-orange-600">
+                              {module.title}
+                            </h4>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              {module.description || "No description"}
+                            </span>
+                          </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleModule(moduleId)}
+                      className="w-full p-4 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between transition-colors text-left cursor-pointer select-none"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs shrink-0">
                           <Layers className="w-4 h-4" />
                         </div>
-                       <div className="pt-0.5">
-                        <h4 className="font-bold text-slate-900 text-sm hover:text-orange-600">
-                          {module.title}
-                        </h4>
-                        <span className="text-[10px] text-slate-500 font-medium">
-                          {module.description || "No description"} 
-                        </span>
-                       </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-slate-600 font-medium">
+                            {module.topics?.length || 0} Topics
+                        <div className="pt-0.5">
+                          <h4 className="font-bold text-slate-900 text-sm hover:text-orange-600 transition-colors">
+                            {module.title}
+                          </h4>
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            {module.description || "No description"}
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-slate-400" />
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="w-full p-4 bg-slate-50/80 flex items-center justify-between transition-colors text-left">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                            <Layers className="w-4 h-4" />
+                          </div>
+                          <div className="pt-0.5">
+                            <h4 className="font-bold text-slate-900 text-sm">
+                              {module.title}
+                            </h4>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              {module.description || "No description"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-slate-600 font-medium">
+                            {module.topics?.length || 0} Topics
+                          </span>
+                        </div>
                       </div>
+                    )}
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-slate-600 font-medium">
                           {module.topics?.length || 0} Topics
                         </span>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
+                        {isAdminView && (
+                          <Link
+                            to={`/admin/modules/${moduleId}/topics`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs font-bold text-orange-600 hover:underline px-2 py-1 bg-orange-50 rounded-lg"
+                          >
+                            Manage
+                          </Link>
+                        )}
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-slate-500" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-400" />
+                        )}
                       </div>
-                    </Link>
+                    </button>
 
                     {isExpanded && (
                       <div className="p-4 divide-y divide-slate-100">
