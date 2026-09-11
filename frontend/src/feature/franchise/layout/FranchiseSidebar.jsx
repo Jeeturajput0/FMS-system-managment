@@ -54,7 +54,7 @@ const menuItems = [
     icon: IndianRupee,
   },
   {
-    label: "Schedule",
+    label: "Batch Schedule",
     path: "/franchise/schedule",
     icon: CalendarDays,
   },
