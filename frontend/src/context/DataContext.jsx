@@ -62,6 +62,7 @@ export const DataProvider = ({ children }) => {
     const loadBackendData = async () => {
       try {
         const currentUser = JSON.parse(localStorage.getItem('ai_scholars_user') || 'null');
+        if (!localStorage.getItem('ai_scholars_token')) return;
         const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser?.role);
         const [courseResponse, studentResponse, feeResponse, coachingResponse, notificationResponse] = await Promise.all([
           apiFetch('/api/courses'),
@@ -84,7 +85,7 @@ export const DataProvider = ({ children }) => {
         setFranchises((coachingResponse.coachings || []).map(normalizeCoaching));
         setNotifications(notificationResponse.data || []);
       } catch (error) {
-        console.warn('Student and fee API unavailable, using local data.', error.message);
+        console.warn('Unable to load shared dashboard data.', error.message);
       }
     };
 

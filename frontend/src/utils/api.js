@@ -1,4 +1,11 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+// Keep the API origin in one place. Endpoints below include their `/api` prefix.
+const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+
+export const clearAuth = () => {
+  localStorage.removeItem('ai_scholars_token');
+  localStorage.removeItem('ai_scholars_user');
+  window.dispatchEvent(new Event('ai-scholars-auth-expired'));
+};
 
 const buildUrl = (path) => `${API_BASE_URL}${path}`;
 export const assetUrl = (path) => {
@@ -26,9 +33,15 @@ export const apiFetch = async (path, options = {}) => {
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : {};
+  let payload = {};
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    payload = { message: 'The server returned an invalid response.' };
+  }
 
   if (!response.ok) {
+    if (response.status === 401 && token && !path.startsWith('/api/auth/login') && !path.startsWith('/api/auth/register')) clearAuth();
     throw new Error(payload.message || 'Request failed');
   }
 
@@ -47,9 +60,15 @@ export const apiUpload = async (path, formData, method = 'POST') => {
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : {};
+  let payload = {};
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    payload = { message: 'The server returned an invalid response.' };
+  }
 
   if (!response.ok) {
+    if (response.status === 401 && token) clearAuth();
     throw new Error(payload.message || 'Upload failed');
   }
 

@@ -6,9 +6,10 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { sanitizeNameInput } from "./utils/name";
+import { apiFetch } from "./utils/api";
 
 // ============================================================
 // ADMIN LAYOUT
@@ -261,6 +262,28 @@ function NameInputGuard() {
 ============================================================ */
 
 function App() {
+  const [, setAuthVersion] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem("ai_scholars_token");
+    if (!token) return undefined;
+    let active = true;
+    apiFetch("/api/auth/me")
+      .then((response) => {
+        if (active && response.user) {
+          localStorage.setItem("ai_scholars_user", JSON.stringify(response.user));
+          setAuthVersion((version) => version + 1);
+        }
+      })
+      .catch(() => active && setAuthVersion((version) => version + 1));
+    const onExpired = () => setAuthVersion((version) => version + 1);
+    window.addEventListener("ai-scholars-auth-expired", onExpired);
+    return () => {
+      active = false;
+      window.removeEventListener("ai-scholars-auth-expired", onExpired);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <NameInputGuard />
