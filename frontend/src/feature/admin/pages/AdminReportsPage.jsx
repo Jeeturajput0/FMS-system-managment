@@ -17,7 +17,7 @@ const AdminReportsPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 20;
 
   const load = async () => {
     try { setLoading(true); const response = await apiFetch("/api/admin/reports"); setReports(response.data || []); } catch (requestError) { setError(requestError.message); } finally { setLoading(false); }

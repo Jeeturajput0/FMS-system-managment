@@ -137,7 +137,7 @@ export const StudentDirectory = () => {
     useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 20;
 
   /* =======================================================
      FORM DATA

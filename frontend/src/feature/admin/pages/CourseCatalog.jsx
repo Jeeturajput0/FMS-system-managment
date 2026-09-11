@@ -32,7 +32,7 @@ export const CourseCatalog = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 20;
 
   const [formData, setFormData] = useState({
     title: "",

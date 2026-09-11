@@ -204,7 +204,7 @@ export const deleteCourse = async (req, res) => {
 };
 export const listFranchiseCourses = async (req, res) => {
   try {
-    const franchiseId = req.user?.franchiseId;
+    const franchiseId = req.user?.coachingId || req.user?.franchiseId;
 
     if (!franchiseId) {
       return res.status(400).json({

@@ -71,7 +71,7 @@ export const FranchiseStudents = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 20;
 
   const { id } = useParams();
 

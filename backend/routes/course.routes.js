@@ -3,6 +3,7 @@ import {
   createCourse,
   deleteCourse,
   getCourse,
+  listFranchiseCourses,
   listCourses,
   updateCourse,
   updateCourseModules,
@@ -15,8 +16,8 @@ const router = express.Router();
 
 router.use(requireDatabase);
 router.get("/", listCourses);
+router.get("/fran", protect, authorize("FRANCHISE"), listFranchiseCourses);
 router.get("/:id", getCourse);
-router.get("/fran")
 router.post(
   "/",
   protect,

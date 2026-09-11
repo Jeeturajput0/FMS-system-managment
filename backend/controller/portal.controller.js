@@ -63,9 +63,14 @@ export const getPortalDashboard = async (req, res) => {
     const isTeacher = req.user.role === "TEACHER";
     const filter = isTeacher ? { ...coachingFilter(req.user), batchId: { $in: teacherBatchIds } } : coachingFilter(req.user);
     const batchFilter = isTeacher ? { _id: { $in: teacherBatchIds } } : (req.user.coachingId ? { coachingId: req.user.coachingId } : {});
+    const courseFilter = isTeacher
+      ? { _id: { $in: teacherCourseIds }, isActive: true }
+      : req.user.role === "FRANCHISE"
+        ? { isActive: true, isPublished: true, availableForFranchises: req.user.coachingId }
+        : { isActive: true };
     const [students, courses, fees, teachers, franchises, activeBatches, recentBatches, recentStudents] = await Promise.all([
       Student.countDocuments(filter),
-      isTeacher ? Course.countDocuments({ _id: { $in: teacherCourseIds }, isActive: true }) : Course.countDocuments({ isActive: true }),
+      Course.countDocuments(courseFilter),
       Fee.find(filter).select("totalPending totalPaid totalAmount").lean(),
       User.countDocuments({ role: "TEACHER", ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}) }),
       Coaching.countDocuments({ status: "active" }),

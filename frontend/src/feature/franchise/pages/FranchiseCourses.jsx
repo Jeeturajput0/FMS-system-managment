@@ -45,7 +45,7 @@ export const FranchiseCourses = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 20;
 
   useEffect(() => {
     const loadCourses = async () => {

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "../../../utils/api";
 import { NAME_PATTERN } from "../../../utils/name";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { sanitizeNameInput } from "../../../utils/name";
 import { Pagination } from "../../../components/Pagination";
@@ -49,7 +49,10 @@ const FranchiseTeachers = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 20;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAddRoute = location.pathname.endsWith("/teachers/add");
 
   // =====================================================
   // LOAD DATA
@@ -63,7 +66,7 @@ const FranchiseTeachers = () => {
       const [teachersResponse, coursesResponse] =
         await Promise.all([
           apiFetch("/api/portal/teachers"),
-          apiFetch("/api/courses"),
+          apiFetch("/api/portal/courses"),
         ]);
 
       setTeachers(teachersResponse?.data || []);
@@ -79,6 +82,14 @@ const FranchiseTeachers = () => {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    setShowForm(isAddRoute);
+    if (isAddRoute) {
+      setEditing(null);
+      setForm(empty);
+    }
+  }, [isAddRoute]);
 
   // =====================================================
   // FILTER
@@ -138,7 +149,7 @@ const FranchiseTeachers = () => {
     setEditing(null);
     setForm(empty);
     setError("");
-    setShowForm(true);
+    navigate("/franchise/teachers/add");
   };
 
   const openEdit = (teacher) => {
@@ -168,6 +179,7 @@ const FranchiseTeachers = () => {
     setShowForm(false);
     setEditing(null);
     setForm(empty);
+    if (isAddRoute) navigate("/franchise/teachers");
   };
 
   // =====================================================

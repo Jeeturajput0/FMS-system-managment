@@ -577,7 +577,7 @@ const FranchiseDashboard = () => {
 
           {/* Add Teacher */}
           <Link
-            to="/franchise/teachers"
+            to="/franchise/teachers/add"
             className="group flex items-center gap-2.5 rounded-xl border border-purple-100 bg-purple-50/70 p-3 transition-all hover:-translate-y-0.5 hover:border-purple-200 hover:bg-purple-50 hover:shadow-sm"
           >
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-purple-600 text-white shadow-sm">

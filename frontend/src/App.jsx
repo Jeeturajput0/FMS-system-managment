@@ -78,6 +78,7 @@ import TeacherDashboard from "./feature/teacher/pages/TeacherDashboard";
 import TeacherStudents from "./feature/teacher/pages/TeacherStudents";
 import TeacherCourses from "./feature/teacher/pages/TeacherCourses";
 import TeacherBatches from "./feature/teacher/pages/TeacherBatches";
+import TeacherBatchesTable from "./feature/teacher/pages/TeacherBatchesTable";
 import TeacherAttendance from "./feature/teacher/pages/TeacherAttendance";
 import TeacherAssignments from "./feature/teacher/pages/TeacherAssignments";
 import TeacherExams from "./feature/teacher/pages/TeacherExams";
@@ -405,7 +406,7 @@ function App() {
             TEACHER ROUTES
         ====================================================== */}
 
-        <Route path="/teacher" element={<TeacherLayout />}>
+        <Route path="/teacher" element={<ProtectedPortalRoute role="TEACHER" />}>
           <Route index element={<TeacherDashboard />} />
 
           <Route path="students" element={<TeacherStudents />} />
@@ -417,7 +418,7 @@ function App() {
 
           <Route path="courses" element={<TeacherCourses />} />
 
-          <Route path="batches" element={<TeacherBatches />} />
+          <Route path="batches" element={<TeacherBatchesTable />} />
 
           <Route path="attendance" element={<TeacherAttendance />} />
 
@@ -459,6 +460,8 @@ function App() {
           {/* TEACHERS */}
 
           <Route path="teachers" element={<FranchiseTeachers />} />
+
+          <Route path="teachers/add" element={<FranchiseTeachers />} />
           <Route path="teachers/:id" element={<FranchiseTeacherView />} />
 
           {/* COURSES */}
