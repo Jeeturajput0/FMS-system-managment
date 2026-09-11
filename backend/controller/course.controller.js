@@ -99,13 +99,11 @@ export const updateCourseModules = async (req, res) => {
       data: course,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to update course modules",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update course modules",
+      error: error.message,
+    });
   }
 };
 
@@ -114,22 +112,18 @@ export const createCourse = async (req, res) => {
     const data = getCourseData(req.body);
 
     if (!hasRequiredData(data)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Title, description, duration and course fee are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Title, description, duration and course fee are required",
+      });
     }
 
     const titleAlreadyUsed = await Course.exists({ title: data.title });
     if (titleAlreadyUsed) {
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: "A course with this title already exists",
-        });
+      return res.status(409).json({
+        success: false,
+        message: "A course with this title already exists",
+      });
     }
 
     const uploadedImages = (req.files || []).map(
@@ -143,21 +137,17 @@ export const createCourse = async (req, res) => {
       isPublished: true,
       createdBy: req.user._id,
     });
-    return res
-      .status(201)
-      .json({
-        success: true,
-        data: course,
-        message: "Course created successfully",
-      });
+    return res.status(201).json({
+      success: true,
+      data: course,
+      message: "Course created successfully",
+    });
   } catch (error) {
     if (error.code === 11000)
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: "A course with this title already exists",
-        });
+      return res.status(409).json({
+        success: false,
+        message: "A course with this title already exists",
+      });
     throw error;
   }
 };
@@ -211,4 +201,43 @@ export const deleteCourse = async (req, res) => {
     id: req.params.id,
     message: "Course deleted successfully",
   });
+};
+export const listFranchiseCourses = async (req, res) => {
+  try {
+    const franchiseId = req.user?.franchiseId;
+
+    if (!franchiseId) {
+      return res.status(400).json({
+        success: false,
+        message: "Franchise ID not found",
+      });
+    }
+
+    if (!mongoose.isValidObjectId(franchiseId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid franchise ID",
+      });
+    }
+
+    const courses = await Course.find({
+      isActive: true,
+      isPublished: true,
+      availableForFranchises: franchiseId,
+    }).sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      data: courses,
+      count: courses.length,
+    });
+  } catch (error) {
+    console.error("listFranchiseCourses error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch franchise courses",
+      error: error.message,
+    });
+  }
 };

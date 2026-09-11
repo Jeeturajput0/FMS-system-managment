@@ -95,11 +95,11 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
         {/* Logo */}
         <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800/80">
           <div>
-           <img
-                 src={logo}
-                 alt="AI Scholars"
-                 className="h-12 w-auto max-w-[190px] object-contain"
-               />
+            <img
+              src={logo}
+              alt="AI Scholars"
+              className="h-12 w-auto max-w-[190px] object-contain"
+            />
             <p className="text-xs font-medium text-amber-400">
               Franchise Portal
             </p>
@@ -165,7 +165,11 @@ export const FranchiseSidebar = ({ isOpen, onClose }) => {
             <Settings size={19} />
             Settings
           </NavLink>
-          <button type="button" onClick={logout} className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-400 hover:bg-red-950/40 hover:text-red-300">
+          <button
+            type="button"
+            onClick={logout}
+            className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-400 hover:bg-red-950/40 hover:text-red-300"
+          >
             <LogOut size={19} /> Logout
           </button>
         </div>

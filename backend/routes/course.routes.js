@@ -16,6 +16,7 @@ const router = express.Router();
 router.use(requireDatabase);
 router.get("/", listCourses);
 router.get("/:id", getCourse);
+router.get("/fran")
 router.post(
   "/",
   protect,
