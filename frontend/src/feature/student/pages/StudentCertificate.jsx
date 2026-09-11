@@ -591,5 +591,4 @@ const Metric = ({
     </div>
   );
 };
-
 export default StudentCertificate;
