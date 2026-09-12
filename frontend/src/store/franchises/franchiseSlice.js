@@ -1,0 +1,1 @@
+import { makeResourceSlice } from "../resource"; import * as t from "./franchiseThunks"; const slice = makeResourceSlice("franchises", { fetch: t.fetchFranchises, get: t.fetchFranchiseById, create: t.createFranchise, update: t.updateFranchise, remove: t.deleteFranchise }); export default slice.reducer;

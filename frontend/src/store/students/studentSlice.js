@@ -1,0 +1,1 @@
+import { makeResourceSlice } from "../resource"; import * as t from "./studentThunks"; const slice = makeResourceSlice("students", { fetch: t.fetchStudents, get: t.fetchStudentById, create: t.createStudent, update: t.updateStudent, remove: t.deleteStudent }); export default slice.reducer;

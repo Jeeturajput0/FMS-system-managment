@@ -1,0 +1,4 @@
+import { createAsyncThunk } from "@reduxjs/toolkit"; import { portalService } from "../../services/portal.service";
+const make = (name, service) => createAsyncThunk(name, async (_, { rejectWithValue }) => { try { return await service(); } catch (e) { return rejectWithValue(e.message || "Unable to load student data"); } });
+export const fetchStudentPortal = createAsyncThunk("studentPortal/fetch", async (_, { dispatch, rejectWithValue }) => { try { const [dashboard, courses, fees, certificate] = await Promise.all([portalService.dashboard(), portalService.courses(), portalService.fees(), portalService.certificate()]); return { dashboard, courses, fees, certificate }; } catch (e) { return rejectWithValue(e.message || "Unable to load student data"); } });
+export const fetchStudentAttendance = make("studentPortal/attendance", portalService.attendance); export const fetchStudentAssignments = make("studentPortal/assignments", portalService.assignments);

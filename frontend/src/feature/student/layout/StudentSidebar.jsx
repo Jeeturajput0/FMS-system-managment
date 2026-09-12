@@ -14,10 +14,15 @@ import {
   LogOut,
 } from "lucide-react";
 import logo from "../../../../assist/logo.png";
-import { clearAuth } from "../../../utils/api";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
+import { logout } from "../../../store/auth/authSlice";
+import { resetServerState } from "../../../store/reset";
+import { selectStudentCourse } from "../../../store/selectors";
 
 const StudentSidebar = ({ open, onClose }) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const course = useAppSelector(selectStudentCourse);
 
   const handleNavigation = () => onClose?.();
 
@@ -29,8 +34,8 @@ const StudentSidebar = ({ open, onClose }) => {
     }`;
 
   const handleLogout = () => {
-    clearAuth();
-    localStorage.removeItem("studentData");
+    dispatch(logout());
+    dispatch(resetServerState());
     onClose?.();
     navigate("/log", { replace: true });
   };
@@ -73,7 +78,7 @@ const StudentSidebar = ({ open, onClose }) => {
 
           <NavLink to="/student/courses" className={linkClass} onClick={handleNavigation}>
             <BookOpen className="w-5 h-5" />
-            My Course
+            <span className="min-w-0"><span className="block">My Course</span></span>
           </NavLink>
 
           <NavLink to="/student/assignments" className={linkClass} onClick={handleNavigation}>

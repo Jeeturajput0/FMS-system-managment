@@ -1,0 +1,3 @@
+import { createAsyncThunk } from "@reduxjs/toolkit"; import { dashboardService } from "../../services/dashboard.service";
+const make = (name, service) => createAsyncThunk(name, async (_, { rejectWithValue }) => { try { return await service(); } catch (e) { return rejectWithValue(e.message || "Failed to load dashboard"); } });
+export const fetchAdminDashboard = make("dashboard/fetchAdmin", dashboardService.getAdminDashboard); export const fetchFranchiseDashboard = make("dashboard/fetchFranchise", dashboardService.getFranchiseDashboard); export const fetchTeacherDashboard = make("dashboard/fetchTeacher", dashboardService.getTeacherDashboard); export const fetchStudentDashboard = make("dashboard/fetchStudent", dashboardService.getStudentDashboard);

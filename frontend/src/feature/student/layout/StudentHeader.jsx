@@ -5,11 +5,10 @@ import {
   Bell,
   UserCircle,
 } from "lucide-react";
+import { useAppSelector } from "../../../hooks/redux";
 
 const StudentHeader = ({ onMenuClick }) => {
-  const user = JSON.parse(
-    localStorage.getItem("ai_scholars_user") || "{}",
-  );
+  const user = useAppSelector((state) => state.auth.user || {});
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6">

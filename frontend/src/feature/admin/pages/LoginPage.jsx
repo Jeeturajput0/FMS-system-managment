@@ -2,26 +2,24 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, AlertCircle, ArrowRight, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
-import { apiFetch } from "../../../utils/api";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
+import { login, register as registerUser } from "../../../store/auth/authThunks";
 import logo from "../../../../assist/logo.png";
 
 export const LoginPage = ({ isRegister = false }) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const authLoading = useAppSelector((state) => state.auth.loading);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
-
     try {
-      const path = isRegister ? "/api/auth/register" : "/api/auth/login";
-
       const payload = isRegister
         ? {
             name,
@@ -34,10 +32,7 @@ export const LoginPage = ({ isRegister = false }) => {
             password,
           };
 
-      const result = await apiFetch(path, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+      const result = await dispatch(isRegister ? registerUser(payload) : login(payload)).unwrap();
 
       if (!isRegister && !["SUPER_ADMIN", "ADMIN"].includes(result.user.role)) {
         throw new Error(
@@ -45,16 +40,10 @@ export const LoginPage = ({ isRegister = false }) => {
         );
       }
 
-      localStorage.setItem("ai_scholars_token", result.token);
-
-      localStorage.setItem("ai_scholars_user", JSON.stringify(result.user));
-
       navigate("/admin/dashboard");
     } catch (err) {
       setError(err.message || "Unable to authenticate.");
-    } finally {
-      setIsLoading(false);
-    }
+    } finally {}
   };
 
   return (
@@ -424,7 +413,7 @@ export const LoginPage = ({ isRegister = false }) => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={authLoading}
               className="
                 mt-2
                 flex
@@ -452,7 +441,7 @@ export const LoginPage = ({ isRegister = false }) => {
                 disabled:opacity-50
               "
             >
-              {isLoading ? (
+              {authLoading ? (
                 <>
                   <span
                     className="

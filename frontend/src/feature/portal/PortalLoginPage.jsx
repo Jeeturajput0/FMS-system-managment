@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { ArrowRight, Lock, Mail, UserPlus, Building2, GraduationCap, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../../utils/api";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { login, register as registerUser } from "../../store/auth/authThunks";
 import { sanitizePhoneInput } from "../../utils/phone";
 import { sanitizeNameInput } from "../../utils/name";
 import logo from "../../../assist/logo.png";
@@ -21,6 +22,8 @@ const routeFor = (role) =>
 
 export const PortalLoginPage = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const authLoading = useAppSelector((state) => state.auth.loading);
   const [form, setForm] = useState({
     name: "",
     franchiseName: "",
@@ -31,7 +34,6 @@ export const PortalLoginPage = () => {
   });
   const [register, setRegister] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const update = (event) =>
     setForm((current) => ({
       ...current,
@@ -44,29 +46,16 @@ export const PortalLoginPage = () => {
   const submit = async (event) => {
     event.preventDefault();
     setError("");
-    setLoading(true);
     try {
-      const result = await apiFetch(
-        `/api/auth/${register ? "register" : "login"}`,
-        {
-          method: "POST",
-          body: JSON.stringify(
-            register ? form : { email: form.email, password: form.password },
-          ),
-        },
-      );
+      const result = await dispatch(register ? registerUser(form) : login({ email: form.email, password: form.password })).unwrap();
       if (!register && result.user.role !== form.role)
         throw new Error(
           `This account is registered as ${result.user.role.toLowerCase()}, not ${form.role.toLowerCase()}.`,
         );
-      localStorage.setItem("ai_scholars_token", result.token);
-      localStorage.setItem("ai_scholars_user", JSON.stringify(result.user));
       navigate(routeFor(result.user.role));
     } catch (requestError) {
       setError(requestError.message || "Unable to authenticate");
-    } finally {
-      setLoading(false);
-    }
+    } finally {}
   };
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#eef4ff] px-4 py-10">
@@ -152,10 +141,10 @@ export const PortalLoginPage = () => {
               />
             </label>
             <button
-              disabled={loading}
+              disabled={authLoading}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-60"
             >
-              {loading
+              {authLoading
                 ? "Please wait..."
                 : register
                   ? "Create account"

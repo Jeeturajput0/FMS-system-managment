@@ -6,10 +6,11 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { sanitizeNameInput } from "./utils/name";
-import { apiFetch } from "./utils/api";
+import { useAppDispatch } from "./hooks/redux";
+import { fetchCurrentUser } from "./store/auth/authThunks";
 
 // ============================================================
 // ADMIN LAYOUT
@@ -294,30 +295,18 @@ function ResponsiveTableCards() {
 ============================================================ */
 
 function App() {
-  const [, setAuthVersion] = useState(0);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const token = localStorage.getItem("ai_scholars_token");
     if (!token) return undefined;
-    let active = true;
-    apiFetch("/api/auth/me")
-      .then((response) => {
-        if (active && response.user) {
-          localStorage.setItem(
-            "ai_scholars_user",
-            JSON.stringify(response.user),
-          );
-          setAuthVersion((version) => version + 1);
-        }
-      })
-      .catch(() => active && setAuthVersion((version) => version + 1));
-    const onExpired = () => setAuthVersion((version) => version + 1);
+    dispatch(fetchCurrentUser());
+    const onExpired = () => dispatch(fetchCurrentUser());
     window.addEventListener("ai-scholars-auth-expired", onExpired);
     return () => {
-      active = false;
       window.removeEventListener("ai-scholars-auth-expired", onExpired);
     };
-  }, []);
+  }, [dispatch]);
 
   return (
     <BrowserRouter>
