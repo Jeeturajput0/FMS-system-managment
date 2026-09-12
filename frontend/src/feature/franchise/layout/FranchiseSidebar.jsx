@@ -7,6 +7,7 @@ import {
   IndianRupee,
   CalendarDays,
   ClipboardCheck,
+  ClipboardList,
   BarChart3,
   UserRound,
   Settings,
@@ -47,6 +48,11 @@ const menuItems = [
     label: "Attendance",
     path: "/franchise/attendance",
     icon: ClipboardCheck,
+  },
+  {
+    label: "Assignments",
+    path: "/franchise/assignments",
+    icon: ClipboardList,
   },
   {
     label: "Fees",

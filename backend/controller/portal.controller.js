@@ -6,6 +6,7 @@ import Student from "../model/student.model.js";
 import User from "../model/user.model.js";
 import Batch from "../model/batches.model.js";
 import Attendance from "../model/attendance.model.js";
+import Assignment from "../model/assignment.model.js";
 import bcrypt from "bcryptjs";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
@@ -292,7 +293,13 @@ export const getPortalTeacherById = async (req, res) => {
 export const getPortalTeacherBatches = async (req, res) => {
   try {
     const batchIds = await getTeacherBatchIds(req.user);
-    const data = await Batch.find({ _id: { $in: batchIds } }).populate("course", "title name").populate("students", "name studentId").sort({ createdAt: -1 }).lean();
+    const data = await Batch.find(
+      req.user.role === "TEACHER"
+        ? { _id: { $in: batchIds } }
+        : req.user.coachingId
+          ? { coachingId: req.user.coachingId }
+          : {},
+    ).populate("course", "title name").populate("students", "name studentId").sort({ createdAt: -1 }).lean();
     return res.json({ success: true, data });
   } catch (error) { return res.status(500).json({ success: false, message: "Failed to load teacher batches", error: error.message }); }
 };
@@ -383,6 +390,158 @@ export const getPortalAttendance = async (req, res) => {
     return res.json({ success: true, data: { batch, attendance } });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load attendance", error: error.message });
+  }
+};
+
+export const getPortalAssignments = async (req, res) => {
+  try {
+    if (!req.user.coachingId) return res.status(400).json({ success: false, message: "Franchise ID not found" });
+    const teacherBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
+    const filter = {
+      coachingId: req.user.coachingId,
+      ...(teacherBatchIds
+        ? {
+            $or: [
+              { batchId: { $in: teacherBatchIds } },
+              { createdBy: req.user._id },
+            ],
+          }
+        : {}),
+    };
+    if (req.query.batchId && mongoose.isValidObjectId(req.query.batchId)) filter.batchId = req.query.batchId;
+    if (req.query.status) filter.status = req.query.status;
+    const data = await Assignment.find(filter)
+      .populate("batchId", "name code course")
+      .populate("courseId", "title name")
+      .populate("createdBy", "name")
+      .sort({ createdAt: -1 })
+      .lean();
+    return res.json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to load assignments", error: error.message });
+  }
+};
+
+export const createPortalAssignment = async (req, res) => {
+  try {
+    const { title, description = "", courseId = null, batchId = null, dueDate = null, maxMarks = 10, attachments = [], status = "ACTIVE" } = req.body;
+    if (!req.user.coachingId) return res.status(400).json({ success: false, message: "Franchise ID not found" });
+    if (!title?.trim() || title.trim().length < 2) return res.status(400).json({ success: false, message: "Assignment title is required" });
+    if (batchId && mongoose.isValidObjectId(batchId)) {
+      const allowedBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
+      const batch = await Batch.findOne({
+        _id: batchId,
+        coachingId: req.user.coachingId,
+        ...(allowedBatchIds ? { _id: { $in: allowedBatchIds } } : {}),
+      }).lean();
+      if (!batch) return res.status(404).json({ success: false, message: "Batch not found" });
+    }
+    if (courseId && !mongoose.isValidObjectId(courseId)) return res.status(400).json({ success: false, message: "Invalid course selected" });
+    const marks = Number(maxMarks);
+    const assignment = await Assignment.create({
+      title: title.trim(),
+      description: String(description).trim(),
+      coachingId: req.user.coachingId,
+      courseId: courseId && mongoose.isValidObjectId(courseId) ? courseId : null,
+      batchId: batchId && mongoose.isValidObjectId(batchId) ? batchId : null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      maxMarks: Number.isFinite(marks) && marks >= 0 ? marks : 10,
+      attachments: Array.isArray(attachments) ? attachments.filter(Boolean) : [],
+      status,
+      createdBy: req.user._id,
+    });
+    const data = await Assignment.findById(assignment._id)
+      .populate("batchId", "name code course")
+      .populate("courseId", "title name")
+      .populate("createdBy", "name")
+      .lean();
+    return res.status(201).json({ success: true, message: "Assignment created successfully", data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to create assignment", error: error.message });
+  }
+};
+
+export const updatePortalAssignment = async (req, res) => {
+  try {
+    const { title, description, courseId, batchId, dueDate, maxMarks, attachments, status } = req.body;
+    if (!req.user.coachingId) return res.status(400).json({ success: false, message: "Franchise ID not found" });
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid assignment ID" });
+    const allowedBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      coachingId: req.user.coachingId,
+      ...(allowedBatchIds
+        ? {
+            $or: [
+              { batchId: { $in: allowedBatchIds } },
+              { createdBy: req.user._id },
+            ],
+          }
+        : {}),
+    });
+    if (!assignment) return res.status(404).json({ success: false, message: "Assignment not found" });
+    if (title !== undefined) {
+      if (!title.trim() || title.trim().length < 2) return res.status(400).json({ success: false, message: "Assignment title is required" });
+      assignment.title = title.trim();
+    }
+    if (description !== undefined) assignment.description = String(description).trim();
+    if (batchId !== undefined) {
+      if (!batchId || !mongoose.isValidObjectId(batchId)) {
+        assignment.batchId = null;
+      } else {
+        const batch = await Batch.findOne({
+          _id: batchId,
+          coachingId: req.user.coachingId,
+          ...(allowedBatchIds ? { _id: { $in: allowedBatchIds } } : {}),
+        }).lean();
+        if (!batch) return res.status(404).json({ success: false, message: "Batch not found" });
+        assignment.batchId = batchId;
+      }
+    }
+    if (courseId !== undefined) {
+      assignment.courseId = courseId && mongoose.isValidObjectId(courseId) ? courseId : null;
+    }
+    if (dueDate !== undefined) assignment.dueDate = dueDate ? new Date(dueDate) : null;
+    if (maxMarks !== undefined) {
+      const marks = Number(maxMarks);
+      assignment.maxMarks = Number.isFinite(marks) && marks >= 0 ? marks : 10;
+    }
+    if (attachments !== undefined) assignment.attachments = Array.isArray(attachments) ? attachments.filter(Boolean) : [];
+    if (status !== undefined) assignment.status = status;
+    assignment.updatedBy = req.user._id;
+    await assignment.save();
+    const data = await Assignment.findById(assignment._id)
+      .populate("batchId", "name code course")
+      .populate("courseId", "title name")
+      .populate("createdBy", "name")
+      .lean();
+    return res.json({ success: true, message: "Assignment updated successfully", data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to update assignment", error: error.message });
+  }
+};
+
+export const deletePortalAssignment = async (req, res) => {
+  try {
+    if (!req.user.coachingId) return res.status(400).json({ success: false, message: "Franchise ID not found" });
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid assignment ID" });
+    const allowedBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
+    const assignment = await Assignment.findOneAndDelete({
+      _id: req.params.id,
+      coachingId: req.user.coachingId,
+      ...(allowedBatchIds
+        ? {
+            $or: [
+              { batchId: { $in: allowedBatchIds } },
+              { createdBy: req.user._id },
+            ],
+          }
+        : {}),
+    }).select("title").lean();
+    if (!assignment) return res.status(404).json({ success: false, message: "Assignment not found" });
+    return res.json({ success: true, message: "Assignment deleted successfully", data: assignment });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to delete assignment", error: error.message });
   }
 };
 

@@ -672,6 +672,8 @@ function App() {
 
           <Route path="attendance" element={<FranchiseAttendance />} />
 
+          <Route path="assignments" element={<TeacherAssignments />} />
+
           {/* ==================================================
               FEES
           ================================================== */}
