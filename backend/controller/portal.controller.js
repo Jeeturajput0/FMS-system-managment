@@ -397,6 +397,17 @@ export const getPortalAssignments = async (req, res) => {
   try {
     if (!req.user.coachingId) return res.status(400).json({ success: false, message: "Franchise ID not found" });
     const teacherBatchIds = req.user.role === "TEACHER" ? await getTeacherBatchIds(req.user) : null;
+    let studentBatchId = null;
+    if (req.user.role === "STUDENT") {
+      const studentRecord = await Student.findOne({
+        ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
+        $or: [
+          ...(mongoose.isValidObjectId(req.user._id) ? [{ userId: req.user._id }] : []),
+          ...(req.user.email ? [{ email: req.user.email.toLowerCase() }] : []),
+        ],
+      }).select("batchId").lean();
+      studentBatchId = studentRecord?.batchId || null;
+    }
     const filter = {
       coachingId: req.user.coachingId,
       ...(teacherBatchIds
@@ -407,9 +418,20 @@ export const getPortalAssignments = async (req, res) => {
             ],
           }
         : {}),
+      ...(req.user.role === "STUDENT"
+        ? {
+            status: "ACTIVE",
+            $or: [
+              ...(studentBatchId ? [{ batchId: studentBatchId }] : []),
+              { batchId: null },
+            ],
+          }
+        : {}),
     };
-    if (req.query.batchId && mongoose.isValidObjectId(req.query.batchId)) filter.batchId = req.query.batchId;
-    if (req.query.status) filter.status = req.query.status;
+    if (req.user.role !== "STUDENT") {
+      if (req.query.batchId && mongoose.isValidObjectId(req.query.batchId)) filter.batchId = req.query.batchId;
+      if (req.query.status) filter.status = req.query.status;
+    }
     const data = await Assignment.find(filter)
       .populate("batchId", "name code course")
       .populate("courseId", "title name")

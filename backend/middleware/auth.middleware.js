@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import Student from "../model/student.model.js";
 
 export const protect = async (req, res, next) => {
   try {
@@ -34,6 +35,30 @@ export const protect = async (req, res, next) => {
       role: decoded.role || "SUPER_ADMIN",
       coachingId: decoded.coachingId || null,
     };
+
+    // Students who self-registered may not have a coachingId on their login.
+    // Resolve it from their Student record (matched by login email) so every
+    // coaching-scoped portal endpoint (dashboard, assignments, fees...) works.
+    if (req.user.role === "STUDENT" && !req.user.coachingId && req.user.email) {
+      try {
+        const record = await Student.findOne({
+          email: String(req.user.email).toLowerCase(),
+        })
+          .select("coachingId userId")
+          .lean();
+        if (record?.coachingId) {
+          req.user.coachingId = record.coachingId;
+          if (!record.userId) {
+            await Student.updateOne(
+              { _id: record._id },
+              { $set: { userId: req.user._id } },
+            );
+          }
+        }
+      } catch {
+        // Resolution is best-effort; endpoints return their own errors.
+      }
+    }
 
     return next();
   } catch (error) {

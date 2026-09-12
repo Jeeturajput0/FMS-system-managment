@@ -12,9 +12,9 @@ import {
   User,
   Settings,
   LogOut,
-  GraduationCap,
 } from "lucide-react";
 import logo from "../../../../assist/logo.png";
+import { clearAuth } from "../../../utils/api";
 
 const StudentSidebar = ({ open, onClose }) => {
   const navigate = useNavigate();
@@ -29,9 +29,9 @@ const StudentSidebar = ({ open, onClose }) => {
     }`;
 
   const handleLogout = () => {
-    localStorage.removeItem("ai_scholars_token");
-    localStorage.removeItem("ai_scholars_user");
+    clearAuth();
     localStorage.removeItem("studentData");
+    onClose?.();
     navigate("/log", { replace: true });
   };
 

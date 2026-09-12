@@ -483,6 +483,11 @@ const TeacherAssignments = () => {
                                 <p className="mt-0.5 line-clamp-1 max-w-[240px] text-xs text-slate-400">
                                   {assignment.description || "No description"}
                                 </p>
+                                {assignment.createdBy?.name && (
+                                  <p className="mt-0.5 max-w-[240px] truncate text-[10px] font-bold text-slate-400">
+                                    by {assignment.createdBy.name}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </td>
