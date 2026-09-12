@@ -21,6 +21,7 @@ const DAYS = [
   "THURSDAY",
   "FRIDAY",
   "SATURDAY",
+
 ];
 
 const DAY_SHORT = {
