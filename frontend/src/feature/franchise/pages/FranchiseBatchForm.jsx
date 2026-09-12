@@ -66,7 +66,9 @@ const FranchiseBatchForm = () => {
   useEffect(() => {
     const storedFranchiseId = user?.coachingId || user?.franchiseId;
     Promise.all([
-      apiFetch("/api/courses"),
+      // The portal endpoint is scoped by the logged-in franchise, so a batch
+      // can only be created for a course assigned to that franchise.
+      apiFetch("/api/portal/courses"),
       apiFetch("/api/portal/teachers"),
       apiFetch("/api/batches/franchise/batches?limit=1000"),
       id ? apiFetch(`/api/batches/${id}`) : Promise.resolve(null),

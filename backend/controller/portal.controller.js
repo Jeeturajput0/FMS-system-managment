@@ -184,6 +184,44 @@ export const getPortalCourses = async (req, res) => {
   }
 };
 
+export const updateMyStudentProfile = async (req, res) => {
+  try {
+    if (req.user.role !== "STUDENT") {
+      return res.status(403).json({ success: false, message: "Only students can update this profile" });
+    }
+
+    const student = await Student.findOne({
+      ...(req.user.coachingId ? { coachingId: req.user.coachingId } : {}),
+      $or: [
+        ...(mongoose.isValidObjectId(req.user._id) ? [{ userId: req.user._id }] : []),
+        ...(req.user.email ? [{ email: req.user.email.toLowerCase() }] : []),
+      ],
+    });
+    if (!student) return res.status(404).json({ success: false, message: "Student profile not found" });
+
+    // Deliberately exclude identity, course, batch and email fields. Those are
+    // controlled by the franchise/admin workflow and cannot be changed here.
+    const allowed = ["name", "mobile", "dob", "gender", "address", "city", "state", "pincode", "fatherName", "motherName"];
+    const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
+    if (updates.name !== undefined && (!updates.name.trim() || !isValidName(updates.name))) {
+      return res.status(400).json({ success: false, message: nameValidationMessage });
+    }
+    if (updates.mobile !== undefined && !isValidPhoneNumber(updates.mobile)) {
+      return res.status(400).json({ success: false, message: phoneValidationMessage });
+    }
+    if (updates.pincode !== undefined && updates.pincode && !/^\d{6}$/.test(String(updates.pincode).trim())) {
+      return res.status(400).json({ success: false, message: "Pincode must be exactly 6 digits" });
+    }
+
+    Object.assign(student, updates);
+    student.updatedBy = req.user._id;
+    await student.save();
+    return res.json({ success: true, message: "Profile updated successfully", data: student.toObject() });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to update student profile", error: error.message });
+  }
+};
+
 export const getPortalFees = async (req, res) => {
   try {
     const student = req.user.role === "STUDENT" ? await Student.findOne({ email: req.user.email }).select("_id") : null;

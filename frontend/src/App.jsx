@@ -131,6 +131,7 @@ import StudentSettings from "./feature/student/pages/StudentSettings";
 import StudentNotifications from "./feature/student/pages/StudentNotifications";
 
 import { DashboardOverview } from "./feature/admin/pages/DashboardOverview";
+import AddTeacherPage from "./feature/franchise/pages/AddTeacherPage";
 
 /* ============================================================
    PROTECTED ADMIN ROUTE
@@ -141,15 +142,12 @@ const ProtectedAdminRoute = () => {
 
   const token = localStorage.getItem("ai_scholars_token");
 
-  const user = JSON.parse(
-    localStorage.getItem("ai_scholars_user") || "null"
-  );
+  const user = JSON.parse(localStorage.getItem("ai_scholars_user") || "null");
 
   if (
     !token ||
     !user ||
-    (user.role !== "SUPER_ADMIN" &&
-      user.role !== "ADMIN")
+    (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN")
   ) {
     return (
       <Navigate
@@ -174,9 +172,7 @@ const ProtectedPortalRoute = ({ role }) => {
 
   const token = localStorage.getItem("ai_scholars_token");
 
-  const user = JSON.parse(
-    localStorage.getItem("ai_scholars_user") || "null"
-  );
+  const user = JSON.parse(localStorage.getItem("ai_scholars_user") || "null");
 
   if (!token || !user || user.role !== role) {
     return (
@@ -225,10 +221,7 @@ function NameInputGuard() {
     const handleInput = (event) => {
       const input = event.target;
 
-      if (
-        !input?.matches?.("input, textarea") ||
-        !nameFields.has(input.name)
-      ) {
+      if (!input?.matches?.("input, textarea") || !nameFields.has(input.name)) {
         return;
       }
 
@@ -239,18 +232,10 @@ function NameInputGuard() {
       }
     };
 
-    document.addEventListener(
-      "input",
-      handleInput,
-      true
-    );
+    document.addEventListener("input", handleInput, true);
 
     return () => {
-      document.removeEventListener(
-        "input",
-        handleInput,
-        true
-      );
+      document.removeEventListener("input", handleInput, true);
     };
   }, []);
 
@@ -270,22 +255,28 @@ function ResponsiveTableCards() {
   useEffect(() => {
     const enhanceTables = () => {
       document.querySelectorAll("table").forEach((table) => {
-        const headings = Array.from(table.tHead?.querySelectorAll("th") || [])
-          .map((heading) => heading.textContent.replace(/\s+/g, " ").trim());
+        const headings = Array.from(
+          table.tHead?.querySelectorAll("th") || [],
+        ).map((heading) => heading.textContent.replace(/\s+/g, " ").trim());
 
         if (!headings.length || !table.tBodies.length) return;
 
         table.classList.add("responsive-data-table");
 
-        Array.from(table.tBodies).flatMap((body) => Array.from(body.rows)).forEach((row) => {
-          const cells = Array.from(row.querySelectorAll(":scope > td"));
-          const isEmptyState = cells.length === 1 && Number(cells[0].colSpan) > 1;
+        Array.from(table.tBodies)
+          .flatMap((body) => Array.from(body.rows))
+          .forEach((row) => {
+            const cells = Array.from(row.querySelectorAll(":scope > td"));
+            const isEmptyState =
+              cells.length === 1 && Number(cells[0].colSpan) > 1;
 
-          row.toggleAttribute("data-mobile-empty", isEmptyState);
-          cells.forEach((cell, index) => {
-            cell.dataset.label = isEmptyState ? "" : headings[index] || "Details";
+            row.toggleAttribute("data-mobile-empty", isEmptyState);
+            cells.forEach((cell, index) => {
+              cell.dataset.label = isEmptyState
+                ? ""
+                : headings[index] || "Details";
+            });
           });
-        });
       });
     };
 
@@ -312,7 +303,10 @@ function App() {
     apiFetch("/api/auth/me")
       .then((response) => {
         if (active && response.user) {
-          localStorage.setItem("ai_scholars_user", JSON.stringify(response.user));
+          localStorage.setItem(
+            "ai_scholars_user",
+            JSON.stringify(response.user),
+          );
           setAuthVersion((version) => version + 1);
         }
       })
@@ -331,229 +325,111 @@ function App() {
       <ResponsiveTableCards />
 
       <Routes>
-
         {/* ======================================================
             PUBLIC ROUTES
         ====================================================== */}
 
-        <Route
-          path="/"
-          element={<LandingPage />}
-        />
+        <Route path="/" element={<LandingPage />} />
 
-        <Route
-          path="/landing"
-          element={<LandingPage />}
-        />
+        <Route path="/landing" element={<LandingPage />} />
 
-        <Route
-          path="/courses"
-          element={<CourseCatalog />}
-        />
+        <Route path="/courses" element={<CourseCatalog />} />
 
         {/* Public course detail disabled */}
-        <Route
-          path="/courses/:id"
-          element={<Navigate to="/log" replace />}
-        />
+        <Route path="/courses/:id" element={<Navigate to="/log" replace />} />
 
         {/* Admin Login */}
-        <Route
-          path="/login/admin"
-          element={<LoginPage />}
-        />
+        <Route path="/login/admin" element={<LoginPage />} />
 
         {/* Admin Registration */}
-        <Route
-          path="/register/admin"
-          element={<LoginPage isRegister />}
-        />
+        <Route path="/register/admin" element={<LoginPage isRegister />} />
 
         {/* Main login */}
-        <Route
-          path="/login"
-          element={
-            <Navigate
-              to="/login/admin"
-              replace
-            />
-          }
-        />
+        <Route path="/login" element={<Navigate to="/login/admin" replace />} />
 
         {/* Portal Login */}
-        <Route
-          path="/log"
-          element={<PortalLoginPage />}
-        />
-
+        <Route path="/log" element={<PortalLoginPage />} />
 
         {/* ======================================================
             ADMIN ROUTES
         ====================================================== */}
 
-        <Route
-          path="/admin"
-          element={<ProtectedAdminRoute />}
-        >
-
+        <Route path="/admin" element={<ProtectedAdminRoute />}>
           {/* Dashboard */}
 
-          <Route
-            index
-            element={<DashboardOverview />}
-          />
+          <Route index element={<DashboardOverview />} />
 
-          <Route
-            path="dashboard"
-            element={<DashboardOverview />}
-          />
-
+          <Route path="dashboard" element={<DashboardOverview />} />
 
           {/* ==================================================
               FRANCHISE MANAGEMENT
           ================================================== */}
 
-          <Route
-            path="franchises"
-            element={<FranchiseList />}
-          />
+          <Route path="franchises" element={<FranchiseList />} />
 
-          <Route
-            path="franchises/add"
-            element={<FranchiseForm />}
-          />
+          <Route path="franchises/add" element={<FranchiseForm />} />
 
-          <Route
-            path="franchises/:id"
-            element={<FranchiseDetail />}
-          />
+          <Route path="franchises/:id" element={<FranchiseDetail />} />
 
-          <Route
-            path="franchises/:id/edit"
-            element={<FranchiseForm />}
-          />
+          <Route path="franchises/:id/edit" element={<FranchiseForm />} />
 
-          <Route
-            path="franchises/batches"
-            element={<FranchiseBatches />}
-          />
+          <Route path="franchises/Timetable" element={<FranchiseBatches />} />
 
-          <Route
-            path="franchises/teachers"
-            element={<FranchiseTeachers />}
-          />
-
+          <Route path="franchises/teachers" element={<FranchiseTeachers />} />
 
           {/* ==================================================
               COURSES
           ================================================== */}
 
-          <Route
-            path="courses"
-            element={<CourseCatalog />}
-          />
+          <Route path="courses" element={<CourseCatalog />} />
 
-          <Route
-            path="course-add"
-            element={<CourseAdd />}
-          />
+          <Route path="course-add" element={<CourseAdd />} />
 
-          <Route
-            path="courses/modules"
-            element={<CourseModules />}
-          />
+          <Route path="courses/modules" element={<CourseModules />} />
 
-          <Route
-            path="courses/:courseId/modules"
-            element={<CourseModules />}
-          />
+          <Route path="courses/:courseId/modules" element={<CourseModules />} />
 
-          <Route
-            path="courses/modules/add"
-            element={<ModuleAdd />}
-          />
+          <Route path="courses/modules/add" element={<ModuleAdd />} />
 
-          <Route
-            path="courses/:courseId/modules/add"
-            element={<ModuleAdd />}
-          />
+          <Route path="courses/:courseId/modules/add" element={<ModuleAdd />} />
 
-          <Route
-            path="modules/:id"
-            element={<ModuleAdd />}
-          />
+          <Route path="modules/:id" element={<ModuleAdd />} />
 
-          <Route
-            path="modules/:id/topics"
-            element={<ModuleTopics />}
-          />
+          <Route path="modules/:id/topics" element={<ModuleTopics />} />
 
-          <Route
-            path="modules/:id/edit"
-            element={<ModuleAdd />}
-          />
+          <Route path="modules/:id/edit" element={<ModuleAdd />} />
 
-          <Route
-            path="topics/:topicId"
-            element={<TopicView />}
-          />
+          <Route path="topics/:topicId" element={<TopicView />} />
 
-          <Route
-            path="topics/:topicId/edit"
-            element={<TopicAdd />}
-          />
+          <Route path="topics/:topicId/edit" element={<TopicAdd />} />
 
-          <Route
-            path="topics/add"
-            element={<TopicAdd />}
-          />
+          <Route path="topics/add" element={<TopicAdd />} />
 
-          <Route
-            path="courses/edit/:id"
-            element={<CourseAdd />}
-          />
+          <Route path="courses/edit/:id" element={<CourseAdd />} />
 
           {/* Admin Course Detail */}
-          <Route
-            path="courses/:id"
-            element={<CourseDetail />}
-          />
+          <Route path="courses/:id" element={<CourseDetail />} />
 
-          <Route
-            path="course/:id"
-            element={<CourseDetail />}
-          />
-
+          <Route path="course/:id" element={<CourseDetail />} />
 
           {/* ==================================================
               STUDENTS
           ================================================== */}
 
-          <Route
-            path="students"
-            element={<StudentDirectory />}
-          />
+          <Route path="students" element={<StudentDirectory />} />
 
-          <Route
-            path="students/:id"
-            element={<StudentDetail />}
-          />
+          <Route path="students/:id" element={<StudentDetail />} />
 
           <Route
             path="students/:id/certificate"
             element={<StudentCertificate />}
           />
 
-
           {/* ==================================================
               FEES
           ================================================== */}
 
-          <Route
-            path="fees"
-            element={<FeesOverview />}
-          />
-
+          <Route path="fees" element={<FeesOverview />} />
 
           {/* ==================================================
               OTHER ADMIN PAGES
@@ -561,45 +437,21 @@ function App() {
 
           <Route
             path="certificates"
-            element={
-              <AdminPlaceholderPage
-                title="Certificates"
-              />
-            }
+            element={<AdminPlaceholderPage title="Certificates" />}
           />
 
-          <Route
-            path="notifications"
-            element={<AdminNotificationsPage />}
-          />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
 
-          <Route
-            path="admins"
-            element={<AdminManagementPage />}
-          />
+          <Route path="admins" element={<AdminManagementPage />} />
 
-          <Route
-            path="reports"
-            element={<AdminReportsPage />}
-          />
+          <Route path="reports" element={<AdminReportsPage />} />
 
-          <Route
-            path="settings"
-            element={<AdminProfilePage />}
-          />
+          <Route path="settings" element={<AdminProfilePage />} />
 
-          <Route
-            path="search"
-            element={<AdminSearchPage />}
-          />
+          <Route path="search" element={<AdminSearchPage />} />
 
-          <Route
-            path="profile"
-            element={<AdminProfilePage />}
-          />
-
+          <Route path="profile" element={<AdminProfilePage />} />
         </Route>
-
 
         {/* ======================================================
             STUDENT ROUTES
@@ -607,155 +459,75 @@ function App() {
 
         <Route
           path="/student"
-          element={
-            <ProtectedPortalRoute
-              role="STUDENT"
-            />
-          }
+          element={<ProtectedPortalRoute role="STUDENT" />}
         >
+          <Route index element={<Navigate to="dashboard" replace />} />
+
+          <Route path="dashboard" element={<StudentDashboard />} />
+
+          <Route path="courses" element={<StudentCourses />} />
+
+          <Route path="courses/modules" element={<StudentModules />} />
+
+          <Route path="courses/topics" element={<StudentTopics />} />
+
+          <Route path="courses/material" element={<StudentStudyMaterial />} />
+
+          <Route path="courses/:id" element={<StudentCourseDetail />} />
 
           <Route
-            index
-            element={
-              <Navigate
-                to="dashboard"
-                replace
-              />
-            }
+            path="courses/:courseId/modules/:moduleId/topics"
+            element={<PortalModuleTopics />}
           />
-
           <Route
-            path="dashboard"
-            element={<StudentDashboard />}
+            path="courses/:courseId/modules/:moduleId/topics/:topicId"
+            element={<PortalTopicDetail />}
           />
 
-          <Route
-            path="courses"
-            element={<StudentCourses />}
-          />
+          <Route path="assignments" element={<StudentAssignments />} />
 
-          <Route
-            path="courses/modules"
-            element={<StudentModules />}
-          />
-
-          <Route
-            path="courses/topics"
-            element={<StudentTopics />}
-          />
-
-          <Route
-            path="courses/material"
-            element={<StudentStudyMaterial />}
-          />
-
-          <Route
-            path="courses/:id"
-            element={<StudentCourseDetail />}
-          />
-
-          <Route path="courses/:courseId/modules/:moduleId/topics" element={<PortalModuleTopics />} />
-          <Route path="courses/:courseId/modules/:moduleId/topics/:topicId" element={<PortalTopicDetail />} />
-
-          <Route
-            path="assignments"
-            element={<StudentAssignments />}
-          />
-
-          <Route
-            path="assignments/pending"
-            element={<StudentAssignments />}
-          />
+          <Route path="assignments/pending" element={<StudentAssignments />} />
 
           <Route
             path="assignments/submitted"
             element={<StudentAssignments />}
           />
 
-          <Route
-            path="assignments/:id"
-            element={<StudentAssignmentDetail />}
-          />
+          <Route path="assignments/:id" element={<StudentAssignmentDetail />} />
 
-          <Route
-            path="tests"
-            element={<StudentTests />}
-          />
+          <Route path="tests" element={<StudentTests />} />
 
-          <Route
-            path="tests/attempt"
-            element={<StudentTestAttempt />}
-          />
+          <Route path="tests/attempt" element={<StudentTestAttempt />} />
 
-          <Route
-            path="tests/results"
-            element={<StudentTestResults />}
-          />
+          <Route path="tests/results" element={<StudentTestResults />} />
 
-          <Route
-            path="progress"
-            element={<StudentProgress />}
-          />
+          <Route path="progress" element={<StudentProgress />} />
 
-          <Route
-            path="attendance"
-            element={<StudentAttendance />}
-          />
+          <Route path="attendance" element={<StudentAttendance />} />
 
-          <Route
-            path="performance"
-            element={<StudentPerformance />}
-          />
+          <Route path="performance" element={<StudentPerformance />} />
 
-          <Route
-            path="fees"
-            element={<StudentFees />}
-          />
+          <Route path="fees" element={<StudentFees />} />
 
-          <Route
-            path="fees/history"
-            element={<StudentPaymentHistory />}
-          />
+          <Route path="fees/history" element={<StudentPaymentHistory />} />
 
-          <Route
-            path="fees/pending"
-            element={<StudentPendingFees />}
-          />
+          <Route path="fees/pending" element={<StudentPendingFees />} />
 
           <Route
             path="certificate/eligibility"
-            element={
-              <StudentCertificateEligibility />
-            }
+            element={<StudentCertificateEligibility />}
           />
 
-          <Route
-            path="certificate"
-            element={<StudentCertificate />}
-          />
+          <Route path="certificate" element={<StudentCertificate />} />
 
-          <Route
-            path="certificate/verify"
-            element={<StudentCertificate />}
-          />
+          <Route path="certificate/verify" element={<StudentCertificate />} />
 
-          <Route
-            path="notifications"
-            element={<StudentNotifications />}
-          />
+          <Route path="notifications" element={<StudentNotifications />} />
 
-          <Route
-            path="profile"
-            element={<StudentProfile />}
-          />
+          <Route path="profile" element={<StudentProfile />} />
 
-          <Route
-            path="settings"
-            element={<StudentSettings />}
-          />
-
+          <Route path="settings" element={<StudentSettings />} />
         </Route>
-
 
         {/* ======================================================
             TEACHER ROUTES
@@ -765,97 +537,62 @@ function App() {
           path="/teacher"
           element={<ProtectedPortalRoute role="TEACHER" />}
         >
-
           {/* Dashboard */}
 
-          <Route
-            index
-            element={<TeacherDashboard />}
-          />
-
+          <Route index element={<TeacherDashboard />} />
 
           {/* Students */}
 
-          <Route
-            path="students"
-            element={<TeacherStudents />}
-          />
+          <Route path="students" element={<TeacherStudents />} />
 
           <Route
             path="students/:id/certificate"
             element={<StudentCertificate />}
           />
 
-
           {/* ==================================================
               TEACHER COURSES
           ================================================== */}
 
-          <Route
-            path="courses"
-            element={<TeacherCourses />}
-          />
+          <Route path="courses" element={<TeacherCourses />} />
 
           {/* ⭐ FULL COURSE DETAIL WITH TEACHER SIDEBAR */}
 
+          <Route path="courses/:id" element={<PortalCourseDetail />} />
+
           <Route
-            path="courses/:id"
-            element={<PortalCourseDetail />}
+            path="courses/:courseId/modules/:moduleId/topics"
+            element={<PortalModuleTopics />}
           />
-
-          <Route path="courses/:courseId/modules/:moduleId/topics" element={<PortalModuleTopics />} />
-          <Route path="courses/:courseId/modules/:moduleId/topics/:topicId" element={<PortalTopicDetail />} />
-
+          <Route
+            path="courses/:courseId/modules/:moduleId/topics/:topicId"
+            element={<PortalTopicDetail />}
+          />
 
           {/* Batches */}
 
-          <Route
-            path="batches"
-            element={<TeacherBatches />}
-          />
-
+          <Route path="batches" element={<TeacherBatches />} />
 
           {/* Attendance */}
 
-          <Route
-            path="attendance"
-            element={<TeacherAttendance />}
-          />
-
+          <Route path="attendance" element={<TeacherAttendance />} />
 
           {/* Assignments */}
 
-          <Route
-            path="assignments"
-            element={<TeacherAssignments />}
-          />
-
+          <Route path="assignments" element={<TeacherAssignments />} />
 
           {/* Exams */}
 
-          <Route
-            path="exams"
-            element={<TeacherExams />}
-          />
-
+          <Route path="exams" element={<TeacherExams />} />
 
           {/* Results */}
 
-          <Route
-            path="results"
-            element={<TeacherResults />}
-          />
-
+          <Route path="results" element={<TeacherResults />} />
 
           {/* Profile */}
 
-          <Route
-            path="profile"
-            element={<TeacherProfile />}
-          />
-
+          <Route path="profile" element={<TeacherProfile />} />
         </Route>
-
 
         {/* ======================================================
             FRANCHISE ROUTES
@@ -863,180 +600,112 @@ function App() {
 
         <Route
           path="/franchise"
-          element={
-            <ProtectedPortalRoute
-              role="FRANCHISE"
-            />
-          }
+          element={<ProtectedPortalRoute role="FRANCHISE" />}
         >
-
           {/* Dashboard */}
 
-          <Route
-            index
-            element={<FranchiseDashboard />}
-          />
-
+          <Route index element={<FranchiseDashboard />} />
 
           {/* ==================================================
               STUDENTS
           ================================================== */}
 
-          <Route
-            path="students"
-            element={<FranchiseStudents />}
-          />
+          <Route path="students" element={<FranchiseStudents />} />
 
-          <Route
-            path="students/:id"
-            element={<FranchiseStudentView />}
-          />
+          <Route path="students/:id" element={<FranchiseStudentView />} />
 
           <Route
             path="students/:id/certificate"
             element={<StudentCertificate />}
           />
 
-          <Route
-            path="students/add"
-            element={<FranchiseStudentAdd />}
-          />
+          <Route path="students/add" element={<FranchiseStudentAdd />} />
 
-          <Route
-            path="students/:id/edit"
-            element={<FranchiseStudentAdd />}
-          />
-
+          <Route path="students/:id/edit" element={<FranchiseStudentAdd />} />
 
           {/* ==================================================
               TEACHERS
           ================================================== */}
 
-          <Route
-            path="teachers"
-            element={<FranchiseTeachers />}
-          />
+          <Route path="teachers" element={<FranchiseTeachers />} />
+<Route
+  path="/franchise/teachers/add"
+  element={<AddTeacherPage />}
+/>
 
-          <Route
-            path="teachers/:id"
-            element={<FranchiseTeacherView />}
-          />
-
+          <Route path="teachers/:id" element={<FranchiseTeacherView />} />
 
           {/* ==================================================
               COURSES
           ================================================== */}
 
-          <Route
-            path="courses"
-            element={<FranchiseCourses />}
-          />
+          <Route path="courses" element={<FranchiseCourses />} />
+
+          <Route path="courses/:id" element={<PortalCourseDetail />} />
 
           <Route
-            path="courses/:id"
-            element={<PortalCourseDetail />}
+            path="courses/:courseId/modules/:moduleId/topics"
+            element={<PortalModuleTopics />}
           />
-
-          <Route path="courses/:courseId/modules/:moduleId/topics" element={<PortalModuleTopics />} />
-          <Route path="courses/:courseId/modules/:moduleId/topics/:topicId" element={<PortalTopicDetail />} />
-
+          <Route
+            path="courses/:courseId/modules/:moduleId/topics/:topicId"
+            element={<PortalTopicDetail />}
+          />
 
           {/* ==================================================
               BATCHES
           ================================================== */}
 
-          <Route
-            path="batches"
-            element={<FranchiseBatches />}
-          />
+          <Route path="batches" element={<FranchiseBatches />} />
 
-          <Route
-            path="batches/students"
-            element={<FranchiseBatchStudents />}
-          />
+          <Route path="batches/students" element={<FranchiseBatchStudents />} />
 
-          <Route
-            path="batches/add"
-            element={<FranchiseBatchForm />}
-          />
+          <Route path="batches/add" element={<FranchiseBatchForm />} />
 
-          <Route
-            path="batches/:id"
-            element={<FranchiseBatchView />}
-          />
+          <Route path="batches/:id" element={<FranchiseBatchView />} />
 
-          <Route
-            path="batches/:id/edit"
-            element={<FranchiseBatchForm />}
-          />
-
+          <Route path="batches/:id/edit" element={<FranchiseBatchForm />} />
 
           {/* ==================================================
               ATTENDANCE
           ================================================== */}
 
-          <Route
-            path="attendance"
-            element={<FranchiseAttendance />}
-          />
-
+          <Route path="attendance" element={<FranchiseAttendance />} />
 
           {/* ==================================================
               FEES
           ================================================== */}
 
-          <Route
-            path="fees"
-            element={<FranchiseFees />}
-          />
-
+          <Route path="fees" element={<FranchiseFees />} />
 
           {/* ==================================================
               SCHEDULE
           ================================================== */}
 
+          <Route path="batches/timetable" element={<FranchiseSchedule />} />
           <Route
             path="schedule"
-            element={<FranchiseSchedule />}
+            element={<Navigate to="/franchise/batches/timetable" replace />}
           />
-
 
           {/* ==================================================
               REPORTS
           ================================================== */}
 
-          <Route
-            path="reports"
-            element={<FranchiseReports />}
-          />
-
+          <Route path="reports" element={<FranchiseReports />} />
 
           {/* ==================================================
               SETTINGS
           ================================================== */}
 
-          <Route
-            path="settings"
-            element={<FranchiseSettings />}
-          />
-
+          <Route path="settings" element={<FranchiseSettings />} />
         </Route>
-
 
         {/* ======================================================
             FALLBACK
         ====================================================== */}
 
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-            />
-          }
-        />
-
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
