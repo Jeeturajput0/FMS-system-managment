@@ -5,13 +5,12 @@ import { motion } from "framer-motion";
 import { apiFetch } from "../../../utils/api";
 import logo from "../../../../assist/logo.png";
 
-export const LoginPage = () => {
+export const LoginPage = ({ isRegister = false }) => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -478,57 +477,6 @@ export const LoginPage = () => {
               )}
             </button>
           </form>
-
-          {/* ================= DIVIDER ================= */}
-
-          <div className="relative my-7 flex items-center">
-            <div className="w-full border-t border-slate-800" />
-
-            <span
-              className="
-                absolute
-                left-1/2
-                -translate-x-1/2
-                bg-slate-900
-                px-3
-                text-xs
-                font-medium
-                text-slate-500
-              "
-            >
-              OR
-            </span>
-          </div>
-
-          {/* ================= REGISTER / LOGIN ================= */}
-
-          <button
-            type="button"
-            onClick={() => setIsRegister((prev) => !prev)}
-            className="
-              flex
-              h-11
-              w-full
-              items-center
-              justify-center
-              gap-2
-              rounded-xl
-              border
-              border-slate-700
-              bg-slate-800
-              px-4
-              text-xs
-              font-bold
-              text-slate-200
-              transition
-              hover:border-slate-600
-              hover:bg-slate-700
-            "
-          >
-            <UserPlus className="h-4 w-4 text-orange-400" />
-
-            <span>{isRegister ? "Switch to Login" : "Register New Admin"}</span>
-          </button>
 
           {/* ================= FOOTER ================= */}
 

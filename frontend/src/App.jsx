@@ -258,6 +258,47 @@ function NameInputGuard() {
 }
 
 /* ============================================================
+   RESPONSIVE DATA TABLES
+
+   Existing dashboard tables remain the desktop source of truth.
+   This adapter reads their column headings and attaches labels to
+   each cell, allowing the shared mobile CSS to present every row as
+   an accessible, labelled card without duplicating data or actions.
+============================================================ */
+
+function ResponsiveTableCards() {
+  useEffect(() => {
+    const enhanceTables = () => {
+      document.querySelectorAll("table").forEach((table) => {
+        const headings = Array.from(table.tHead?.querySelectorAll("th") || [])
+          .map((heading) => heading.textContent.replace(/\s+/g, " ").trim());
+
+        if (!headings.length || !table.tBodies.length) return;
+
+        table.classList.add("responsive-data-table");
+
+        Array.from(table.tBodies).flatMap((body) => Array.from(body.rows)).forEach((row) => {
+          const cells = Array.from(row.querySelectorAll(":scope > td"));
+          const isEmptyState = cells.length === 1 && Number(cells[0].colSpan) > 1;
+
+          row.toggleAttribute("data-mobile-empty", isEmptyState);
+          cells.forEach((cell, index) => {
+            cell.dataset.label = isEmptyState ? "" : headings[index] || "Details";
+          });
+        });
+      });
+    };
+
+    enhanceTables();
+    const observer = new MutationObserver(enhanceTables);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  return null;
+}
+
+/* ============================================================
    APP
 ============================================================ */
 
@@ -287,6 +328,7 @@ function App() {
   return (
     <BrowserRouter>
       <NameInputGuard />
+      <ResponsiveTableCards />
 
       <Routes>
 
@@ -319,6 +361,12 @@ function App() {
         <Route
           path="/login/admin"
           element={<LoginPage />}
+        />
+
+        {/* Admin Registration */}
+        <Route
+          path="/register/admin"
+          element={<LoginPage isRegister />}
         />
 
         {/* Main login */}
