@@ -20,6 +20,7 @@ import { apiFetch, apiUpload, assetUrl } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { Pagination } from "../../../components/Pagination";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
+import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 /* =========================================================
@@ -158,6 +159,9 @@ export const StudentDirectory = () => {
     idCard, makeIdCard, closeIdCard,
     selectedIds, toggleSelect, isSelected, toggleSelectAll,
     clearSelection, bulk, openBulkCards, closeBulkCards,
+    selectedTemplate, setSelectedTemplate, templateModal,
+    closeTemplateModal, requestIdCard, requestBulkCards,
+    confirmTemplate,
   } = useStudentIdCard();
   const pageSize = 20;
 
@@ -1070,7 +1074,7 @@ export const StudentDirectory = () => {
               Clear
             </button>
             <button
-              onClick={() => openBulkCards(students)}
+              onClick={() => requestBulkCards(students)}
               className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white hover:bg-violet-700"
             >
               <CreditCard className="w-3.5 h-3.5" /> Print ID Cards ({selectedIds.length})
@@ -1336,7 +1340,7 @@ export const StudentDirectory = () => {
                       <td className="py-4 px-4 text-right">
                         <div className="inline-flex items-center gap-1">
                           <button
-                            onClick={() => makeIdCard(student)}
+                            onClick={() => requestIdCard(student)}
                             title="Make ID card"
                             aria-label={`Make ID card for ${student.name}`}
                             className="p-1.5 rounded-lg bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors inline-flex items-center gap-1"
@@ -1372,6 +1376,14 @@ export const StudentDirectory = () => {
 
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
       {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
+      <StudentIdTemplateModal
+        open={templateModal.open}
+        selectedTemplate={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        onContinue={confirmTemplate}
+        onClose={closeTemplateModal}
+        studentCount={templateModal.mode === "bulk" ? selectedIds.length : 1}
+      />
 
       {/* =================================================
           ADD STUDENT MODAL

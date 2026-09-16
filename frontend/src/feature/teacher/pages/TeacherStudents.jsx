@@ -15,6 +15,7 @@ import {
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
+import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const TeacherStudents = () => {
@@ -24,9 +25,11 @@ const TeacherStudents = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const {
-    idCard, makeIdCard, closeIdCard,
+    idCard, requestIdCard, closeIdCard,
     selectedIds, toggleSelect, isSelected, toggleSelectAll,
-    clearSelection, bulk, openBulkCards, closeBulkCards,
+    clearSelection, bulk, requestBulkCards, closeBulkCards,
+    selectedTemplate, setSelectedTemplate, templateModal,
+    closeTemplateModal, confirmTemplate,
   } = useStudentIdCard();
 
   useEffect(() => {
@@ -204,7 +207,7 @@ const TeacherStudents = () => {
               Clear
             </button>
             <button
-              onClick={() => openBulkCards(filtered)}
+              onClick={() => requestBulkCards(filtered)}
               className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white hover:bg-violet-700"
             >
               <CreditCard size={14} /> Print ID Cards ({selectedIds.length})
@@ -344,7 +347,7 @@ const TeacherStudents = () => {
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"
-                            onClick={() => makeIdCard(s)}
+                            onClick={() => requestIdCard(s)}
                             title="Make ID card"
                             aria-label={`Make ID card for ${s.name}`}
                             className="inline-flex items-center justify-center gap-1 rounded-xl bg-violet-50 px-2.5 p-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
@@ -474,7 +477,7 @@ const TeacherStudents = () => {
                 <div className="mt-3 flex gap-2">
                   <button
                     type="button"
-                    onClick={() => makeIdCard(s)}
+                    onClick={() => requestIdCard(s)}
                     className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-violet-50 py-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
                   >
                     <CreditCard size={15} />
@@ -635,7 +638,7 @@ const TeacherStudents = () => {
               <div className="mt-5 flex gap-3">
                 <button
                   type="button"
-                  onClick={() => { setSelected(null); makeIdCard(selected); }}
+                  onClick={() => { setSelected(null); requestIdCard(selected); }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-700"
                 >
                   <CreditCard size={16} />
@@ -663,6 +666,14 @@ const TeacherStudents = () => {
       )}
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
       {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
+      <StudentIdTemplateModal
+        open={templateModal.open}
+        selectedTemplate={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        onContinue={confirmTemplate}
+        onClose={closeTemplateModal}
+        studentCount={templateModal.mode === "bulk" ? selectedIds.length : 1}
+      />
     </div>
   );
 };

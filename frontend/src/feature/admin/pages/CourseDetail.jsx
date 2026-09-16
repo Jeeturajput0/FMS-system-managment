@@ -20,6 +20,7 @@ import {
 
 import { apiFetch, assetUrl } from "../../../utils/api";
 import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 export const CourseDetail = () => {
@@ -33,7 +34,7 @@ export const CourseDetail = () => {
   const [activeTab, setActiveTab] = useState("Modules");
 
   const [expandedModules, setExpandedModules] = useState([]);
-  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
 
   /* =========================================================
      VIEW DETECTION
@@ -867,7 +868,7 @@ export const CourseDetail = () => {
                             type="button"
                             title="Make ID card"
                             aria-label={`Make ID card for ${student?.name}`}
-                            onClick={() => makeIdCard(student)}
+                            onClick={() => requestIdCard(student)}
                             className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-[11px] font-bold text-violet-700 transition hover:bg-violet-100"
                           >
                             <CreditCard size={13} />
@@ -906,6 +907,14 @@ export const CourseDetail = () => {
       )}
 
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      <StudentIdTemplateModal
+        open={templateModal.open}
+        selectedTemplate={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        onContinue={confirmTemplate}
+        onClose={closeTemplateModal}
+        studentCount={1}
+      />
 
     </div>
   );

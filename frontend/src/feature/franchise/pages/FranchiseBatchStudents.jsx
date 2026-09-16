@@ -11,6 +11,7 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
+import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const FranchiseBatchStudents = () => {
@@ -25,7 +26,7 @@ const FranchiseBatchStudents = () => {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
   const [showAddStudents, setShowAddStudents] = useState(false);
-  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
   const {
     selectedIds: idSelectedIds,
     toggleSelect: toggleIdSelect,
@@ -33,8 +34,13 @@ const FranchiseBatchStudents = () => {
     toggleSelectAll: toggleIdSelectAll,
     clearSelection: clearIdSelection,
     bulk: idBulk,
-    openBulkCards: openIdBulkCards,
+    requestBulkCards: openIdBulkCards,
     closeBulkCards: closeIdBulkCards,
+    selectedTemplate: bulkTemplate,
+    setSelectedTemplate: setBulkTemplate,
+    templateModal: bulkTemplateModal,
+    closeTemplateModal: closeBulkTemplateModal,
+    confirmTemplate: confirmBulkTemplate,
   } = useStudentIdCard();
 
   const loadBatch = async () => {
@@ -488,7 +494,7 @@ const FranchiseBatchStudents = () => {
                         type="button"
                         title="Make ID card"
                         aria-label={`Make ID card for ${student.name}`}
-                        onClick={() => makeIdCard(student)}
+                        onClick={() => requestIdCard(student)}
                         className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-xs font-bold text-violet-700 transition hover:bg-violet-100"
                       >
                         <CreditCard size={14} />
@@ -513,6 +519,22 @@ const FranchiseBatchStudents = () => {
       </div>
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
       {idBulk.open && <StudentIdCardBulkModal {...idBulk} onClose={closeIdBulkCards} />}
+      <StudentIdTemplateModal
+        open={templateModal.open}
+        selectedTemplate={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        onContinue={confirmTemplate}
+        onClose={closeTemplateModal}
+        studentCount={1}
+      />
+      <StudentIdTemplateModal
+        open={bulkTemplateModal.open}
+        selectedTemplate={bulkTemplate}
+        onSelect={setBulkTemplate}
+        onContinue={confirmBulkTemplate}
+        onClose={closeBulkTemplateModal}
+        studentCount={idSelectedIds.length}
+      />
     </div>
   );
 };

@@ -3,9 +3,14 @@ import { Loader2, Printer, X } from "lucide-react";
 import { assetUrl } from "../utils/api";
 import logo from "../../assist/logo.png";
 import "./StudentIdCard.css";
+import "./student-id/StudentIdCard.css";
+import {
+  DEFAULT_TEMPLATE,
+  resolveTemplate,
+} from "./student-id/templates";
 
 /* =========================
-   Helpers
+   Helpers (existing logic, unchanged)
 ========================= */
 
 const formatDate = (value) => {
@@ -54,7 +59,7 @@ const courseName = (student) =>
   "—";
 
 /* =========================
-   Detail Component
+   Detail Component (existing, unchanged)
 ========================= */
 
 const Details = ({ label, children }) => (
@@ -65,7 +70,7 @@ const Details = ({ label, children }) => (
 );
 
 /* =========================
-   Student Photo
+   Student Photo (existing, unchanged)
 ========================= */
 
 const PhotoBox = ({ student }) => {
@@ -97,14 +102,11 @@ const PhotoBox = ({ student }) => {
 };
 
 /* =========================================================
-   SINGLE ID CARD VIEW
-   Front / Back
+   LEGACY SINGLE ID CARD VIEW (original design, preserved)
+   Rendered only when template="legacy" is passed.
 ========================================================= */
 
-export function StudentIdCardView({
-  student,
-  side = "front",
-}) {
+export function LegacyStudentIdCardView({ student, side = "front" }) {
   if (!student) return null;
 
   return (
@@ -208,7 +210,7 @@ export function StudentIdCardView({
         </div>
       )}
 
-      {/* 
+      {/*
         IMPORTANT:
         Fixed institute address footer removed.
         So front side will NOT show:
@@ -220,16 +222,49 @@ export function StudentIdCardView({
 }
 
 /* =========================================================
-   SINGLE STUDENT ID CARD MODAL
+   TEMPLATE-AWARE SINGLE ID CARD VIEW
+   (keeps the original export name + signature;
+   adds an optional `template` prop)
+========================================================= */
+
+export function StudentIdCardView({
+  student,
+  side = "front",
+  template = DEFAULT_TEMPLATE,
+}) {
+  if (!student) return null;
+
+  if (template === "legacy") {
+    return <LegacyStudentIdCardView student={student} side={side} />;
+  }
+
+  const TemplateComponent = resolveTemplate(template);
+  return <TemplateComponent student={student} side={side} />;
+}
+
+/* =========================================================
+   SINGLE STUDENT ID CARD MODAL (template-driven)
+   Accepts:
+     student  — single student object
+     students — optional array; when 2+ are passed, all are
+                rendered FRONT + BACK with the same template
+     template — "template-1" | "template-2" | "template-3"
+                | "template-4" | "legacy"
 ========================================================= */
 
 export default function StudentIdCardModal({
   student,
+  students = [],
+  template = DEFAULT_TEMPLATE,
   loading,
   error,
   onClose,
 }) {
   const [side, setSide] = useState("front");
+
+  const list = Array.isArray(students) ? students.filter(Boolean) : [];
+  const isBulk = list.length > 1;
+  const activeStudent = student || list[0] || null;
 
   return (
     <div
@@ -249,13 +284,17 @@ export default function StudentIdCardModal({
 
           <div>
             <h2 className="font-black text-slate-900">
-              Student ID Card
+              {isBulk
+                ? `ID Cards — ${list.length} students`
+                : "Student ID Card"}
             </h2>
 
             <p className="text-xs text-slate-500">
-              {student?.name
-                ? `${student.name} · ${student.studentId || ""}`
-                : "Preview both sides before printing."}
+              {isBulk
+                ? "Front + back for every selected student — same template."
+                : activeStudent?.name
+                  ? `${activeStudent.name} · ${activeStudent.studentId || ""}`
+                  : "Preview both sides before printing."}
             </p>
           </div>
 
@@ -295,41 +334,42 @@ export default function StudentIdCardModal({
           </div>
 
         ) : (
-
-          student && (
+          activeStudent && (
             <>
 
               {/* =========================
                   FRONT / BACK BUTTONS
               ========================= */}
 
-              <div className="id-controls flex justify-center gap-2 px-5 pt-5">
+              {!isBulk && (
+                <div className="id-controls flex justify-center gap-2 px-5 pt-5">
 
-                <button
-                  type="button"
-                  onClick={() => setSide("front")}
-                  className={`rounded-lg px-4 py-2 text-xs font-black ${
-                    side === "front"
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  FRONT
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setSide("front")}
+                    className={`rounded-lg px-4 py-2 text-xs font-black ${
+                      side === "front"
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    FRONT
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => setSide("back")}
-                  className={`rounded-lg px-4 py-2 text-xs font-black ${
-                    side === "back"
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  BACK
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setSide("back")}
+                    className={`rounded-lg px-4 py-2 text-xs font-black ${
+                      side === "back"
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    BACK
+                  </button>
 
-              </div>
+                </div>
+              )}
 
               {/* =========================
                   CARD PREVIEW
@@ -337,10 +377,38 @@ export default function StudentIdCardModal({
 
               <div className="id-print-area id-card-stage p-5 sm:p-8">
 
-                <StudentIdCardView
-                  student={student}
-                  side={side}
-                />
+                {isBulk ? (
+                  <div className="id-bulk-grid">
+                    {list.map((item, index) => (
+                      <div
+                        className="id-bulk-item"
+                        key={item._id || item.studentId || index}
+                      >
+                        <p className="id-bulk-name id-controls">
+                          {index + 1}. {item.name} · {item.studentId || ""}
+                        </p>
+                        <div className="id-bulk-pair">
+                          <StudentIdCardView
+                            student={item}
+                            side="front"
+                            template={template}
+                          />
+                          <StudentIdCardView
+                            student={item}
+                            side="back"
+                            template={template}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <StudentIdCardView
+                    student={activeStudent}
+                    side={side}
+                    template={template}
+                  />
+                )}
 
               </div>
 
@@ -364,7 +432,7 @@ export default function StudentIdCardModal({
                   className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white"
                 >
                   <Printer size={16} />
-                  Print ID Card
+                  {isBulk ? `Print All (${list.length})` : "Print ID Card"}
                 </button>
 
               </div>
@@ -380,11 +448,13 @@ export default function StudentIdCardModal({
 }
 
 /* =========================================================
-   BULK STUDENT ID CARD MODAL
+   BULK STUDENT ID CARD MODAL (template-driven)
+   The ONE selected template is applied to ALL students.
 ========================================================= */
 
 export function StudentIdCardBulkModal({
   students = [],
+  template = DEFAULT_TEMPLATE,
   loading,
   error,
   onClose,
@@ -466,7 +536,7 @@ export function StudentIdCardBulkModal({
         ) : (
 
           /* =========================
-             STUDENTS
+             STUDENTS (same template for all)
           ========================= */
 
           <>
@@ -497,12 +567,14 @@ export function StudentIdCardBulkModal({
                       <StudentIdCardView
                         student={student}
                         side="front"
+                        template={template}
                       />
 
                       {/* BACK */}
                       <StudentIdCardView
                         student={student}
                         side="back"
+                        template={template}
                       />
 
                     </div>

@@ -12,6 +12,7 @@ import {
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const formatDate = (value) =>
@@ -22,7 +23,7 @@ const FranchiseBatchView = () => {
   const [batch, setBatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
 
   useEffect(() => {
     let active = true;
@@ -137,7 +138,7 @@ const FranchiseBatchView = () => {
                         type="button"
                         title="Make ID card"
                         aria-label={`Make ID card for ${student.name}`}
-                        onClick={() => makeIdCard(student)}
+                        onClick={() => requestIdCard(student)}
                         className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-xs font-bold text-violet-700 transition hover:bg-violet-100"
                       >
                         <CreditCard size={14} />
@@ -152,6 +153,14 @@ const FranchiseBatchView = () => {
         ) : <p className="rounded-xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">No students assigned to this batch.</p>}
       </div>
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      <StudentIdTemplateModal
+        open={templateModal.open}
+        selectedTemplate={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        onContinue={confirmTemplate}
+        onClose={closeTemplateModal}
+        studentCount={1}
+      />
     </div>
   );
 };

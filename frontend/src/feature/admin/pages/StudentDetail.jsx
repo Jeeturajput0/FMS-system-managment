@@ -3,6 +3,8 @@ import { ArrowLeft, Award, CreditCard, Edit, Loader2 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
+import { DEFAULT_TEMPLATE } from "../../../components/student-id/templates";
 
 const value = (item) => {
   if (!item) return "Not assigned";
@@ -42,6 +44,8 @@ export const StudentDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [idCardOpen, setIdCardOpen] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(DEFAULT_TEMPLATE);
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -261,7 +265,7 @@ export const StudentDetail = () => {
 
           <button
             type="button"
-            onClick={() => setIdCardOpen(true)}
+            onClick={() => setTemplateOpen(true)}
             title="Make ID card"
             className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700"
           >
@@ -461,8 +465,21 @@ export const StudentDetail = () => {
       </div>
 
       {idCardOpen && (
-        <StudentIdCardModal student={student} loading={false} error="" onClose={() => setIdCardOpen(false)} />
+        <StudentIdCardModal student={student} template={selectedTemplate} loading={false} error="" onClose={() => setIdCardOpen(false)} />
       )}
+
+      <StudentIdTemplateModal
+        open={templateOpen}
+        selectedTemplate={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        onContinue={() => {
+          if (!selectedTemplate) return;
+          setTemplateOpen(false);
+          setIdCardOpen(true);
+        }}
+        onClose={() => setTemplateOpen(false)}
+        studentCount={1}
+      />
 
     </div>
   );
