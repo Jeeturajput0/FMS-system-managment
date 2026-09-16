@@ -63,6 +63,39 @@ export const validUntil = (student) => {
   }
 };
 
+/** US-style date "MM/DD/YYYY" (school template back side). */
+export const formatDateUS = (value) => {
+  if (!value) return "—";
+  try {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(d);
+  } catch {
+    return String(value || "—");
+  }
+};
+
+/** Valid-until = joining date + 2 years, shown as "MM/DD/YYYY". */
+export const validUntilPlus2US = (student) => {
+  if (!student?.joiningDate) return "—";
+  try {
+    const d = new Date(student.joiningDate);
+    if (Number.isNaN(d.getTime())) return "—";
+    d.setFullYear(d.getFullYear() + 2);
+    return new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(d);
+  } catch {
+    return "—";
+  }
+};
+
 /* =========================
    Student photo with fallback initial
 ========================= */
