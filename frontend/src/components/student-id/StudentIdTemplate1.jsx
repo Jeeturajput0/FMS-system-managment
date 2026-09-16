@@ -26,7 +26,6 @@ export default function StudentIdTemplate1({ student, side = "front" }) {
         <div className="sid-t1-back">
           <div className="sid-t1-brand">
             <img src={brandLogo} alt="Institute logo" />
-            <span>AI Scholars</span>
           </div>
 
           <h2 className="sid-t1-title">TERMS &amp; CONDITIONS</h2>
@@ -65,7 +64,6 @@ export default function StudentIdTemplate1({ student, side = "front" }) {
       <div className="sid-t1-front">
         <div className="sid-t1-brand">
           <img src={brandLogo} alt="Institute logo" />
-          <span>AI Scholars</span>
         </div>
 
         <div className="sid-t1-body">
@@ -76,7 +74,6 @@ export default function StudentIdTemplate1({ student, side = "front" }) {
           />
 
           <div className="sid-t1-info">
-            <h2 className="sid-t1-title">STUDENT ID CARD</h2>
             <dl className="sid-t1-rows">
               <div>
                 <dt>Name</dt>

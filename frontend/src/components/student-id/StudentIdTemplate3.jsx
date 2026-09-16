@@ -65,11 +65,7 @@ export default function StudentIdTemplate3({ student, side = "front" }) {
       <div className="sid-t3-top">
         <div className="sid-t3-brand">
           <img src={brandLogo} alt="Institute logo" />
-          <span>
-            AI Scholars
-            <br />
-            International Co.
-          </span>
+         
         </div>
         <TemplatePhoto
           student={student}
