@@ -12,10 +12,11 @@ import {
   Edit,
   Trash2,
   CreditCard,
+  Camera,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { apiFetch } from "../../../utils/api";
+import { apiFetch, apiUpload, assetUrl } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { Pagination } from "../../../components/Pagination";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
@@ -109,6 +110,19 @@ const formatStatus = (status) => {
 
 const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value || "");
 
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const GENDERS = ["Male", "Female", "Other"];
+const STUDENT_STATUSES = ["enquiry", "registered", "active", "completed", "inactive", "dropped"];
+
+const dateValue = (value) => {
+  if (!value) return "";
+  try {
+    return new Date(value).toISOString().slice(0, 10);
+  } catch {
+    return "";
+  }
+};
+
 /* =========================================================
    COMPONENT
 ========================================================= */
@@ -153,15 +167,25 @@ export const StudentDirectory = () => {
 
   const initialFormData = {
     name: "",
+    studentId: "",
     email: "",
     mobile: "",
+    fatherName: "",
     courseId: "",
     coachingId: "",
     batchId: "",
+    joiningDate: new Date().toISOString().slice(0, 10),
+    dob: "",
+    gender: "",
+    bloodGroup: "",
+    address: "",
+    photo: "",
+    status: "registered",
   };
 
   const [formData, setFormData] =
     useState(initialFormData);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   /* =======================================================
      FETCH COURSES
@@ -561,6 +585,27 @@ export const StudentDirectory = () => {
     }));
   };
 
+  const handlePhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setError("Choose an image file no larger than 5 MB.");
+      return;
+    }
+    try {
+      setPhotoUploading(true);
+      setError("");
+      const body = new FormData();
+      body.append("photo", file);
+      const result = await apiUpload("/api/students/upload-photo", body);
+      setFormData((prev) => ({ ...prev, photo: result.photo }));
+    } catch (uploadError) {
+      setError(uploadError?.message || "Photo upload failed.");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
   /* =======================================================
      ADD STUDENT
   ======================================================= */
@@ -575,16 +620,16 @@ export const StudentDirectory = () => {
       return;
     }
 
-    if (!formData.email.trim()) {
+    if (!/^\d{10}$/.test(formData.mobile.trim())) {
       setError(
-        "Student email is required"
+        "Enter a valid 10-digit mobile number"
       );
       return;
     }
 
-    if (!formData.mobile.trim()) {
+    if (formData.email.trim() && !/^\S+@\S+\.\S+$/.test(formData.email.trim())) {
       setError(
-        "Phone number is required"
+        "Enter a valid email address"
       );
       return;
     }
@@ -593,6 +638,26 @@ export const StudentDirectory = () => {
       setError(
         "Please select a course"
       );
+      return;
+    }
+
+    if (!formData.joiningDate) {
+      setError("Joined date is required");
+      return;
+    }
+
+    if (!formData.dob) {
+      setError("Date of birth is required");
+      return;
+    }
+
+    if (!formData.gender) {
+      setError("Please select gender");
+      return;
+    }
+
+    if (!formData.address.trim()) {
+      setError("Address is required");
       return;
     }
 
@@ -609,8 +674,24 @@ export const StudentDirectory = () => {
         mobile:
           formData.mobile.trim(),
 
+        fatherName: formData.fatherName.trim(),
+
         courseId:
           formData.courseId,
+
+        joiningDate: formData.joiningDate || undefined,
+
+        dob: formData.dob || undefined,
+
+        gender: formData.gender || undefined,
+
+        bloodGroup: formData.bloodGroup || "",
+
+        address: formData.address.trim(),
+
+        photo: formData.photo || "",
+
+        status: formData.status || "registered",
 
         ...(formData.coachingId
           ? { coachingId: formData.coachingId }
@@ -721,11 +802,20 @@ export const StudentDirectory = () => {
     setEditingStudent(student);
     setFormData({
       name: student.name || "",
+      studentId: student.studentId || student.id || "",
       email: student.email || "",
       mobile: student.mobile || student.phone || "",
+      fatherName: student.fatherName || "",
       courseId: getId(student.courseId),
       coachingId: getId(student.coachingId),
       batchId: getId(student.batchId),
+      joiningDate: dateValue(student.joiningDate) || new Date().toISOString().slice(0, 10),
+      dob: dateValue(student.dob),
+      gender: student.gender || "",
+      bloodGroup: student.bloodGroup || "",
+      address: student.address || "",
+      photo: student.photo || "",
+      status: student.status || "registered",
     });
     setShowAddModal(true);
   };
@@ -1303,7 +1393,7 @@ export const StudentDirectory = () => {
                 opacity: 0,
                 scale: 0.95,
               }}
-              className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto"
             >
               {/* MODAL HEADER */}
 
@@ -1344,7 +1434,28 @@ export const StudentDirectory = () => {
                 onSubmit={handleSubmit}
                 className="space-y-4 text-xs"
               >
-                {/* NAME + EMAIL */}
+                {/* STUDENT ID (read-only) */}
+
+                {editingStudent && (
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Student ID
+                    </label>
+
+                    <input
+                      type="text"
+                      value={formData.studentId || ""}
+                      disabled
+                      className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl font-mono text-slate-500"
+                    />
+
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      ID backend se auto-generate hota hai.
+                    </p>
+                  </div>
+                )}
+
+                {/* NAME + FATHER NAME */}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -1369,13 +1480,54 @@ export const StudentDirectory = () => {
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Email Address *
+                      Father&apos;s Name
+                    </label>
+
+                    <input
+                      type="text"
+                      name="fatherName"
+                      placeholder="Father's full name"
+                      value={formData.fatherName}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+
+                {/* MOBILE + EMAIL */}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Mobile Number *
+                    </label>
+
+                    <input
+                      type="tel"
+                      name="mobile"
+                      required
+                      inputMode="numeric"
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                      placeholder="9876500000"
+                      value={
+                        formData.mobile
+                      }
+                      onChange={
+                        handleInputChange
+                      }
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Email Address
                     </label>
 
                     <input
                       type="email"
                       name="email"
-                      required
                       placeholder="student@gmail.com"
                       value={
                         formData.email
@@ -1388,27 +1540,143 @@ export const StudentDirectory = () => {
                   </div>
                 </div>
 
-                {/* MOBILE */}
+                {/* JOINED + DOB */}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Joined Date *
+                    </label>
+
+                    <input
+                      type="date"
+                      name="joiningDate"
+                      required
+                      value={formData.joiningDate}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Date of Birth *
+                    </label>
+
+                    <input
+                      type="date"
+                      name="dob"
+                      required
+                      value={formData.dob}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+
+                {/* GENDER + BLOOD GROUP + STATUS */}
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Gender *
+                    </label>
+
+                    <select
+                      name="gender"
+                      required
+                      value={formData.gender}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    >
+                      <option value="">Select</option>
+                      {GENDERS.map((g) => (
+                        <option key={g} value={g}>{g}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Blood Group
+                    </label>
+
+                    <select
+                      name="bloodGroup"
+                      value={formData.bloodGroup}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    >
+                      <option value="">Select</option>
+                      {BLOOD_GROUPS.map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Status *
+                    </label>
+
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    >
+                      {STUDENT_STATUSES.map((s) => (
+                        <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* PHOTO */}
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
-                    Phone Number *
+                    Student Photo
                   </label>
 
-                  <input
-                    type="tel"
-                    name="mobile"
+                  <label className="flex h-28 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 hover:border-orange-400">
+                    {formData.photo ? (
+                      <img
+                        src={assetUrl(formData.photo)}
+                        className="h-full w-full object-cover"
+                        alt="Student preview"
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : (
+                      <span className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                        {photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                        {photoUploading ? "Uploading..." : "Upload photo (max 5 MB)"}
+                      </span>
+                    )}
+                    <input
+                      className="hidden"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handlePhotoUpload}
+                      disabled={photoUploading}
+                    />
+                  </label>
+                </div>
+
+                {/* ADDRESS */}
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Address *
+                  </label>
+
+                  <textarea
+                    name="address"
+                    rows="3"
                     required
-                    inputMode="numeric"
-                    maxLength={10}
-                    pattern="[0-9]{10}"
-                    placeholder="9876500000"
-                    value={
-                      formData.mobile
-                    }
-                    onChange={
-                      handleInputChange
-                    }
+                    placeholder="Student's residential address"
+                    value={formData.address}
+                    onChange={handleInputChange}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
@@ -1550,29 +1818,7 @@ export const StudentDirectory = () => {
 
                 {/* BATCH */}
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Batch ID
-                  </label>
-
-                  <input
-                    type="text"
-                    name="batchId"
-                    placeholder="Enter Batch ID (optional)"
-                    value={
-                      formData.batchId
-                    }
-                    onChange={
-                      handleInputChange
-                    }
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                  />
-
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Leave empty if batch is
-                    not assigned yet.
-                  </p>
-                </div>
+                
 
                 {/* FORM FOOTER */}
 
@@ -1595,7 +1841,7 @@ export const StudentDirectory = () => {
                   <button
                     type="submit"
                     disabled={
-                      submitLoading
+                      submitLoading || photoUploading
                     }
                     className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-md shadow-orange-500/20 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
