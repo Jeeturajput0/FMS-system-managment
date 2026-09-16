@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   BookOpen,
   CalendarDays,
+  CreditCard,
   Edit,
   Loader2,
   UserRound,
@@ -10,6 +11,8 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const formatDate = (value) =>
   value ? new Date(value).toLocaleDateString() : "Not set";
@@ -19,6 +22,7 @@ const FranchiseBatchView = () => {
   const [batch, setBatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
 
   useEffect(() => {
     let active = true;
@@ -119,7 +123,7 @@ const FranchiseBatchView = () => {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[650px] text-left text-sm">
               <thead className="border-b border-slate-100 bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
-                <tr><th className="px-4 py-3">Student</th><th className="px-4 py-3">Student ID</th><th className="px-4 py-3">Mobile</th><th className="px-4 py-3">Status</th></tr>
+                <tr><th className="px-4 py-3">Student</th><th className="px-4 py-3">Student ID</th><th className="px-4 py-3">Mobile</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">ID Card</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {students.map((student) => (
@@ -128,6 +132,18 @@ const FranchiseBatchView = () => {
                     <td className="px-4 py-3 font-mono text-xs text-slate-600">{student.studentId || "-"}</td>
                     <td className="px-4 py-3 text-slate-600">{student.mobile || "-"}</td>
                     <td className="px-4 py-3"><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{student.status || "registered"}</span></td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        title="Make ID card"
+                        aria-label={`Make ID card for ${student.name}`}
+                        onClick={() => makeIdCard(student)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-xs font-bold text-violet-700 transition hover:bg-violet-100"
+                      >
+                        <CreditCard size={14} />
+                        <span className="hidden xl:inline">Make ID</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -135,6 +151,7 @@ const FranchiseBatchView = () => {
           </div>
         ) : <p className="rounded-xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">No students assigned to this batch.</p>}
       </div>
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
     </div>
   );
 };

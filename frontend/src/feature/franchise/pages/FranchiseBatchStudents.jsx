@@ -3,12 +3,15 @@ import {
   ArrowLeft,
   Check,
   CheckSquare,
+  CreditCard,
   Loader2,
   Plus,
   Search,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const FranchiseBatchStudents = () => {
   const [searchParams] = useSearchParams();
@@ -22,6 +25,7 @@ const FranchiseBatchStudents = () => {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
   const [showAddStudents, setShowAddStudents] = useState(false);
+  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
 
   const loadBatch = async () => {
     if (!batchId) {
@@ -396,6 +400,7 @@ const FranchiseBatchStudents = () => {
                 <th className="px-5 py-3">Course</th>
                 <th className="px-5 py-3">Mobile</th>
                 <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">ID Card</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -427,12 +432,24 @@ const FranchiseBatchStudents = () => {
                         {student.status || "registered"}
                       </span>
                     </td>
+                    <td className="px-5 py-4 text-right">
+                      <button
+                        type="button"
+                        title="Make ID card"
+                        aria-label={`Make ID card for ${student.name}`}
+                        onClick={() => makeIdCard(student)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-xs font-bold text-violet-700 transition hover:bg-violet-100"
+                      >
+                        <CreditCard size={14} />
+                        <span className="hidden xl:inline">Make ID</span>
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="px-5 py-12 text-center text-sm text-slate-500"
                   >
                     No students are assigned to this batch.
@@ -443,6 +460,7 @@ const FranchiseBatchStudents = () => {
           </table>
         </div>
       </div>
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
     </div>
   );
 };

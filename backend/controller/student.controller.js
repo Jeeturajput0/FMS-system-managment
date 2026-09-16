@@ -9,6 +9,9 @@ import Batch from "../model/batches.model.js";
 import { generateUniqueAutoGenId, getCenterIdPrefix } from "../utils/index.js";
 import { isValidPhoneNumber, phoneValidationMessage } from "../utils/phone.js";
 import { isValidName, nameValidationMessage } from "../utils/name.js";
+import { getImageKit } from "../config/imagekit.js";
+import path from "path";
+import { randomUUID } from "crypto";
 
 const isValidEmail = (value) => /^\S+@\S+\.\S+$/.test(String(value || "").trim());
 
@@ -84,6 +87,7 @@ export const createStudent = async (req, res) => {
       email,
       dob,
       gender,
+      bloodGroup,
       address,
       city,
       state,
@@ -283,6 +287,8 @@ export const createStudent = async (req, res) => {
           dob: dob || null,
 
           gender: gender || "Other",
+
+          bloodGroup: bloodGroup || "",
 
           address: address?.trim() || "",
 
@@ -642,6 +648,31 @@ export const getStudentById = async (req, res) => {
 };
 
 // ======================================================
+// UPLOAD STUDENT PHOTO
+// POST /api/students/upload-photo
+// ======================================================
+export const uploadStudentPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Please choose a student photo" });
+    }
+
+    const extension = path.extname(req.file.originalname).toLowerCase() || ".jpg";
+    const uploaded = await getImageKit().upload({
+      file: req.file.buffer.toString("base64"),
+      fileName: `student-${Date.now()}-${randomUUID()}${extension}`,
+      folder: "/students",
+      useUniqueFileName: false,
+    });
+
+    return res.status(201).json({ success: true, photo: uploaded.url });
+  } catch (error) {
+    console.error("Student photo upload error:", error);
+    return res.status(502).json({ success: false, message: "Unable to upload student photo" });
+  }
+};
+
+// ======================================================
 // UPDATE STUDENT
 // PUT /api/students/:id
 // ======================================================
@@ -683,6 +714,7 @@ export const updateStudent = async (req, res) => {
       email,
       dob,
       gender,
+      bloodGroup,
       address,
       city,
       state,
@@ -758,6 +790,10 @@ export const updateStudent = async (req, res) => {
 
     if (gender !== undefined) {
       student.gender = gender;
+    }
+
+    if (bloodGroup !== undefined) {
+      student.bloodGroup = bloodGroup;
     }
 
     if (address !== undefined) {

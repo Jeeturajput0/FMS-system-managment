@@ -16,10 +16,12 @@ import {
   Mail,
   BookOpen,
   Award,
+  CreditCard,
 } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import { Pagination } from "../../../components/Pagination";
+import StudentIdCardModal from "../components/StudentIdCardModal";
 
 const courseName = (course) =>
   course?.title || course?.name || "Not assigned";
@@ -71,6 +73,7 @@ export const FranchiseStudents = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [page, setPage] = useState(1);
+  const [idCard, setIdCard] = useState({ open: false, student: null, loading: false, error: "" });
   const pageSize = 20;
 
   const { id } = useParams();
@@ -118,6 +121,16 @@ export const FranchiseStudents = () => {
       setError(
         requestError.message || "Unable to delete student",
       );
+    }
+  };
+
+  const makeId = async (student) => {
+    setIdCard({ open: true, student: null, loading: true, error: "" });
+    try {
+      const response = await apiFetch(`/api/students/${student._id}`);
+      setIdCard({ open: true, student: response.student, loading: false, error: "" });
+    } catch (requestError) {
+      setIdCard({ open: true, student: null, loading: false, error: requestError.message || "Unable to load the student ID card." });
     }
   };
 
@@ -549,6 +562,15 @@ export const FranchiseStudents = () => {
                         >
                           <Eye size={15} />
                         </Link>
+                        <button
+                          title="Make ID card"
+                          aria-label={`Make ID card for ${student.name}`}
+                          onClick={() => makeId(student)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-2 text-xs font-bold text-violet-700 transition hover:bg-violet-100"
+                        >
+                          <CreditCard size={15} />
+                          <span className="hidden xl:inline">Make ID</span>
+                        </button>
 
                         <Link
                           title="Edit student"
@@ -613,6 +635,7 @@ export const FranchiseStudents = () => {
           </span>
         </div>
       )}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={() => setIdCard({ open: false, student: null, loading: false, error: "" })} />}
     </div>
   );
 };

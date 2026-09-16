@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Award, Edit, Loader2 } from "lucide-react";
+import { ArrowLeft, Award, CreditCard, Edit, Loader2 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
 
 const value = (item) => {
   if (!item) return "Not assigned";
@@ -40,6 +41,7 @@ export const StudentDetail = () => {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [idCardOpen, setIdCardOpen] = useState(false);
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -257,6 +259,16 @@ export const StudentDetail = () => {
             {status}
           </span>
 
+          <button
+            type="button"
+            onClick={() => setIdCardOpen(true)}
+            title="Make ID card"
+            className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700"
+          >
+            <CreditCard size={15} />
+            Make ID
+          </button>
+
           <Link
             to={editPath}
             className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
@@ -447,6 +459,10 @@ export const StudentDetail = () => {
         </div>
 
       </div>
+
+      {idCardOpen && (
+        <StudentIdCardModal student={student} loading={false} error="" onClose={() => setIdCardOpen(false)} />
+      )}
 
     </div>
   );

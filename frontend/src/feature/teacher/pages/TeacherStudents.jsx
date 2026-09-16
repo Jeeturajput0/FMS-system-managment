@@ -10,9 +10,12 @@ import {
   UserRound,
   BookOpen,
   CalendarCheck,
+  CreditCard,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const TeacherStudents = () => {
   const [students, setStudents] = useState([]);
@@ -20,6 +23,7 @@ const TeacherStudents = () => {
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
 
   useEffect(() => {
     setLoading(true);
@@ -284,6 +288,16 @@ const TeacherStudents = () => {
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"
+                            onClick={() => makeIdCard(s)}
+                            title="Make ID card"
+                            aria-label={`Make ID card for ${s.name}`}
+                            className="inline-flex items-center justify-center gap-1 rounded-xl bg-violet-50 px-2.5 p-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
+                          >
+                            <CreditCard size={16} />
+                            <span className="hidden xl:inline">Make ID</span>
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => setSelected(s)}
                             title="View student"
                             className="inline-flex items-center justify-center rounded-xl bg-blue-50 p-2.5 text-blue-700 transition hover:bg-blue-100"
@@ -395,6 +409,14 @@ const TeacherStudents = () => {
                 </div>
 
                 <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => makeIdCard(s)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-violet-50 py-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
+                  >
+                    <CreditCard size={15} />
+                    ID Card
+                  </button>
                   <button
                     type="button"
                     onClick={() => setSelected(s)}
@@ -550,6 +572,14 @@ const TeacherStudents = () => {
               <div className="mt-5 flex gap-3">
                 <button
                   type="button"
+                  onClick={() => { setSelected(null); makeIdCard(selected); }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-700"
+                >
+                  <CreditCard size={16} />
+                  Make ID
+                </button>
+                <button
+                  type="button"
                   onClick={() => setSelected(null)}
                   className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
                 >
@@ -568,6 +598,7 @@ const TeacherStudents = () => {
           </div>
         </div>
       )}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
     </div>
   );
 };

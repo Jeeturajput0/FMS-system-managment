@@ -91,6 +91,12 @@ const studentSchema = new mongoose.Schema(
       default: "Other",
     },
 
+    bloodGroup: {
+      type: String,
+      enum: ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      default: "",
+    },
+
     address: {
       type: String,
       trim: true,

@@ -22,3 +22,4 @@ const upload = multer({
 });
 
 export const courseUpload = upload.array("images", 5);
+export const studentPhotoUpload = upload.single("photo");

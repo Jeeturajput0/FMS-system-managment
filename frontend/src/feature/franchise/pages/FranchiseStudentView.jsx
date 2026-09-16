@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const FranchiseStudentView = () => {
   const { id } = useParams();
   const [student, setStudent] = useState(null);
   const [error, setError] = useState("");
+  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
 
   useEffect(() => {
     apiFetch(`/api/students/${id}`)
@@ -33,7 +36,10 @@ const FranchiseStudentView = () => {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">Student profile</p>
         <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div><h1 className="text-2xl font-black">{student.name}</h1><p className="mt-1 font-mono text-sm text-blue-100">{student.studentId || "No student ID"}</p></div>
-          <Link to={`/franchise/students/${student._id}/edit`} className="rounded-xl bg-white px-4 py-2.5 text-center text-sm font-bold text-blue-700">Edit student</Link>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => makeIdCard(student)} className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-center text-sm font-bold text-white hover:bg-violet-700"><CreditCard size={16} /> Make ID</button>
+            <Link to={`/franchise/students/${student._id}/edit`} className="rounded-xl bg-white px-4 py-2.5 text-center text-sm font-bold text-blue-700">Edit student</Link>
+          </div>
         </div>
       </div>
 
@@ -42,6 +48,7 @@ const FranchiseStudentView = () => {
           <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-semibold text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-bold text-slate-900">{value}</p></div>
         ))}
       </div>
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
     </div>
   );
 };

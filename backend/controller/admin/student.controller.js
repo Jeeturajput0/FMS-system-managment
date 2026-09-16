@@ -5,4 +5,5 @@ export {
   updateStudent,
   deleteStudent,
   updateStudentStatus,
+  uploadStudentPhoto,
 } from "../student.controller.js";

@@ -11,12 +11,15 @@ import {
   AlertCircle,
   Edit,
   Trash2,
+  CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { apiFetch } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { Pagination } from "../../../components/Pagination";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 /* =========================================================
    API ENDPOINTS
@@ -137,6 +140,7 @@ export const StudentDirectory = () => {
     useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [page, setPage] = useState(1);
+  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
   const pageSize = 20;
 
   /* =======================================================
@@ -1196,6 +1200,14 @@ export const StudentDirectory = () => {
 
                       <td className="py-4 px-4 text-right">
                         <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => makeIdCard(student)}
+                            title="Make ID card"
+                            aria-label={`Make ID card for ${student.name}`}
+                            className="p-1.5 rounded-lg bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors inline-flex items-center gap-1"
+                          >
+                            <CreditCard className="w-3.5 h-3.5" />
+                          </button>
                           <Link
                             to={`/admin/students/${student.mongoId}`}
                             title="View student"
@@ -1222,6 +1234,8 @@ export const StudentDirectory = () => {
       </div>
 
       <Pagination page={page} pageCount={Math.ceil(filteredStudents.length / pageSize)} onPageChange={setPage} totalItems={filteredStudents.length} pageSize={pageSize} />
+
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
 
       {/* =================================================
           ADD STUDENT MODAL

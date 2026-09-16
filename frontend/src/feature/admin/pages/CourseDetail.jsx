@@ -13,11 +13,14 @@ import {
   HelpCircle,
   CheckCircle2,
   Clock,
+  CreditCard,
   Layers,
   Users,
 } from "lucide-react";
 
 import { apiFetch, assetUrl } from "../../../utils/api";
+import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 export const CourseDetail = () => {
   const { id } = useParams();
@@ -30,6 +33,7 @@ export const CourseDetail = () => {
   const [activeTab, setActiveTab] = useState("Modules");
 
   const [expandedModules, setExpandedModules] = useState([]);
+  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
 
   /* =========================================================
      VIEW DETECTION
@@ -803,6 +807,10 @@ export const CourseDetail = () => {
                     <th className="px-4 py-3">
                       Status
                     </th>
+
+                    <th className="px-4 py-3 text-right">
+                      ID Card
+                    </th>
                   </tr>
                 </thead>
 
@@ -854,6 +862,19 @@ export const CourseDetail = () => {
 
                         </td>
 
+                        <td className="px-4 py-4 text-right">
+                          <button
+                            type="button"
+                            title="Make ID card"
+                            aria-label={`Make ID card for ${student?.name}`}
+                            onClick={() => makeIdCard(student)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-[11px] font-bold text-violet-700 transition hover:bg-violet-100"
+                          >
+                            <CreditCard size={13} />
+                            Make ID
+                          </button>
+                        </td>
+
                       </tr>
                     )
                   )}
@@ -883,6 +904,8 @@ export const CourseDetail = () => {
 
         </div>
       )}
+
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
 
     </div>
   );
