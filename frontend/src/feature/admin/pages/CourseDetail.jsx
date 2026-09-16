@@ -21,6 +21,7 @@ import {
 import { apiFetch, assetUrl } from "../../../utils/api";
 import StudentIdCardModal from "../../../components/StudentIdCardModal";
 import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
+import CertificateButton from "../../certificate/CertificateButton";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 export const CourseDetail = () => {
@@ -864,16 +865,24 @@ export const CourseDetail = () => {
                         </td>
 
                         <td className="px-4 py-4 text-right">
-                          <button
-                            type="button"
-                            title="Make ID card"
-                            aria-label={`Make ID card for ${student?.name}`}
-                            onClick={() => requestIdCard(student)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-[11px] font-bold text-violet-700 transition hover:bg-violet-100"
-                          >
-                            <CreditCard size={13} />
-                            Make ID
-                          </button>
+                          <div className="inline-flex items-center gap-1.5">
+                            <CertificateButton
+                              studentId={student?._id || student?.id}
+                              studentName={student?.name || student?.fullName}
+                              title="Certificate"
+                              className="inline-flex items-center gap-1 rounded-lg border border-orange-100 bg-orange-50 px-2 py-1.5 text-[11px] font-bold text-orange-700 transition hover:bg-orange-100"
+                            />
+                            <button
+                              type="button"
+                              title="Make ID card"
+                              aria-label={`Make ID card for ${student?.name}`}
+                              onClick={() => requestIdCard(student)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-[11px] font-bold text-violet-700 transition hover:bg-violet-100"
+                            >
+                              <CreditCard size={13} />
+                              Make ID
+                            </button>
+                          </div>
                         </td>
 
                       </tr>

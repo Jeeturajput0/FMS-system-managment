@@ -120,74 +120,6 @@
 }
 
 /* =========================================================
-   TEMPLATE 2 — Maroon Gold (landscape)
-========================================================= */
-
-.sid-t2 { background: #7a2a2e; }
-
-.sid-t2-ring { position: absolute; inset: 0; pointer-events: none; }
-.sid-t2-ring-a {
-  background:
-    radial-gradient(ellipse 120% 135% at 8% 50%, transparent 62%, #d9b45b 62.5%, #d9b45b 65%, #8c1f28 65.5%);
-}
-.sid-t2-ring-b {
-  background:
-    radial-gradient(ellipse 120% 135% at 92% 50%, transparent 62%, #d9b45b 62.5%, #d9b45b 65%, #5d1a1e 65.5%);
-}
-
-.sid-t2-sheet {
-  position: absolute;
-  top: 4%; bottom: 4%; left: 9%; right: 9%;
-  background: #ffffff;
-  border-radius: 50% / 50%;
-  border: 1.2cqi solid #d9b45b;
-  display: flex; align-items: center;
-  padding: 4% 7%;
-  overflow: hidden;
-}
-
-.sid-t2-front { gap: 5cqi; }
-
-.sid-t2-photo {
-  width: 30%; aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1.6cqi solid #d9b45b;
-  overflow: hidden; flex-shrink: 0;
-  background: #f3ede2;
-  display: flex; align-items: center; justify-content: center;
-}
-.sid-t2-photo img { width: 100%; height: 100%; object-fit: cover; }
-.sid-t2-photo span { font-size: 11cqi; font-weight: 700; color: #7a2a2e; }
-
-.sid-t2-info { flex: 1; min-width: 0; }
-.sid-t2-title {
-  margin: 0 0 2cqi;
-  font-size: 5cqi; font-weight: 800; color: #6e2a2d;
-  border-bottom: 0.5cqi solid #4b4b4b;
-  padding-bottom: 2cqi;
-  white-space: nowrap;
-}
-.sid-t2-rows { margin: 0; display: grid; gap: 1.1cqi; }
-.sid-t2-rows > div { display: flex; gap: 1cqi; align-items: baseline; min-width: 0; }
-.sid-t2-rows dt { flex: 0 0 30%; font-size: 2.9cqi; color: #555; font-weight: 500; white-space: nowrap; }
-.sid-t2-rows dd {
-  margin: 0; flex: 1; min-width: 0;
-  font-size: 2.9cqi; color: #333;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.sid-t2-points {
-  margin: 2cqi 0 0; padding-left: 4cqi;
-  font-size: 2.9cqi; line-height: 1.5; color: #444;
-  display: grid; gap: 1.2cqi;
-}
-.sid-t2-back-contact {
-  display: flex; flex-wrap: wrap; gap: 1.5cqi 4cqi;
-  margin-top: 2.5cqi;
-  font-size: 2.7cqi; font-weight: 700; color: #555;
-}
-
-/* =========================================================
    TEMPLATE 3 — Corporate Cyan (portrait)
 ========================================================= */
 
@@ -368,33 +300,105 @@
 }
 
 /* =========================================================
+   TEMPLATE 5 — School Cream (landscape)
+   Cream bg, mauve bands, gold pill, photo+barcode,
+   Name / ID / Email / Address rows; terms back side.
+========================================================= */
+
+.sid-t5 { background: #fffef3; display: flex; flex-direction: column; }
+
+.sid-t5-band { position: absolute; left: 0; right: 0; background: #c795c2; z-index: 1; }
+.sid-t5-band-top { top: 0; height: 9%; }
+.sid-t5-band-bottom { bottom: 0; height: 9%; }
+
+.sid-t5-school {
+  position: relative; z-index: 2;
+  margin: 11% 0 0; padding: 0 4cqi;
+  font-size: 7.2cqi; font-weight: 800; color: #17324b;
+  text-align: center; line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sid-t5-front {
+  position: relative; z-index: 2;
+  flex: 1; display: flex; gap: 4cqi;
+  padding: 2.5cqi 4cqi 3cqi;
+  min-height: 0;
+}
+
+.sid-t5-left { width: 30%; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; }
+.sid-t5-photo {
+  flex: 1; min-height: 0; overflow: hidden;
+  background: #8fa3b0;
+  display: flex; align-items: center; justify-content: center;
+}
+.sid-t5-photo img { width: 100%; height: 100%; object-fit: cover; }
+.sid-t5-photo span { font-size: 14cqi; font-weight: 700; color: #fff; }
+
+.sid-t5-bars { height: 7cqi; margin-top: 1.6cqi; flex-shrink: 0; }
+
+.sid-t5-right { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.sid-t5-pill {
+  background: #e4c65b; color: #17324b;
+  font-size: 6.4cqi; font-weight: 800; line-height: 1.25;
+  border-radius: 5cqi 0 0 5cqi;
+  padding: 1cqi 2cqi 1cqi 7cqi;
+  margin: 0 -4cqi 2cqi 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sid-t5-rows { margin: 0; display: grid; gap: 1.8cqi; }
+.sid-t5-rows > div { display: flex; gap: 1.5cqi; align-items: baseline; min-width: 0; }
+.sid-t5-rows dt { flex: 0 0 24%; font-size: 3.9cqi; font-weight: 800; color: #17324b; white-space: nowrap; }
+.sid-t5-rows dd {
+  margin: 0; flex: 1; min-width: 0;
+  font-size: 3.5cqi; color: #1f2937;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sid-t5-addr dd { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+.sid-t5-back {
+  position: relative; z-index: 2;
+  flex: 1; display: flex; gap: 5cqi;
+  padding: 12% 5cqi 12%;
+  min-height: 0;
+}
+.sid-t5-terms { flex: 1.1; min-width: 0; }
+.sid-t5-terms-title { margin: 0; font-size: 4.6cqi; font-weight: 800; color: #17324b; }
+.sid-t5-terms ul { margin: 2.5cqi 0 0; padding-left: 5cqi; display: grid; gap: 2cqi; }
+.sid-t5-terms li { font-size: 3.1cqi; line-height: 1.45; color: #1f2937; }
+
+.sid-t5-valid { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sid-t5-valid .sid-t5-bars { height: 9cqi; margin-top: 0; }
+.sid-t5-valid-rows { margin: 2cqi 0 0; display: grid; gap: 1.4cqi; }
+.sid-t5-valid-rows > div { display: flex; gap: 1.5cqi; align-items: baseline; }
+.sid-t5-valid-rows dt { flex: 0 0 34%; font-size: 3.5cqi; font-weight: 800; color: #17324b; white-space: nowrap; }
+.sid-t5-valid-rows dd { margin: 0; font-size: 3.4cqi; color: #1f2937; white-space: nowrap; }
+.sid-t5-return { margin: 2.5cqi 0 0; font-size: 3.4cqi; line-height: 1.5; color: #1f2937; }
+.sid-t5-contact { margin-top: auto; padding-top: 2cqi; display: grid; gap: 1.6cqi; }
+.sid-t5-contact > div { display: flex; align-items: center; gap: 2cqi; font-size: 3.3cqi; color: #1f2937; min-width: 0; }
+.sid-t5-contact > div > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sid-t5-ico {
+  width: 5.5cqi; height: 5.5cqi; flex-shrink: 0;
+  border: 0.5cqi solid #17324b; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #17324b;
+}
+
+.sid-t5-deco {
+  position: absolute; left: 0; right: 52%; bottom: 17%; height: 7%;
+  background: #c795c2; z-index: 1;
+}
+.sid-t5-deco-slash {
+  position: absolute; right: -3cqi; top: -45%;
+  width: 6cqi; height: 190%;
+  background: #e4c65b;
+  transform: skewX(-12deg);
+}
+
+/* =========================================================
    Gallery preview tweaks (no pointer interaction inside)
 ========================================================= */
 
 .sid-preview { pointer-events: none; user-select: none; }
 .sid-preview .sid { box-shadow: 0 6px 18px #0f172a26; }
-
-/* =========================================================
-   PRINT — new templates (single + bulk)
-========================================================= */
-
-@media print {
-  .sid {
-    box-shadow: none !important;
-    border: 1px solid #e5e7eb !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-  .sid-landscape {
-    width: 85.6mm !important;
-    height: 54mm !important;
-    aspect-ratio: auto !important;
-    margin: 0 auto 6mm auto !important;
-  }
-  .sid-portrait {
-    width: 54mm !important;
-    height: 85.6mm !important;
-    aspect-ratio: auto !important;
-    margin: 0 auto 6mm auto !important;
-  }
-}

@@ -62,7 +62,6 @@ export default function StudentIdTemplate2({ student, side = "front" }) {
         />
 
         <div className="sid-t2-info">
-          <h2 className="sid-t2-title">School Identification Card</h2>
           <dl className="sid-t2-rows">
             <div>
               <dt>Name</dt>

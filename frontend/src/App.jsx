@@ -124,6 +124,8 @@ import StudentPaymentHistory from "./feature/student/pages/StudentPaymentHistory
 import StudentPendingFees from "./feature/student/pages/StudentPendingFees";
 import StudentCertificate from "./feature/student/pages/StudentCertificate";
 import StudentCertificateEligibility from "./feature/student/pages/StudentCertificateEligibility";
+import CertificateManagement from "./feature/certificate/CertificateManagement";
+import CertificateVerification from "./feature/certificate/CertificateVerification";
 import StudentTestAttempt from "./feature/student/pages/StudentTestAttempt";
 import StudentTestResults from "./feature/student/pages/StudentTestResults";
 import StudentAssignmentDetail from "./feature/student/pages/StudentAssignmentDetail";
@@ -327,6 +329,9 @@ function App() {
         {/* Public course detail disabled */}
         <Route path="/courses/:id" element={<Navigate to="/log" replace />} />
 
+        {/* Public certificate verification (no login required) */}
+        <Route path="/verify-certificate/:certificateId" element={<CertificateVerification />} />
+
         {/* Admin Login */}
         <Route path="/login/admin" element={<LoginPage />} />
 
@@ -426,7 +431,7 @@ function App() {
 
           <Route
             path="certificates"
-            element={<AdminPlaceholderPage title="Certificates" />}
+            element={<CertificateManagement />}
           />
 
           <Route path="notifications" element={<AdminNotificationsPage />} />
