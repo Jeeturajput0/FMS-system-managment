@@ -5,7 +5,6 @@ import { isSuperAdmin } from "./certificateTemplates";
 import PrintPortal from "../../print/PrintPortal";
 import { CertPrintPages } from "../../print/CertPrintPages";
 import { usePrint } from "../../print/printUtils";
-import "./certificate.css";
 
 /**
  * Bulk certificate print — one A4 landscape page per certificate.

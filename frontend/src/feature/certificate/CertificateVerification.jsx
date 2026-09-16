@@ -3,7 +3,6 @@ import { Award, Loader2, ShieldAlert, ShieldCheck, XCircle } from "lucide-react"
 import { Link, useParams } from "react-router-dom";
 import { certificateService } from "../../services/certificate.service";
 import { formatLongDate } from "./certificateTemplates";
-import "./certificate.css";
 
 /**
  * Public verification page: /verify-certificate/:certificateId

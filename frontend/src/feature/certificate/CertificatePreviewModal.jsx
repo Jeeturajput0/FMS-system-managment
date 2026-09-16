@@ -10,7 +10,6 @@ import {
   formatLongDate,
   isSuperAdmin,
 } from "./certificateTemplates";
-import "./certificate.css";
 
 const dateInputValue = (v) => {
   if (!v) return "";
@@ -98,7 +97,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
     >
       <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
         {/* header */}
-        <div className="cert-modal-chrome flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-7">
+        <div className=" flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-7">
           <div>
             <h2 className="flex items-center gap-2 font-black text-slate-900">
               <Award size={20} className="text-amber-500" /> Certificate Preview
@@ -121,12 +120,12 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
           <div className="p-8 text-center text-sm font-semibold text-red-600">{error}</div>
         ) : (
           <>
-            {error && <p className="cert-modal-chrome px-5 pt-4 text-center text-xs font-bold text-red-600 sm:px-7">{error}</p>}
-            {notice && <p className="cert-modal-chrome px-5 pt-4 text-center text-xs font-bold text-emerald-600 sm:px-7">{notice}</p>}
+            {error && <p className=" px-5 pt-4 text-center text-xs font-bold text-red-600 sm:px-7">{error}</p>}
+            {notice && <p className=" px-5 pt-4 text-center text-xs font-bold text-emerald-600 sm:px-7">{notice}</p>}
 
             {/* meta strip */}
             {data && (
-              <div className="cert-modal-chrome flex flex-wrap gap-2 px-5 pt-4 text-[11px] font-bold sm:px-7">
+              <div className=" flex flex-wrap gap-2 px-5 pt-4 text-[11px] font-bold sm:px-7">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
                   Template: {certificateTemplateName(template?.id)}
                 </span>
@@ -145,21 +144,23 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
               </div>
             )}
 
-            {/* certificate (screen preview) */}
-            <div className="cert-stage cert-scroll p-5 sm:p-8">
+            {/* certificate (screen preview, same 297/210 ratio, scaled) */}
+            <div className="bg-[#eef2f6] overflow-x-auto p-5 sm:p-8">
               {certificate ? (
-                <CertificateView
-                  certificateNumber={certificate.certificateNumber}
-                  studentName={certificate.studentName || student?.name}
-                  courseName={certificate.courseTitle || courseTitle}
-                  startDate={dates?.startDate}
-                  completionDate={dates?.completionDate}
-                  issueDate={certificate.issueDate}
-                  description={description}
-                  verifyUrl={verifyUrl}
-                />
+                <div className="min-w-[560px]">
+                  <CertificateView
+                    certificateNumber={certificate.certificateNumber}
+                    studentName={certificate.studentName || student?.name}
+                    courseName={certificate.courseTitle || courseTitle}
+                    startDate={dates?.startDate}
+                    completionDate={dates?.completionDate}
+                    issueDate={certificate.issueDate}
+                    description={description}
+                    verifyUrl={verifyUrl}
+                  />
+                </div>
               ) : (
-                <div className="cert-modal-chrome mx-auto max-w-lg rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+                <div className=" mx-auto max-w-lg rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
                   <ShieldAlert className="mx-auto text-amber-500" size={28} />
                   <h3 className="mt-2 font-black text-slate-900">Certificate not issued yet</h3>
                   <ul className="mt-3 space-y-1 text-xs font-semibold text-slate-600">
@@ -179,7 +180,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
 
             {/* super-admin completion editor */}
             {superAdmin && data && (!certificate || !certificate.completionDate) && (
-              <div className="cert-modal-chrome mx-5 mb-2 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:mx-7 sm:flex-row sm:items-end">
+              <div className=" mx-5 mb-2 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:mx-7 sm:flex-row sm:items-end">
                 <div className="flex-1">
                   <label className="text-xs font-bold text-slate-700">Completion date</label>
                   <input
@@ -215,7 +216,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
             )}
 
             {/* footer */}
-            <div className="cert-modal-chrome flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+            <div className=" flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
               <p className="text-[11px] font-semibold text-slate-400">
                 {allowPrint
                   ? "Only the certificate will be printed (landscape)."

@@ -200,6 +200,7 @@
 }
 .id-bulk-pair { display: grid; gap: 14px; }
 
-/* NOTE: print is owned by src/print/print.css + printUtils.js.
+/* NOTE: print is owned by src/print/printUtils.js (JS-set @page)
+   + Tailwind print classes in src/print/*.jsx.
    Do NOT add @media print / @page rules here — competing page
    rules break orientation switching between ID and certificate jobs. */

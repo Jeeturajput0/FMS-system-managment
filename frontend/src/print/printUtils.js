@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * Production print utilities.
+ * Production print engine — JavaScript only, no print CSS file.
+ * Tailwind handles all sizes/layout (mm arbitrary values + print: variant).
+ * This module only does what Tailwind cannot:
+ *   1. @page orientation per print job (dynamic <style> tag).
+ *   2. Hide the app (#root) during print via inline styles.
+ *   3. Wait for images, then window.print(), then restore everything.
  *
- * Architecture:
- * - Printable documents are ALWAYS mounted inside #print-root
- *   (via <PrintPortal>), which is display:none on screen.
- * - On print: hide #root, set @page orientation for THIS job,
- *   wait for images, then window.print().
- * - afterprint always restores the UI + button state.
+ * Printable documents are ALWAYS mounted inside #print-root
+ * (via <PrintPortal>, `hidden print:block`), so window.print()
+ * never fires on an empty tree.
  */
 
 export const PRINT_ROOT_ID = "print-root";
@@ -19,12 +21,20 @@ export function ensurePrintRoot() {
   if (!node) {
     node = document.createElement("div");
     node.id = PRINT_ROOT_ID;
+    // NOTE: no inline display style here — visibility is controlled by
+    // the `hidden print:block` Tailwind classes on each portal wrapper.
+    // (Inline display:none would override print:block and print blank.)
     document.body.appendChild(node);
   }
   return node;
 }
 
-/** Declare the intended @page orientation for the current print job. */
+/**
+ * Declare the intended @page orientation for the current print job,
+ * plus tiny print-only normalizations for legacy CSS components
+ * (ID-card shadows/borders). Rewritten on every job, so ID (portrait)
+ * and certificate (landscape) jobs never fight each other.
+ */
 export function setPageOrientation(orientation = "portrait") {
   const size = orientation === "landscape" ? "A4 landscape" : "A4 portrait";
   let tag = document.getElementById(PAGE_STYLE_ID);
@@ -33,7 +43,12 @@ export function setPageOrientation(orientation = "portrait") {
     tag.id = PAGE_STYLE_ID;
     document.head.appendChild(tag);
   }
-  tag.textContent = `@page { size: ${size}; margin: 0; }`;
+  tag.textContent = `
+@page { size: ${size}; margin: 0; }
+@media print {
+  .sid { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+  .student-id-card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+}`;
 }
 
 const nextFrame = () =>
@@ -59,6 +74,34 @@ export function waitForImages(container, timeout = 10000) {
   ]);
 }
 
+const APP_ROOT_ID = "root";
+const prevInlineStyles = new Map();
+
+function hideAppForPrint() {
+  const app = document.getElementById(APP_ROOT_ID);
+  if (app) {
+    prevInlineStyles.set(app, app.style.display);
+    app.style.display = "none";
+  }
+  prevInlineStyles.set(document.body, document.body.style.cssText);
+  document.body.style.margin = "0";
+  document.body.style.padding = "0";
+  document.body.style.background = "#fff";
+  document.body.style.webkitPrintColorAdjust = "exact";
+  document.body.style.printColorAdjust = "exact";
+}
+
+function restoreAppAfterPrint() {
+  const app = document.getElementById(APP_ROOT_ID);
+  if (app && prevInlineStyles.has(app)) {
+    app.style.display = prevInlineStyles.get(app);
+  }
+  if (prevInlineStyles.has(document.body)) {
+    document.body.style.cssText = prevInlineStyles.get(document.body);
+  }
+  prevInlineStyles.clear();
+}
+
 let afterPrintHandlerInstalled = false;
 const afterPrintCallbacks = new Set();
 
@@ -66,7 +109,7 @@ function installAfterPrintHandler() {
   if (afterPrintHandlerInstalled) return;
   afterPrintHandlerInstalled = true;
   window.addEventListener("afterprint", () => {
-    document.body.classList.remove("printing-id", "printing-cert");
+    restoreAppAfterPrint();
     afterPrintCallbacks.forEach((cb) => {
       try {
         cb();
@@ -87,8 +130,7 @@ export async function runPrintJob(orientation = "portrait") {
   const root = ensurePrintRoot();
   const hasContent = root && root.childElementCount > 0;
   if (!hasContent) return false;
-  document.body.classList.remove("printing-id", "printing-cert");
-  document.body.classList.add(orientation === "landscape" ? "printing-cert" : "printing-id");
+  hideAppForPrint();
   setPageOrientation(orientation);
   await waitForImages(root);
   await nextFrame();
@@ -103,8 +145,6 @@ export async function runPrintJob(orientation = "portrait") {
  *   <button disabled={printing} onClick={handlePrint}>
  *     {printing ? "Preparing print..." : "Print"}
  *   </button>
- * Button is disabled + labelled while preparing, restored via afterprint
- * AND via fallback timeout (some browsers skip afterprint on cancel).
  */
 export function usePrint(orientation = "portrait") {
   const [printing, setPrinting] = useState(false);
@@ -123,14 +163,19 @@ export function usePrint(orientation = "portrait") {
     try {
       const started = await runPrintJob(orientation);
       if (!started) {
+        restoreAppAfterPrint();
         setPrinting(false);
         return false;
       }
       // Restore state on dialog close; fallback in case afterprint is missed.
       afterPrintCallbacks.add(() => setPrinting(false));
-      timer.current = setTimeout(() => setPrinting(false), 15000);
+      timer.current = setTimeout(() => {
+        restoreAppAfterPrint();
+        setPrinting(false);
+      }, 15000);
       return true;
     } catch {
+      restoreAppAfterPrint();
       setPrinting(false);
       return false;
     }

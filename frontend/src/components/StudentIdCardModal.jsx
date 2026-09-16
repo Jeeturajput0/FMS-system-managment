@@ -379,7 +379,7 @@ export default function StudentIdCardModal({
                   CARD PREVIEW
               ========================= */}
 
-              <div className="id-print-area id-card-stage p-5 sm:p-8">
+              <div className="id-card-stage p-5 sm:p-8">
 
                 {isBulk ? (
                   <div className="id-bulk-grid">
@@ -559,7 +559,7 @@ export function StudentIdCardBulkModal({
 
           <>
 
-            <div className="id-print-area id-card-stage p-5 sm:p-8">
+            <div className="id-card-stage p-5 sm:p-8">
 
               <div className="id-bulk-grid">
 

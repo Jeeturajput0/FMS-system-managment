@@ -3,9 +3,12 @@ import { ensurePrintRoot } from "./printUtils";
 
 /**
  * Renders children into the dedicated #print-root (outside #root).
- * Screen: hidden by print.css. Print: the ONLY visible content.
+ * `hidden print:block` keeps it off-screen but printable.
  * Content stays mounted so window.print() never fires on an empty tree.
  */
 export default function PrintPortal({ children }) {
-  return createPortal(children, ensurePrintRoot());
+  return createPortal(
+    <div className="hidden print:block">{children}</div>,
+    ensurePrintRoot()
+  );
 }
