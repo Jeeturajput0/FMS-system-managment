@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Award, Loader2, Printer, ShieldAlert, X } from "lucide-react";
 import { certificateService } from "../../services/certificate.service";
 import CertificateView from "./CertificateView";
+import PrintPortal from "../../print/PrintPortal";
+import { SingleCertPrintPage } from "../../print/CertPrintPages";
+import { usePrint } from "../../print/printUtils";
 import {
   certificateTemplateName,
   formatLongDate,
@@ -32,6 +35,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const superAdmin = isSuperAdmin();
+  const { printing, handlePrint } = usePrint("landscape");
 
   const load = async () => {
     if (!studentId) return;
@@ -141,8 +145,8 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
               </div>
             )}
 
-            {/* certificate */}
-            <div className="cert-stage cert-scroll certificate-print-area p-5 sm:p-8">
+            {/* certificate (screen preview) */}
+            <div className="cert-stage cert-scroll p-5 sm:p-8">
               {certificate ? (
                 <CertificateView
                   certificateNumber={certificate.certificateNumber}
@@ -229,10 +233,12 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
                 {allowPrint && (
                   <button
                     type="button"
-                    onClick={() => window.print()}
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white"
+                    onClick={handlePrint}
+                    disabled={printing}
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
                   >
-                    <Printer size={16} /> Print Certificate
+                    {printing ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
+                    {printing ? "Preparing print..." : "Print Certificate"}
                   </button>
                 )}
               </div>
@@ -240,6 +246,24 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
           </>
         )}
       </div>
+
+      {/* Dedicated print tree (A4 landscape) — mounted before print, hidden on screen */}
+      {certificate && (
+        <PrintPortal>
+          <SingleCertPrintPage
+            item={{
+              certificateNumber: certificate.certificateNumber,
+              studentName: certificate.studentName || student?.name,
+              courseName: certificate.courseTitle || courseTitle,
+              startDate: dates?.startDate,
+              completionDate: dates?.completionDate,
+              issueDate: certificate.issueDate,
+              description,
+              verifyUrl,
+            }}
+          />
+        </PrintPortal>
+      )}
     </div>
   );
 }

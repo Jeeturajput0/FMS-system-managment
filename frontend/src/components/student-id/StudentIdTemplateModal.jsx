@@ -72,7 +72,7 @@ export default function StudentIdTemplateModal({
 
         {/* ---------- Gallery ---------- */}
         <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-7">
-          {TEMPLATE_META.map((meta) => {
+          {TEMPLATE_META.filter((meta) => TEMPLATE_COMPONENTS[meta.id]).map((meta) => {
             const PreviewComponent = TEMPLATE_COMPONENTS[meta.id];
             const selected = selectedTemplate === meta.id;
             return (

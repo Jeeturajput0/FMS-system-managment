@@ -1,6 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  Award,
   Eye,
   Loader2,
   Search,
@@ -15,6 +16,8 @@ import { apiFetch } from "../../../utils/api";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
 import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import CertificateButton from "../../certificate/CertificateButton";
+import CertificateBulkModal from "../../certificate/CertificateBulkModal";
+import { isSuperAdmin } from "../../certificate/certificateTemplates";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const TeacherStudents = () => {
@@ -23,6 +26,7 @@ const TeacherStudents = () => {
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [certBulkOpen, setCertBulkOpen] = useState(false);
   const {
     idCard, requestIdCard, closeIdCard,
     selectedIds, toggleSelect, isSelected, toggleSelectAll,
@@ -198,7 +202,7 @@ const TeacherStudents = () => {
           <p className="text-sm font-bold text-violet-800">
             {selectedIds.length} student{selectedIds.length !== 1 ? "s" : ""} selected
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={clearSelection}
               className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-xs font-bold text-violet-700 hover:bg-violet-100"
@@ -211,8 +215,23 @@ const TeacherStudents = () => {
             >
               <CreditCard size={14} /> Print ID Cards ({selectedIds.length})
             </button>
+            {isSuperAdmin() && (
+              <button
+                onClick={() => setCertBulkOpen(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white hover:bg-amber-600"
+              >
+                <Award size={14} /> Print Certificates ({selectedIds.length})
+              </button>
+            )}
           </div>
         </div>
+      )}
+      {certBulkOpen && (
+        <CertificateBulkModal
+          studentIds={selectedIds}
+          open
+          onClose={() => setCertBulkOpen(false)}
+        />
       )}
 
       {/* Desktop Table */}

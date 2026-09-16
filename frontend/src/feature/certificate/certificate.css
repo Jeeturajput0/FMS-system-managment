@@ -115,24 +115,6 @@
 .cert-scroll { overflow-x: auto; }
 .cert-scroll .cert { min-width: 560px; }
 
-/* =========================================================
-   PRINT — only the certificate
-========================================================= */
-
-@media print {
-  body * { visibility: hidden !important; }
-  .certificate-print-area, .certificate-print-area * { visibility: visible !important; }
-  .certificate-print-area {
-    position: fixed !important; inset: 0 !important;
-    background: #fff !important; padding: 0 !important; margin: 0 !important;
-  }
-  .cert-modal-chrome { display: none !important; }
-  .cert {
-    width: 277mm !important; height: 190mm !important;
-    aspect-ratio: auto !important;
-    box-shadow: none !important; margin: 0 auto !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  @page { size: A4 landscape; margin: 0; }
-}
+/* NOTE: print is owned by src/print/print.css + printUtils.js.
+   Do NOT add @media print / @page rules here — competing page
+   rules break orientation switching between ID and certificate jobs. */

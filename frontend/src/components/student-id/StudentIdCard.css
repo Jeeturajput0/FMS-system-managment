@@ -120,74 +120,6 @@
 }
 
 /* =========================================================
-   TEMPLATE 2 — Maroon Gold (landscape)
-========================================================= */
-
-.sid-t2 { background: #7a2a2e; }
-
-.sid-t2-ring { position: absolute; inset: 0; pointer-events: none; }
-.sid-t2-ring-a {
-  background:
-    radial-gradient(ellipse 120% 135% at 8% 50%, transparent 62%, #d9b45b 62.5%, #d9b45b 65%, #8c1f28 65.5%);
-}
-.sid-t2-ring-b {
-  background:
-    radial-gradient(ellipse 120% 135% at 92% 50%, transparent 62%, #d9b45b 62.5%, #d9b45b 65%, #5d1a1e 65.5%);
-}
-
-.sid-t2-sheet {
-  position: absolute;
-  top: 4%; bottom: 4%; left: 9%; right: 9%;
-  background: #ffffff;
-  border-radius: 50% / 50%;
-  border: 1.2cqi solid #d9b45b;
-  display: flex; align-items: center;
-  padding: 4% 7%;
-  overflow: hidden;
-}
-
-.sid-t2-front { gap: 5cqi; }
-
-.sid-t2-photo {
-  width: 30%; aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1.6cqi solid #d9b45b;
-  overflow: hidden; flex-shrink: 0;
-  background: #f3ede2;
-  display: flex; align-items: center; justify-content: center;
-}
-.sid-t2-photo img { width: 100%; height: 100%; object-fit: cover; }
-.sid-t2-photo span { font-size: 11cqi; font-weight: 700; color: #7a2a2e; }
-
-.sid-t2-info { flex: 1; min-width: 0; }
-.sid-t2-title {
-  margin: 0 0 2cqi;
-  font-size: 5cqi; font-weight: 800; color: #6e2a2d;
-  border-bottom: 0.5cqi solid #4b4b4b;
-  padding-bottom: 2cqi;
-  white-space: nowrap;
-}
-.sid-t2-rows { margin: 0; display: grid; gap: 1.1cqi; }
-.sid-t2-rows > div { display: flex; gap: 1cqi; align-items: baseline; min-width: 0; }
-.sid-t2-rows dt { flex: 0 0 30%; font-size: 2.9cqi; color: #555; font-weight: 500; white-space: nowrap; }
-.sid-t2-rows dd {
-  margin: 0; flex: 1; min-width: 0;
-  font-size: 2.9cqi; color: #333;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.sid-t2-points {
-  margin: 2cqi 0 0; padding-left: 4cqi;
-  font-size: 2.9cqi; line-height: 1.5; color: #444;
-  display: grid; gap: 1.2cqi;
-}
-.sid-t2-back-contact {
-  display: flex; flex-wrap: wrap; gap: 1.5cqi 4cqi;
-  margin-top: 2.5cqi;
-  font-size: 2.7cqi; font-weight: 700; color: #555;
-}
-
-/* =========================================================
    TEMPLATE 3 — Corporate Cyan (portrait)
 ========================================================= */
 
@@ -470,28 +402,3 @@
 
 .sid-preview { pointer-events: none; user-select: none; }
 .sid-preview .sid { box-shadow: 0 6px 18px #0f172a26; }
-
-/* =========================================================
-   PRINT — new templates (single + bulk)
-========================================================= */
-
-@media print {
-  .sid {
-    box-shadow: none !important;
-    border: 1px solid #e5e7eb !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-  .sid-landscape {
-    width: 85.6mm !important;
-    height: 54mm !important;
-    aspect-ratio: auto !important;
-    margin: 0 auto 6mm auto !important;
-  }
-  .sid-portrait {
-    width: 54mm !important;
-    height: 85.6mm !important;
-    aspect-ratio: auto !important;
-    margin: 0 auto 6mm auto !important;
-  }
-}

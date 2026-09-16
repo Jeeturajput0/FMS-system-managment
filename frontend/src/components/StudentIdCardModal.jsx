@@ -8,6 +8,9 @@ import {
   DEFAULT_TEMPLATE,
   resolveTemplate,
 } from "./student-id/templates";
+import PrintPortal from "../print/PrintPortal";
+import { BulkIdPrintPages, SingleIdPrintPage } from "../print/IdPrintPages";
+import { usePrint } from "../print/printUtils";
 
 /* =========================
    Helpers (existing logic, unchanged)
@@ -261,6 +264,7 @@ export default function StudentIdCardModal({
   onClose,
 }) {
   const [side, setSide] = useState("front");
+  const { printing, handlePrint } = usePrint("portrait");
 
   const list = Array.isArray(students) ? students.filter(Boolean) : [];
   const isBulk = list.length > 1;
@@ -428,11 +432,12 @@ export default function StudentIdCardModal({
 
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white"
+                  onClick={handlePrint}
+                  disabled={printing}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
                 >
-                  <Printer size={16} />
-                  {isBulk ? `Print All (${list.length})` : "Print ID Card"}
+                  {printing ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
+                  {printing ? "Preparing print..." : isBulk ? `Print All (${list.length})` : "Print ID Card"}
                 </button>
 
               </div>
@@ -442,6 +447,17 @@ export default function StudentIdCardModal({
         )}
 
       </div>
+
+      {/* Dedicated print tree (A4 portrait) — mounted before print, hidden on screen */}
+      {activeStudent && !loading && !error && (
+        <PrintPortal>
+          {isBulk ? (
+            <BulkIdPrintPages pairs={list.map((item) => ({ student: item, template }))} />
+          ) : (
+            <SingleIdPrintPage student={activeStudent} side={side} template={template} />
+          )}
+        </PrintPortal>
+      )}
 
     </div>
   );
@@ -459,6 +475,8 @@ export function StudentIdCardBulkModal({
   error,
   onClose,
 }) {
+  const { printing, handlePrint } = usePrint("portrait");
+  const ready = !loading && !error && students.length > 0;
   return (
     <div
       className="id-modal fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
@@ -603,12 +621,13 @@ export function StudentIdCardBulkModal({
 
               <button
                 type="button"
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white"
+                onClick={handlePrint}
+                disabled={printing}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
               >
-                <Printer size={16} />
+                {printing ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
 
-                Print All ({students.length})
+                {printing ? "Preparing print..." : `Print All (${students.length})`}
 
               </button>
 
@@ -619,6 +638,13 @@ export function StudentIdCardBulkModal({
         )}
 
       </div>
+
+      {/* Dedicated print tree (A4 portrait grid) — mounted before print, hidden on screen */}
+      {ready && (
+        <PrintPortal>
+          <BulkIdPrintPages pairs={students.map((s) => ({ student: s, template }))} />
+        </PrintPortal>
+      )}
 
     </div>
   );

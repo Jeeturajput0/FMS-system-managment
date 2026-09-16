@@ -84,7 +84,6 @@ const KNOWN_TEMPLATE_IDS = ["template-1", "template-2", "template-3", "template-
 
 const TEMPLATE_NAMES = {
   "template-1": "Classic Blue",
-  "template-2": "Maroon Gold",
   "template-3": "Corporate Cyan",
   "template-4": "Minimal Beige",
   "template-5": "School Cream",

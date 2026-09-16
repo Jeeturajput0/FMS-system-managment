@@ -1,0 +1,149 @@
+/* =========================================================
+   FMS PRODUCTION PRINT SYSTEM (single source of truth)
+   - Screen:  #print-root is hidden, app renders normally.
+   - Print:   #root (app) is hidden, ONLY #print-root prints.
+   - @page orientation is set per print job by printUtils.js
+     (a <style id="print-page-style"> tag), so ID cards
+     (A4 portrait) and certificates (A4 landscape) never fight.
+   - Physical sizes use plain CSS mm — no Tailwind dependency.
+========================================================= */
+
+#print-root {
+  display: none;
+}
+
+@media print {
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide the entire application (sidebar, navbar, tables,
+     modals, buttons — everything inside #root). */
+  #root {
+    display: none !important;
+  }
+
+  /* Show ONLY the dedicated print tree. */
+  #print-root {
+    display: block !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* ============ A4 PAGES ============ */
+
+  .a4-id-page {
+    width: 210mm;
+    height: 297mm;
+    box-sizing: border-box;
+    padding: 10mm;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8mm;
+    align-content: flex-start;
+    justify-content: center;
+    break-after: page;
+    page-break-after: always;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .a4-id-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .a4-id-page.single {
+    align-content: center;
+    align-items: center;
+  }
+
+  .a4-certificate-page {
+    width: 297mm;
+    height: 210mm;
+    box-sizing: border-box;
+    break-after: page;
+    page-break-after: always;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .a4-certificate-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* ============ ID CARD SLOTS (physical size, never stretched) ============ */
+
+  .print-id-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    flex-shrink: 0;
+  }
+
+  .print-id-card.landscape-card {
+    width: 85.6mm;
+    height: 54mm;
+  }
+
+  .print-id-card.portrait-card {
+    width: 54mm;
+    height: 85.6mm;
+  }
+
+  .print-id-card > .sid,
+  .print-id-card > .student-id-card {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* front+back pair of one student never splits across pages */
+  .print-id-pair {
+    display: contents;
+  }
+
+  /* ============ CERTIFICATE SLOT (full A4 landscape) ============ */
+
+  .print-cert-slot {
+    width: 297mm;
+    height: 210mm;
+    box-sizing: border-box;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-cert-slot > .cert {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

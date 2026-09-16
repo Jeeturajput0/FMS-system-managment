@@ -200,33 +200,6 @@
 }
 .id-bulk-pair { display: grid; gap: 14px; }
 
-/* ============ PRINT — single + bulk ============ */
-@media print {
-  body * { visibility: hidden !important; }
-  .id-print-area, .id-print-area * { visibility: visible !important; }
-  .id-print-area {
-    position: fixed !important;
-    inset: 0 !important;
-    background: #fff !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-  }
-  .id-modal { position: static !important; background: #fff !important; padding: 0 !important; }
-  .id-modal-panel { box-shadow: none !important; width: 100% !important; max-width: none !important; }
-  .id-controls { display: none !important; }
-  .id-card-stage { padding: 0 !important; background: #fff !important; }
-  .id-bulk-grid { display: block !important; }
-  .student-id-card {
-    width: 85.6mm !important;
-    height: 54mm !important;
-    aspect-ratio: auto !important;
-    box-shadow: none !important;
-    border: 1px solid #e5e7eb !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    margin: 0 auto 6mm auto !important;
-  }
-  .id-bulk-pair { break-inside: avoid; page-break-inside: avoid; }
-  @page { size: A4; margin: 8mm; }
-}
+/* NOTE: print is owned by src/print/print.css + printUtils.js.
+   Do NOT add @media print / @page rules here — competing page
+   rules break orientation switching between ID and certificate jobs. */
