@@ -1,7 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Award,
   Eye,
   Loader2,
   Search,
@@ -12,10 +11,10 @@ import {
   CalendarCheck,
   CreditCard,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
 import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
+import CertificateButton from "../../certificate/CertificateButton";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const TeacherStudents = () => {
@@ -364,13 +363,12 @@ const TeacherStudents = () => {
                             <Eye size={16} />
                           </button>
 
-                          <Link
-                            to={`/teacher/students/${s._id}/certificate`}
+                          <CertificateButton
+                            studentId={s._id}
+                            studentName={s.name}
                             title="View certificate"
                             className="inline-flex items-center justify-center rounded-xl bg-orange-50 p-2.5 text-orange-700 transition hover:bg-orange-100"
-                          >
-                            <Award size={16} />
-                          </Link>
+                          />
                         </div>
                       </td>
                     </tr>
@@ -492,13 +490,14 @@ const TeacherStudents = () => {
                     View
                   </button>
 
-                  <Link
-                    to={`/teacher/students/${s._id}/certificate`}
+                  <CertificateButton
+                    studentId={s._id}
+                    studentName={s.name}
+                    title="Certificate"
+                    showLabel
+                    label="Certificate"
                     className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-50 py-2.5 text-xs font-black text-orange-700 transition hover:bg-orange-100"
-                  >
-                    <Award size={15} />
-                    Certificate
-                  </Link>
+                  />
                 </div>
               </div>
             );
@@ -652,13 +651,14 @@ const TeacherStudents = () => {
                   Close
                 </button>
 
-                <Link
-                  to={`/teacher/students/${selected._id}/certificate`}
+                <CertificateButton
+                  studentId={selected._id}
+                  studentName={selected.name}
+                  title="Certificate"
+                  showLabel
+                  label="Certificate"
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
-                >
-                  <Award size={16} />
-                  Certificate
-                </Link>
+                />
               </div>
             </div>
           </div>

@@ -119,6 +119,22 @@ const courseSchema = new mongoose.Schema(
       },
     ],
 
+    // ---- course-based certificate template (additive) ----
+    // Template id used when issuing certificates for this course
+    // (e.g. "template-1".."template-5", "legacy"). Empty = auto-detect.
+    certificateTemplate: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    // Description template with placeholders:
+    // [STUDENT_NAME] [COURSE_NAME] [START_DATE] [COMPLETION_DATE] [CERTIFICATE_ID]
+    certificateDescription: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     isPublished: {
       type: Boolean,
       default: false,

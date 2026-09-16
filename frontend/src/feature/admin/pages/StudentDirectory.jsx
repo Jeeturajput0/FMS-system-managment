@@ -21,6 +21,7 @@ import { sanitizePhoneInput } from "../../../utils/phone";
 import { Pagination } from "../../../components/Pagination";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
 import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
+import CertificateButton from "../../certificate/CertificateButton";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 /* =========================================================
@@ -1347,6 +1348,12 @@ export const StudentDirectory = () => {
                           >
                             <CreditCard className="w-3.5 h-3.5" />
                           </button>
+                          <CertificateButton
+                            studentId={student.mongoId || student._id}
+                            studentName={student.name}
+                            title="Certificate"
+                            className="p-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors inline-flex items-center gap-1"
+                          />
                           <Link
                             to={`/admin/students/${student.mongoId}`}
                             title="View student"

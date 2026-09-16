@@ -69,10 +69,155 @@ const nextCertificateNumber = async () => {
 const loadStudent = async (id) => {
   if (!mongoose.isValidObjectId(id)) return null;
   return Student.findById(id)
-    .populate("courseId", "title certificateEligibility")
+    .populate("courseId", "title certificateEligibility certificateTemplate certificateDescription duration")
     .populate("coachingId", "name code")
     .populate("batchId", "teacher name code")
     .lean();
+};
+
+/* =====================================================
+   DYNAMIC CERTIFICATE SYSTEM (additive helpers)
+   Template ids match frontend/src/components/student-id/templates.jsx
+===================================================== */
+
+const KNOWN_TEMPLATE_IDS = ["template-1", "template-2", "template-3", "template-4", "template-5", "legacy"];
+
+const TEMPLATE_NAMES = {
+  "template-1": "Classic Blue",
+  "template-2": "Maroon Gold",
+  "template-3": "Corporate Cyan",
+  "template-4": "Minimal Beige",
+  "template-5": "School Cream",
+  legacy: "Legacy",
+};
+
+const templateGroupOf = (course) => {
+  const title = String(course?.title || course?.name || "").toLowerCase();
+  const has = (...words) => words.some((w) => title.includes(w));
+  if (has("backend", "node", "express", "mongo", "mern", "full stack", "fullstack", "java", "spring", "php", "laravel", "django", "api")) return "backend";
+  if (has("python", "data science", "data analys", "machine learning", "artificial intelligence", "cyber", "cloud", "devops")) return "data";
+  if (has("graphic", "ui", "ux", "photoshop", "figma", "video edit")) return "design";
+  if (has("market", "digital", "seo", "social media", "business", "tally", "account")) return "marketing";
+  if (has("frontend", "front-end", "react", "angular", "vue", "web design", "web develop", "javascript")) return "frontend";
+  return "general";
+};
+
+const resolveCertificateTemplate = (course) => {
+  const configured = String(course?.certificateTemplate || "").trim();
+  if (KNOWN_TEMPLATE_IDS.includes(configured)) {
+    return { id: configured, name: TEMPLATE_NAMES[configured], source: "course" };
+  }
+  const group = templateGroupOf(course);
+  const byGroup = { frontend: "template-1", backend: "template-2", data: "template-3", design: "template-4", marketing: "template-5", general: "template-1" };
+  const id = byGroup[group] || "template-1";
+  return { id, name: TEMPLATE_NAMES[id], source: "auto" };
+};
+
+const DESCRIPTION_TEMPLATES = {
+  frontend: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], showcasing exceptional dedication, strong technical understanding and consistent performance throughout the training program, and is hereby recognized for this remarkable achievement.",
+  backend: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], demonstrating strong server-side development skills, database management expertise and consistent performance throughout the training program.",
+  data: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], demonstrating strong analytical thinking, practical problem-solving skills and consistent performance throughout the training program.",
+  design: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], showcasing exceptional creativity, strong design fundamentals and consistent performance throughout the training program.",
+  marketing: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], demonstrating strong marketing insight, practical campaign skills and consistent performance throughout the training program.",
+  general: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], showcasing dedication and consistent performance throughout the training program.",
+};
+
+const formatLongDate = (value) => {
+  if (!value) return "—";
+  try {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "long", year: "numeric" }).format(d);
+  } catch {
+    return "—";
+  }
+};
+
+const addDuration = (date, duration) => {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
+  const value = Number(duration?.value || 0);
+  if (!value) return null;
+  const unit = String(duration?.unit || "months").toLowerCase();
+  if (unit.startsWith("day")) d.setDate(d.getDate() + value);
+  else if (unit.startsWith("week")) d.setDate(d.getDate() + value * 7);
+  else if (unit.startsWith("year")) d.setFullYear(d.getFullYear() + value);
+  else d.setMonth(d.getMonth() + value);
+  return d;
+};
+
+const fillDescription = (template, map) =>
+  String(template || "").replace(/\[STUDENT_NAME\]|\[COURSE_NAME\]|\[START_DATE\]|\[COMPLETION_DATE\]|\[CERTIFICATE_ID\]/g, (key) => map[key] ?? key);
+
+const buildCertificatePayload = (student, eligibility, certificate, req) => {
+  const course = student.courseId || {};
+  const template = resolveCertificateTemplate(course);
+  const startDate = certificate?.startDate || student.joiningDate || student.enrollmentDate || student.createdAt || null;
+  const completionDate =
+    certificate?.completionDate || addDuration(startDate, course.duration) || null;
+  const description =
+    certificate?.description ||
+    course.certificateDescription ||
+    DESCRIPTION_TEMPLATES[templateGroupOf(course)] ||
+    DESCRIPTION_TEMPLATES.general;
+  const values = {
+    "[STUDENT_NAME]": certificate?.studentName || student.name || "",
+    "[COURSE_NAME]": certificate?.courseTitle || course.title || "",
+    "[START_DATE]": formatLongDate(startDate),
+    "[COMPLETION_DATE]": formatLongDate(completionDate),
+    "[CERTIFICATE_ID]": certificate?.certificateNumber || "",
+  };
+  return {
+    template,
+    description: fillDescription(description, values),
+    dates: { startDate, completionDate },
+    verifyPath: certificate ? `/verify-certificate/${certificate.certificateNumber}` : null,
+    canPrint: req?.user?.role === "SUPER_ADMIN",
+  };
+};
+
+const userObjectIdOrNull = (req) =>
+  mongoose.isValidObjectId(req?.user?._id) ? req.user._id : null;
+
+const createCertificateRecord = async (student, eligibility, course, req, overrides = {}) => {
+  const certificateNumber = await nextCertificateNumber();
+  const template = resolveCertificateTemplate(course);
+  const startDate = overrides.startDate || student.joiningDate || student.enrollmentDate || new Date();
+  const completionDate = overrides.completionDate || addDuration(startDate, course.duration) || null;
+  const values = {
+    "[STUDENT_NAME]": student.name || "",
+    "[COURSE_NAME]": course.title || "",
+    "[START_DATE]": formatLongDate(startDate),
+    "[COMPLETION_DATE]": formatLongDate(completionDate),
+    "[CERTIFICATE_ID]": certificateNumber,
+  };
+  const description =
+    course.certificateDescription ||
+    fillDescription(DESCRIPTION_TEMPLATES[templateGroupOf(course)] || DESCRIPTION_TEMPLATES.general, values);
+  try {
+    const created = await Certificate.create({
+      certificateNumber,
+      studentId: student._id,
+      courseId: course._id,
+      coachingId: student.coachingId?._id || student.coachingId,
+      studentName: student.name,
+      courseTitle: course.title,
+      progress: eligibility.progress,
+      attendance: eligibility.attendance,
+      pendingFees: eligibility.pendingFees,
+      templateId: template.id,
+      templateName: template.name,
+      startDate,
+      completionDate,
+      description,
+      status: "ACTIVE",
+      createdBy: userObjectIdOrNull(req),
+    });
+    return created.toObject();
+  } catch (error) {
+    if (error.code !== 11000) throw error;
+    return Certificate.findOne({ studentId: student._id }).lean();
+  }
 };
 
 export const getCertificate = async (req, res) => {
@@ -88,28 +233,141 @@ export const getCertificate = async (req, res) => {
     let certificate = await Certificate.findOne({ studentId: student._id }).lean();
 
     if (!certificate && eligibility.eligible) {
-      const certificateNumber = await nextCertificateNumber();
-      try {
-        certificate = await Certificate.create({
-          certificateNumber,
-          studentId: student._id,
-          courseId: student.courseId._id,
-          coachingId: student.coachingId._id,
-          studentName: student.name,
-          courseTitle: student.courseId.title,
-          progress: eligibility.progress,
-          attendance: eligibility.attendance,
-          pendingFees: eligibility.pendingFees,
-        });
-      } catch (error) {
-        if (error.code !== 11000) throw error;
-        certificate = await Certificate.findOne({ studentId: student._id }).lean();
-      }
+      certificate = await createCertificateRecord(student, eligibility, student.courseId, req);
       await Student.updateOne({ _id: student._id }, { $set: { certificateEligible: true, certificateIssued: true, certificateId: certificate._id } });
     }
 
-    return res.json({ success: true, data: { student, eligibility, certificate } });
+    const dynamic = buildCertificatePayload(student, eligibility, certificate, req);
+    return res.json({ success: true, data: { student, eligibility, certificate, ...dynamic } });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load certificate", error: error.message });
+  }
+};
+
+/* =====================================================
+   GET /api/certificates (SUPER_ADMIN, ADMIN)
+   Certificate Management list
+===================================================== */
+
+export const listCertificates = async (req, res) => {
+  try {
+    const page = Math.max(Number(req.query.page || 1), 1);
+    const limit = Math.min(Math.max(Number(req.query.limit || 20), 1), 100);
+    const filter = {};
+    if (["ACTIVE", "REVOKED"].includes(String(req.query.status || "").toUpperCase())) {
+      filter.status = String(req.query.status).toUpperCase();
+    }
+    const search = String(req.query.search || "").trim();
+    if (search) {
+      filter.$or = [
+        { certificateNumber: { $regex: search, $options: "i" } },
+        { studentName: { $regex: search, $options: "i" } },
+        { courseTitle: { $regex: search, $options: "i" } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      Certificate.find(filter)
+        .populate("studentId", "name studentId mobile")
+        .populate("courseId", "title")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Certificate.countDocuments(filter),
+    ]);
+    return res.json({ success: true, data: items, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to load certificates", error: error.message });
+  }
+};
+
+/* =====================================================
+   PATCH /api/certificates/student/:studentId/completion (SUPER_ADMIN only)
+   Set completion date; optionally force-issue even if not eligible.
+===================================================== */
+
+export const setCompletionDate = async (req, res) => {
+  try {
+    const student = await loadStudent(req.params.studentId);
+    if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+    if (!(await canViewStudent(student, req))) return res.status(403).json({ success: false, message: "You are not authorized for this student" });
+
+    const { completionDate, forceIssue = false } = req.body || {};
+    const parsed = completionDate ? new Date(completionDate) : null;
+    if (!parsed || Number.isNaN(parsed.getTime())) {
+      return res.status(400).json({ success: false, message: "A valid completion date is required" });
+    }
+
+    const eligibility = getEligibility(student, student.courseId);
+    let certificate = await Certificate.findOne({ studentId: student._id }).lean();
+
+    if (!certificate) {
+      if (!eligibility.eligible && !forceIssue) {
+        return res.status(400).json({ success: false, message: "Student is not eligible for a certificate yet", reasons: eligibility.reasons });
+      }
+      certificate = await createCertificateRecord(student, eligibility, student.courseId, req, { completionDate: parsed });
+      await Student.updateOne({ _id: student._id }, { $set: { certificateEligible: true, certificateIssued: true, certificateId: certificate._id } });
+    } else {
+      certificate = await Certificate.findByIdAndUpdate(
+        certificate._id,
+        { $set: { completionDate: parsed, ...(certificate.startDate ? {} : { startDate: student.joiningDate || student.enrollmentDate || new Date() }) } },
+        { new: true },
+      ).lean();
+    }
+
+    const dynamic = buildCertificatePayload(student, eligibility, certificate, req);
+    return res.json({ success: true, message: "Completion date saved", data: { student, eligibility, certificate, ...dynamic } });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to save completion date", error: error.message });
+  }
+};
+
+/* =====================================================
+   POST /api/certificates/:certificateNumber/revoke (SUPER_ADMIN only)
+   Body { status: "REVOKED" } default; { status: "ACTIVE" } restores.
+===================================================== */
+
+export const revokeCertificate = async (req, res) => {
+  try {
+    const status = String(req.body?.status || "REVOKED").toUpperCase();
+    if (!["ACTIVE", "REVOKED"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid certificate status" });
+    }
+    const certificate = await Certificate.findOne({ certificateNumber: req.params.certificateNumber });
+    if (!certificate) return res.status(404).json({ success: false, message: "Certificate Not Found" });
+    certificate.status = status;
+    certificate.revokedBy = status === "REVOKED" ? userObjectIdOrNull(req) : null;
+    certificate.revokedAt = status === "REVOKED" ? new Date() : null;
+    await certificate.save();
+    return res.json({ success: true, message: status === "REVOKED" ? "Certificate revoked" : "Certificate restored", data: certificate.toObject() });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to update certificate status", error: error.message });
+  }
+};
+
+/* =====================================================
+   GET /api/certificates/verify/:certificateNumber (PUBLIC)
+   Only verification-safe fields are exposed.
+===================================================== */
+
+export const verifyCertificate = async (req, res) => {
+  try {
+    const certificate = await Certificate.findOne({ certificateNumber: req.params.certificateNumber })
+      .select("certificateNumber studentName courseTitle issueDate startDate completionDate status")
+      .lean();
+    if (!certificate) return res.status(404).json({ success: false, message: "Certificate Not Found" });
+    return res.json({
+      success: true,
+      data: {
+        certificateId: certificate.certificateNumber,
+        studentName: certificate.studentName,
+        courseName: certificate.courseTitle,
+        issueDate: certificate.issueDate,
+        completionDate: certificate.completionDate,
+        status: certificate.status || "ACTIVE",
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Certificate verification failed", error: error.message });
   }
 };

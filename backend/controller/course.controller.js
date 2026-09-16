@@ -18,6 +18,10 @@ const getCourseData = (body) => ({
   certificateFee: Number(body.certificateFee || 0),
   category: body.category || "General",
   level: body.level || "Beginner",
+  // Optional certificate-template fields — only included when explicitly sent,
+  // so existing create/update calls without them are unaffected.
+  ...(body.certificateTemplate !== undefined ? { certificateTemplate: String(body.certificateTemplate || "").trim() } : {}),
+  ...(body.certificateDescription !== undefined ? { certificateDescription: String(body.certificateDescription || "").trim() } : {}),
 });
 
 const hasRequiredData = (course) =>

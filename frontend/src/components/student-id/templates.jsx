@@ -1,6 +1,5 @@
 import StudentIdTemplate1 from "./StudentIdTemplate1";
 import StudentIdTemplate2 from "./StudentIdTemplate2";
-import StudentIdTemplate3 from "./StudentIdTemplate3";
 import StudentIdTemplate4 from "./StudentIdTemplate4";
 import StudentIdTemplate5 from "./StudentIdTemplate5";
 
@@ -16,7 +15,6 @@ import StudentIdTemplate5 from "./StudentIdTemplate5";
 export const TEMPLATE_COMPONENTS = {
   "template-1": StudentIdTemplate1,
   "template-2": StudentIdTemplate2,
-  "template-3": StudentIdTemplate3,
   "template-4": StudentIdTemplate4,
   "template-5": StudentIdTemplate5,
 };

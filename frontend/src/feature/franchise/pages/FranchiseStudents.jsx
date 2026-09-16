@@ -15,7 +15,6 @@ import {
   Phone,
   Mail,
   BookOpen,
-  Award,
   CreditCard,
 } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -24,6 +23,7 @@ import { Pagination } from "../../../components/Pagination";
 import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
 import StudentIdTemplateModal from "../../../components/student-id/StudentIdTemplateModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
+import CertificateButton from "../../certificate/CertificateButton";
 
 const courseName = (course) =>
   course?.title || course?.name || "Not assigned";
@@ -622,14 +622,12 @@ export const FranchiseStudents = () => {
                         >
                           <Edit size={15} />
                         </Link>
-                       <Link
-                          title="View certificate"
-                          aria-label="View certificate"
-                          to={`/franchise/students/${student._id}/certificate`}
-                          className="rounded-lg bg-orange-50 p-2 text-orange-600"
-                        >
-                          <Award size={15} />
-                        </Link>
+                       <CertificateButton
+                          studentId={student._id}
+                          studentName={student.name}
+                          title="Certificate"
+                          className="rounded-lg bg-orange-50 p-2 text-orange-600 transition hover:bg-orange-100"
+                        />
 
                         <button
                           title="Deactivate student"
