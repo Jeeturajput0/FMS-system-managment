@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../../../utils/api";
 import { sanitizePhoneInput } from "../../../utils/phone";
 import { Pagination } from "../../../components/Pagination";
-import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 /* =========================================================
@@ -140,7 +140,11 @@ export const StudentDirectory = () => {
     useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [page, setPage] = useState(1);
-  const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
+  const {
+    idCard, makeIdCard, closeIdCard,
+    selectedIds, toggleSelect, isSelected, toggleSelectAll,
+    clearSelection, bulk, openBulkCards, closeBulkCards,
+  } = useStudentIdCard();
   const pageSize = 20;
 
   /* =======================================================
@@ -962,11 +966,43 @@ export const StudentDirectory = () => {
           TABLE
       ================================================== */}
 
+      {/* BULK BAR */}
+      {selectedIds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3">
+          <p className="text-xs font-bold text-violet-800">
+            {selectedIds.length} student{selectedIds.length !== 1 ? "s" : ""} selected
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={clearSelection}
+              className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-xs font-bold text-violet-700 hover:bg-violet-100"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => openBulkCards(students)}
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white hover:bg-violet-700"
+            >
+              <CreditCard className="w-3.5 h-3.5" /> Print ID Cards ({selectedIds.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-semibold text-[10px] border-b border-slate-100">
               <tr>
+                <th className="py-4 px-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={pageStudents.length > 0 && pageStudents.every((s) => isSelected(s))}
+                    onChange={() => toggleSelectAll(pageStudents)}
+                    title="Select all on this page"
+                    className="h-4 w-4 accent-violet-600"
+                  />
+                </th>
                 <th className="py-4 px-4">
                   Student ID
                 </th>
@@ -1015,7 +1051,7 @@ export const StudentDirectory = () => {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="10"
+                    colSpan="11"
                     className="py-16 text-center"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
@@ -1033,7 +1069,7 @@ export const StudentDirectory = () => {
 
                 <tr>
                   <td
-                    colSpan="10"
+                    colSpan="11"
                     className="py-16 text-center"
                   >
                     <div className="flex flex-col items-center">
@@ -1063,6 +1099,15 @@ export const StudentDirectory = () => {
                       }
                       className="hover:bg-slate-50/80 transition-colors"
                     >
+                      <td className="py-4 px-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected(student)}
+                          onChange={() => toggleSelect(student)}
+                          aria-label={`Select ${student.name}`}
+                          className="h-4 w-4 accent-violet-600"
+                        />
+                      </td>
                       {/* STUDENT ID */}
 
                       <td className="py-4 px-4 font-mono font-bold text-orange-600">
@@ -1236,6 +1281,7 @@ export const StudentDirectory = () => {
       <Pagination page={page} pageCount={Math.ceil(filteredStudents.length / pageSize)} onPageChange={setPage} totalItems={filteredStudents.length} pageSize={pageSize} />
 
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
 
       {/* =================================================
           ADD STUDENT MODAL

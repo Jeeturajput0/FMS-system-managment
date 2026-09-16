@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
-import StudentIdCardModal from "../../../components/StudentIdCardModal";
+import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
 import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const FranchiseBatchStudents = () => {
@@ -26,6 +26,16 @@ const FranchiseBatchStudents = () => {
   const [error, setError] = useState("");
   const [showAddStudents, setShowAddStudents] = useState(false);
   const { idCard, makeIdCard, closeIdCard } = useStudentIdCard();
+  const {
+    selectedIds: idSelectedIds,
+    toggleSelect: toggleIdSelect,
+    isSelected: isIdSelected,
+    toggleSelectAll: toggleIdSelectAll,
+    clearSelection: clearIdSelection,
+    bulk: idBulk,
+    openBulkCards: openIdBulkCards,
+    closeBulkCards: closeIdBulkCards,
+  } = useStudentIdCard();
 
   const loadBatch = async () => {
     if (!batchId) {
@@ -376,24 +386,56 @@ const FranchiseBatchStudents = () => {
           <h2 className="font-black text-slate-900">
             {batch.name} — Student List
           </h2>
-          <div className="relative sm:w-72">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              value={assignedSearch}
-              onChange={(event) => setAssignedSearch(event.target.value)}
-              placeholder="Search students..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-blue-500"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            {idSelectedIds.length > 0 && (
+              <>
+                <span className="text-xs font-bold text-violet-700">
+                  {idSelectedIds.length} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => openIdBulkCards(assignedStudents)}
+                  className="inline-flex items-center gap-1 rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white hover:bg-violet-700"
+                >
+                  <CreditCard size={14} /> Print IDs ({idSelectedIds.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={clearIdSelection}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50"
+                >
+                  Clear
+                </button>
+              </>
+            )}
+            <div className="relative sm:w-64">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                value={assignedSearch}
+                onChange={(event) => setAssignedSearch(event.target.value)}
+                placeholder="Search students..."
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-blue-500"
+              />
+            </div>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
               <tr>
+                <th className="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={assignedStudents.length > 0 && assignedStudents.every((s) => isIdSelected(s))}
+                    onChange={() => toggleIdSelectAll(assignedStudents)}
+                    title="Select all for ID print"
+                    className="h-4 w-4 accent-violet-600"
+                  />
+                </th>
                 <th className="px-5 py-3">S.No.</th>
                 <th className="px-5 py-3">Student name</th>
                 <th className="px-5 py-3">Student ID</th>
@@ -410,6 +452,15 @@ const FranchiseBatchStudents = () => {
                     key={student._id || student.studentId}
                     className="hover:bg-blue-50/30"
                   >
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={isIdSelected(student)}
+                        onChange={() => toggleIdSelect(student)}
+                        aria-label={`Select ${student.name} for ID print`}
+                        className="h-4 w-4 accent-violet-600"
+                      />
+                    </td>
                     <td className="px-5 py-4 font-bold text-slate-400">
                       {index + 1}
                     </td>
@@ -449,7 +500,7 @@ const FranchiseBatchStudents = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="px-5 py-12 text-center text-sm text-slate-500"
                   >
                     No students are assigned to this batch.
@@ -461,6 +512,7 @@ const FranchiseBatchStudents = () => {
         </div>
       </div>
       {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      {idBulk.open && <StudentIdCardBulkModal {...idBulk} onClose={closeIdBulkCards} />}
     </div>
   );
 };

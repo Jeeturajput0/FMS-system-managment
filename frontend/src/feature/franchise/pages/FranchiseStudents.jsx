@@ -21,7 +21,8 @@ import {
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
 import { Pagination } from "../../../components/Pagination";
-import StudentIdCardModal from "../components/StudentIdCardModal";
+import StudentIdCardModal, { StudentIdCardBulkModal } from "../../../components/StudentIdCardModal";
+import { useStudentIdCard } from "../../../hooks/useStudentIdCard";
 
 const courseName = (course) =>
   course?.title || course?.name || "Not assigned";
@@ -73,7 +74,11 @@ export const FranchiseStudents = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [page, setPage] = useState(1);
-  const [idCard, setIdCard] = useState({ open: false, student: null, loading: false, error: "" });
+  const {
+    idCard, makeIdCard, closeIdCard,
+    selectedIds, toggleSelect, isSelected, toggleSelectAll,
+    clearSelection, bulk, openBulkCards, closeBulkCards,
+  } = useStudentIdCard();
   const pageSize = 20;
 
   const { id } = useParams();
@@ -124,15 +129,7 @@ export const FranchiseStudents = () => {
     }
   };
 
-  const makeId = async (student) => {
-    setIdCard({ open: true, student: null, loading: true, error: "" });
-    try {
-      const response = await apiFetch(`/api/students/${student._id}`);
-      setIdCard({ open: true, student: response.student, loading: false, error: "" });
-    } catch (requestError) {
-      setIdCard({ open: true, student: null, loading: false, error: requestError.message || "Unable to load the student ID card." });
-    }
-  };
+  const makeId = (student) => makeIdCard(student);
 
   const filteredStudents = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -405,12 +402,44 @@ export const FranchiseStudents = () => {
         </div>
       </div>
 
+      {/* Bulk bar */}
+      {selectedIds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3">
+          <p className="text-sm font-bold text-violet-800">
+            {selectedIds.length} student{selectedIds.length !== 1 ? "s" : ""} selected
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={clearSelection}
+              className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-xs font-bold text-violet-700 hover:bg-violet-100"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => openBulkCards(filteredStudents)}
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white hover:bg-violet-700"
+            >
+              <CreditCard size={14} /> Print ID Cards ({selectedIds.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Student Table */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] text-left text-sm">
+          <table className="w-full min-w-[900px] text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50/80">
               <tr>
+                <th className="w-10 px-4 py-3.5">
+                  <input
+                    type="checkbox"
+                    checked={pageStudents.length > 0 && pageStudents.every((s) => isSelected(s))}
+                    onChange={() => toggleSelectAll(pageStudents)}
+                    title="Select all on this page"
+                    className="h-4 w-4 accent-violet-600"
+                  />
+                </th>
                 <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                   Student
                 </th>
@@ -436,7 +465,7 @@ export const FranchiseStudents = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-14 text-center">
+                  <td colSpan={6} className="p-14 text-center">
                     <div className="flex flex-col items-center">
                       <div className="mb-3 rounded-2xl bg-blue-50 p-4">
                         <Loader2
@@ -457,7 +486,7 @@ export const FranchiseStudents = () => {
                 </tr>
               ) : filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-14 text-center">
+                  <td colSpan={6} className="p-14 text-center">
                     <div className="mx-auto flex max-w-sm flex-col items-center">
                       <div className="mb-4 rounded-2xl bg-slate-100 p-4 text-slate-400">
                         <Users size={28} />
@@ -488,6 +517,16 @@ export const FranchiseStudents = () => {
                     key={student._id}
                     className="border-b border-slate-100 last:border-0 transition hover:bg-blue-50/30"
                   >
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={isSelected(student)}
+                        onChange={() => toggleSelect(student)}
+                        title={`Select ${student.name}`}
+                        aria-label={`Select ${student.name}`}
+                        className="h-4 w-4 accent-violet-600"
+                      />
+                    </td>
                     {/* Student */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -635,7 +674,8 @@ export const FranchiseStudents = () => {
           </span>
         </div>
       )}
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={() => setIdCard({ open: false, student: null, loading: false, error: "" })} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
     </div>
   );
 };
