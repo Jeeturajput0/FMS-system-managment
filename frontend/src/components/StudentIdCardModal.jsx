@@ -6,6 +6,7 @@ import "./StudentIdCard.css";
 import "./student-id/StudentIdCard.css";
 import {
   DEFAULT_TEMPLATE,
+  isPortraitTemplate,
   resolveTemplate,
 } from "./student-id/templates";
 import PrintPortal from "../print/PrintPortal";
@@ -60,6 +61,13 @@ const courseName = (student) =>
   student?.courseId?.name ||
   student?.course ||
   "—";
+
+/* Portrait stage: 54 x 85.6mm ratio · Landscape stage: 85.6 x 54mm ratio */
+const stageClassFor = (template) =>
+  `id-card-preview${isPortraitTemplate(template) ? "" : " id-card-preview-landscape"}`;
+
+const dimsFor = (template) =>
+  isPortraitTemplate(template) ? "54 × 85.6mm" : "85.6 × 54mm";
 
 /* =========================
    Detail Component (existing, unchanged)
@@ -263,7 +271,7 @@ export default function StudentIdCardModal({
   error,
   onClose,
 }) {
-  const [side, setSide] = useState("front");
+  const [view, setView] = useState("both"); // "front" | "back" | "both"
   const { printing, handlePrint } = usePrint("portrait");
 
   const list = Array.isArray(students) ? students.filter(Boolean) : [];
@@ -342,41 +350,32 @@ export default function StudentIdCardModal({
             <>
 
               {/* =========================
-                  FRONT / BACK BUTTONS
+                  FRONT / BACK / BOTH BUTTONS
               ========================= */}
 
               {!isBulk && (
                 <div className="id-controls flex justify-center gap-2 px-5 pt-5">
 
-                  <button
-                    type="button"
-                    onClick={() => setSide("front")}
-                    className={`rounded-lg px-4 py-2 text-xs font-black ${
-                      side === "front"
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    FRONT
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSide("back")}
-                    className={`rounded-lg px-4 py-2 text-xs font-black ${
-                      side === "back"
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    BACK
-                  </button>
+                  {(["front", "back", "both"]).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setView(v)}
+                      className={`rounded-lg px-4 py-2 text-xs font-black uppercase ${
+                        view === v
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
 
                 </div>
               )}
 
               {/* =========================
-                  CARD PREVIEW
+                  CARD PREVIEW — complete 54 x 85.6mm cards
               ========================= */}
 
               <div className="id-card-stage p-5 sm:p-8">
@@ -392,26 +391,57 @@ export default function StudentIdCardModal({
                           {index + 1}. {item.name} · {item.studentId || ""}
                         </p>
                         <div className="id-bulk-pair">
-                          <StudentIdCardView
-                            student={item}
-                            side="front"
-                            template={template}
-                          />
-                          <StudentIdCardView
-                            student={item}
-                            side="back"
-                            template={template}
-                          />
+                          <div className="id-card-front">
+                            <span className="id-card-side-label id-controls">FRONT</span>
+                            <div className={stageClassFor(template)}>
+                              <StudentIdCardView
+                                student={item}
+                                side="front"
+                                template={template}
+                              />
+                            </div>
+                          </div>
+                          <div className="id-card-back">
+                            <span className="id-card-side-label id-controls">BACK</span>
+                            <div className={stageClassFor(template)}>
+                              <StudentIdCardView
+                                student={item}
+                                side="back"
+                                template={template}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <StudentIdCardView
-                    student={activeStudent}
-                    side={side}
-                    template={template}
-                  />
+                  <div className="flex flex-wrap items-start justify-center gap-6">
+                    {(view === "front" || view === "both") && (
+                      <div className="id-card-front">
+                        <span className="id-card-side-label">FRONT — {dimsFor(template)}</span>
+                        <div className={stageClassFor(template)}>
+                          <StudentIdCardView
+                            student={activeStudent}
+                            side="front"
+                            template={template}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {(view === "back" || view === "both") && (
+                      <div className="id-card-back">
+                        <span className="id-card-side-label">BACK — {dimsFor(template)}</span>
+                        <div className={stageClassFor(template)}>
+                          <StudentIdCardView
+                            student={activeStudent}
+                            side="back"
+                            template={template}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
               </div>
@@ -454,7 +484,7 @@ export default function StudentIdCardModal({
           {isBulk ? (
             <BulkIdPrintPages pairs={list.map((item) => ({ student: item, template }))} />
           ) : (
-            <SingleIdPrintPage student={activeStudent} side={side} template={template} />
+            <SingleIdPrintPage student={activeStudent} template={template} />
           )}
         </PrintPortal>
       )}
@@ -582,18 +612,28 @@ export function StudentIdCardBulkModal({
                     <div className="id-bulk-pair">
 
                       {/* FRONT */}
-                      <StudentIdCardView
-                        student={student}
-                        side="front"
-                        template={template}
-                      />
+                      <div className="id-card-front">
+                        <span className="id-card-side-label id-controls">FRONT</span>
+                        <div className={stageClassFor(template)}>
+                          <StudentIdCardView
+                            student={student}
+                            side="front"
+                            template={template}
+                          />
+                        </div>
+                      </div>
 
                       {/* BACK */}
-                      <StudentIdCardView
-                        student={student}
-                        side="back"
-                        template={template}
-                      />
+                      <div className="id-card-back">
+                        <span className="id-card-side-label id-controls">BACK</span>
+                        <div className={stageClassFor(template)}>
+                          <StudentIdCardView
+                            student={student}
+                            side="back"
+                            template={template}
+                          />
+                        </div>
+                      </div>
 
                     </div>
 

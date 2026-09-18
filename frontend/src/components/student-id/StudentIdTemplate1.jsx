@@ -10,7 +10,7 @@ import {
 } from "./idCardHelpers";
 
 /**
- * TEMPLATE 1 — Classic Blue (landscape)
+ * TEMPLATE 1 — Classic Blue (LANDSCAPE 85.6 x 54mm)
  * White background, blue geometric top/bottom, logo at top,
  * photo left + details right, Terms & Conditions on back.
  */

@@ -2,7 +2,11 @@
    STUDENT ID CARD TEMPLATES (student-id/)
    Base uses container-query units so gallery miniatures,
    modal previews and print all scale proportionally.
-========================================================= */
+
+   PHYSICAL SIZE (fixed): portrait 54mm x 85.6mm
+   (aspect-ratio: 54 / 85.6). Screen stages scale the card
+   with width:300px / max-width:100%; print uses exact mm.
+   ========================================================= */
 
 .sid {
   container-type: inline-size;
@@ -15,16 +19,98 @@
   font-family: Arial, Helvetica, sans-serif;
   box-shadow: 0 16px 35px #0f172a33;
   text-align: left;
+  box-sizing: border-box;
 }
 
-.sid-landscape { aspect-ratio: 1.586 / 1; }
-.sid-portrait { aspect-ratio: 0.63 / 1; }
+/* Standard CR80 portrait: 54mm x 85.6mm -> 54/85.6 */
+.sid-portrait { aspect-ratio: 54 / 85.6; }
+/* Standard CR80 landscape: 85.6mm x 54mm -> 85.6/54 */
+.sid-landscape { aspect-ratio: 85.6 / 54; }
 
 .sid img { display: block; }
+.sid * { box-sizing: border-box; }
 
 /* =========================================================
-   TEMPLATE 1 — Classic Blue (landscape)
+   SCREEN PREVIEW SYSTEM (exact ratio, scaled, never cropped)
+   .id-card-preview  : single full-card stage (screen)
+   .id-card-template : selected-template stage (screen)
+   .id-card-front / .id-card-back : labelled side wrappers
 ========================================================= */
+
+.id-card-preview,
+.id-card-template {
+  width: min(100%, 300px);
+  aspect-ratio: 54 / 85.6;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+.id-card-preview .sid,
+.id-card-template .sid {
+  width: 100%;
+  height: 100%;
+}
+
+/* Landscape stages (templates 1 + 4): 85.6 x 54mm ratio */
+.id-card-preview-landscape,
+.id-card-template-landscape {
+  width: min(100%, 480px);
+  aspect-ratio: 85.6 / 54;
+}
+
+.id-card-preview-landscape .sid,
+.id-card-template-landscape .sid {
+  width: 100%;
+  height: 100%;
+}
+
+.id-card-front,
+.id-card-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.id-card-side-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #64748b;
+}
+
+/* =========================================================
+   TEMPLATE GALLERY (selection screen: every card fully visible)
+========================================================= */
+
+.sid-gallery-item {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 54 / 85.6;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sid-gallery-item .sid {
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 6px 18px #0f172a26;
+}
+
+/* Landscape gallery cell (templates 1 + 4): full 85.6 x 54mm card */
+.sid-gallery-item-landscape {
+  max-width: 100%;
+  aspect-ratio: 85.6 / 54;
+}
+
+/* =========================================================
+   TEMPLATE 1 — Classic Blue (LANDSCAPE 85.6 x 54mm)
+======================================================== */
 
 .sid-t1 { background: #ffffff; }
 
@@ -120,8 +206,121 @@
 }
 
 /* =========================================================
-   TEMPLATE 3 — Corporate Cyan (portrait)
+   TEMPLATE 2 — Maroon Gold (PORTRAIT 54 x 85.6mm)
 ========================================================= */
+
+.sid-t2 {
+  background: linear-gradient(180deg, #4a0808 0%, #7f1d1d 55%, #450a0a 100%);
+  display: flex; flex-direction: column;
+  text-align: center;
+}
+.sid-t2::before {
+  content: ""; position: absolute; left: -22%; top: -8%;
+  width: 60%; aspect-ratio: 1; border-radius: 50%;
+  border: 1.2cqi solid #c9a22755; pointer-events: none;
+}
+.sid-t2::after {
+  content: ""; position: absolute; right: -22%; bottom: -8%;
+  width: 60%; aspect-ratio: 1; border-radius: 50%;
+  border: 1.2cqi solid #c9a22755; pointer-events: none;
+}
+
+.sid-t2-head { position: relative; z-index: 1; padding: 6cqi 6cqi 0; }
+.sid-t2-logo {
+  width: 12cqi; height: 12cqi; border-radius: 50%;
+  background: #fff; border: 1cqi solid #c9a227;
+  margin: 0 auto; padding: 1.4cqi;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.sid-t2-logo img { width: 100%; height: 100%; object-fit: contain; }
+.sid-t2-school {
+  margin: 2cqi 0 0; font-size: 4.4cqi; font-weight: 800;
+  letter-spacing: 0.14em; color: #f5d76e;
+}
+.sid-t2-sub {
+  margin: 1cqi 0 0; font-size: 2.9cqi; letter-spacing: 0.34em; color: #f3e2b3;
+}
+.sid-t2-rule {
+  width: 26%; height: 0.9cqi; border-radius: 1cqi;
+  background: #c9a227; margin: 2.5cqi auto 0;
+}
+
+.sid-t2-photo {
+  width: 40%; aspect-ratio: 1; border-radius: 50%;
+  border: 1.6cqi solid #c9a227;
+  background: #e2e8f0; overflow: hidden; z-index: 1;
+  margin: 4cqi auto 0;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2cqi 6cqi #00000066;
+  position: relative;
+}
+.sid-t2-photo img { width: 100%; height: 100%; object-fit: cover; }
+.sid-t2-photo span { font-size: 14cqi; font-weight: 700; color: #7f1d1d; }
+
+.sid-t2-name {
+  margin: 3cqi 6cqi 0; font-size: 5.6cqi; font-weight: 800; color: #fff;
+  letter-spacing: 0.03em; text-transform: uppercase; line-height: 1.15;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: relative; z-index: 1;
+}
+.sid-t2-course {
+  margin: 1cqi 6cqi 0; font-size: 3.2cqi; letter-spacing: 0.24em;
+  text-transform: uppercase; color: #f5d76e;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: relative; z-index: 1;
+}
+
+.sid-t2-sheet {
+  position: relative; z-index: 1;
+  margin: 4cqi 7cqi 0; background: #fffdf6;
+  border-radius: 2.5cqi; border: 0.6cqi solid #c9a227;
+  padding: 3.5cqi 4cqi; text-align: left;
+  flex: 1; min-height: 0; overflow: hidden;
+}
+.sid-t2-rows { margin: 0; display: grid; gap: 1.5cqi; }
+.sid-t2-rows > div { display: flex; gap: 1.5cqi; align-items: baseline; min-width: 0; }
+.sid-t2-rows dt { flex: 0 0 28%; font-size: 3.2cqi; font-weight: 800; color: #7f1d1d; white-space: nowrap; }
+.sid-t2-rows dd {
+  margin: 0; flex: 1; min-width: 0;
+  font-size: 3.2cqi; color: #1f2937;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sid-t2-sheet-addr dd {
+  white-space: normal; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.sid-t2-bars { height: 7.5cqi; margin-top: 2.5cqi; }
+.sid-t2-sheet-id {
+  margin: 1.2cqi 0 0; text-align: center;
+  font-size: 2.9cqi; letter-spacing: 0.3em; color: #111827; font-weight: 700;
+}
+
+.sid-t2-foot {
+  position: relative; z-index: 1;
+  margin-top: 3cqi; padding: 2.4cqi 4cqi;
+  background: #c9a227; color: #450a0a;
+  font-size: 3cqi; font-weight: 800; letter-spacing: 0.06em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sid-t2-back { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; padding: 7cqi 8cqi 0; min-height: 0; }
+.sid-t2-title { margin: 0; font-size: 5cqi; font-weight: 800; color: #f5d76e; line-height: 1.2; }
+.sid-t2-points {
+  margin: 3cqi 0 0; padding-left: 5cqi; display: grid; gap: 2.2cqi;
+  font-size: 3.2cqi; line-height: 1.5; color: #fdeecd; text-align: left;
+}
+.sid-t2-back-contact {
+  margin: auto 0 0; background: #fffdf6; border: 0.6cqi solid #c9a227;
+  border-radius: 2.5cqi; padding: 3cqi 4cqi;
+  display: grid; gap: 1.4cqi; text-align: center;
+  font-size: 3.2cqi; font-weight: 700; color: #7f1d1d;
+}
+.sid-t2-back-contact span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* =========================================================
+   TEMPLATE 3 — Corporate Cyan (portrait)
+======================================================== */
 
 .sid-t3 { background: #0f2740; display: flex; flex-direction: column; }
 
@@ -169,6 +368,7 @@
 .sid-t3-course {
   margin: 1.5cqi 0 0; font-size: 3.4cqi; letter-spacing: 0.35em;
   text-transform: uppercase; color: #cbd5e1;
+  max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .sid-t3-rows { margin: 5cqi 0 0; width: 100%; display: grid; gap: 2cqi; text-align: left; }
 .sid-t3-rows > div { display: flex; gap: 2cqi; align-items: baseline; min-width: 0; }
@@ -221,180 +421,194 @@
 .sid-t3-back-foot p { margin: 0; font-size: 4.4cqi; font-weight: 800; color: #fff; line-height: 1.3; }
 
 /* =========================================================
-   TEMPLATE 4 — Minimal Beige (portrait)
-========================================================= */
+   TEMPLATE 4 — Minimal Beige (LANDSCAPE 85.6 x 54mm)
+======================================================== */
 
 .sid-t4 { background: #f3ece1; display: flex; flex-direction: column; }
 .sid-t4::before {
-  content: ""; position: absolute; left: -12%; top: 18%;
-  width: 30%; aspect-ratio: 1; border-radius: 50%;
+  content: ""; position: absolute; left: -6%; top: 22%;
+  width: 15%; aspect-ratio: 1; border-radius: 50%;
   background: #e9c9b8; opacity: 0.7;
 }
 .sid-t4::after {
-  content: ""; position: absolute; right: -14%; bottom: 22%;
-  width: 34%; aspect-ratio: 1; border-radius: 50%;
+  content: ""; position: absolute; right: -7%; bottom: 26%;
+  width: 17%; aspect-ratio: 1; border-radius: 50%;
   background: #e4a89b; opacity: 0.55;
 }
 
-.sid-t4-bar { height: 4.5%; flex-shrink: 0; background: #14263f; z-index: 1; }
+.sid-t4-bar { height: 8%; flex-shrink: 0; background: #14263f; z-index: 1; }
 .sid-t4-bar-bottom { margin-top: auto; }
 
 .sid-t4-front {
   position: relative; z-index: 1;
   flex: 1; display: flex; flex-direction: column;
-  padding: 5cqi 8cqi;
+  padding: 2.5cqi 4cqi;
   min-height: 0;
 }
-.sid-t4-brand { display: flex; align-items: center; justify-content: center; gap: 2.5cqi; }
-.sid-t4-brand img { width: 10cqi; height: 10cqi; object-fit: contain; }
+.sid-t4-brand { display: flex; align-items: center; gap: 2cqi; }
+.sid-t4-brand img { width: 6.5cqi; height: 6.5cqi; object-fit: contain; }
 .sid-t4-brand span {
-  font-size: 4.6cqi; font-weight: 800; letter-spacing: 0.12em;
-  color: #14263f; line-height: 1.3; text-align: left;
+  font-size: 3.6cqi; font-weight: 800; letter-spacing: 0.12em;
+  color: #14263f; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.sid-t4-photo-row { display: flex; gap: 4cqi; margin-top: 4cqi; align-items: stretch; }
+.sid-t4-mid {
+  flex: 1; display: flex; gap: 3.5cqi;
+  margin-top: 2.5cqi; min-height: 0; align-items: stretch;
+}
 .sid-t4-photo {
-  flex: 1; aspect-ratio: 1.05; border-radius: 1cqi; overflow: hidden;
+  width: 24%; flex-shrink: 0; border-radius: 1cqi; overflow: hidden;
   background: #d8cfc0;
   display: flex; align-items: center; justify-content: center;
 }
 .sid-t4-photo img { width: 100%; height: 100%; object-fit: cover; }
-.sid-t4-photo span { font-size: 16cqi; font-weight: 700; color: #14263f; }
-.sid-t4-side-barcode {
-  width: 9%; background: #f3ece1; border-radius: 1cqi;
-  padding: 1cqi; display: flex;
-}
-.sid-t4-bars { flex: 1; width: 100%; min-height: 100%; }
+.sid-t4-photo span { font-size: 11cqi; font-weight: 700; color: #14263f; }
 
-.sid-t4-rows { margin: 4cqi 0 0; display: grid; gap: 1.6cqi; }
+.sid-t4-rows { flex: 1; min-width: 0; margin: 0; display: grid; gap: 1.5cqi; align-content: center; }
 .sid-t4-rows > div { display: flex; gap: 1.5cqi; align-items: baseline; min-width: 0; }
-.sid-t4-rows dt { flex: 0 0 24%; font-size: 3.8cqi; font-weight: 700; color: #14263f; white-space: nowrap; }
+.sid-t4-rows dt { flex: 0 0 26%; font-size: 3cqi; font-weight: 700; color: #14263f; white-space: nowrap; }
 .sid-t4-rows dd {
   margin: 0; flex: 1; min-width: 0;
-  font-size: 3.4cqi; color: #333;
+  font-size: 2.9cqi; color: #333;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.sid-t4-back-card {
-  position: relative; z-index: 1;
-  flex: 1; margin: 5cqi 7cqi; padding: 6cqi;
-  background: #faf6ef; border-radius: 4cqi;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 2cqi 6cqi #14263f22;
+.sid-t4-side {
+  width: 19%; flex-shrink: 0;
+  background: #faf6ef; border: 0.5cqi solid #14263f; border-radius: 1cqi;
+  padding: 1.5cqi; display: flex; flex-direction: column;
 }
-.sid-t4-back-title { margin: 0; font-size: 5cqi; font-weight: 800; color: #14263f; }
-.sid-t4-back-points {
-  margin: 3cqi 0 0; padding-left: 5cqi; display: grid; gap: 2cqi;
-  font-size: 3.3cqi; line-height: 1.5; color: #444;
-}
-.sid-t4-back-dates { margin: 4cqi 0 0; display: grid; gap: 1.5cqi; }
-.sid-t4-back-dates > div { display: flex; gap: 2cqi; align-items: baseline; }
-.sid-t4-back-dates span { flex: 0 0 22%; font-size: 4cqi; font-weight: 800; color: #14263f; }
-.sid-t4-back-dates strong { font-size: 3.6cqi; color: #333; font-weight: 500; }
-.sid-t4-back-note { margin: 4cqi 0 0; font-size: 3.4cqi; line-height: 1.5; color: #333; }
-.sid-t4-back-contact {
-  margin-top: auto; padding-top: 3cqi;
-  display: grid; gap: 1.5cqi;
-  font-size: 3.4cqi; font-weight: 700; color: #14263f;
+.sid-t4-bars { flex: 1; width: 100%; min-height: 0; }
+.sid-t4-side > span {
+  margin-top: 1cqi; text-align: center;
+  font-size: 2.2cqi; letter-spacing: 0.14em; font-weight: 700; color: #14263f;
+  white-space: nowrap; overflow: hidden;
 }
 
+.sid-t4-back-wrap {
+  position: relative; z-index: 1;
+  flex: 1; display: flex; gap: 4cqi;
+  padding: 3cqi 4cqi;
+  min-height: 0;
+}
+.sid-t4-back-card {
+  flex: 1.2; min-width: 0;
+  background: #faf6ef; border-radius: 2cqi;
+  padding: 2.5cqi 3cqi;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 1.5cqi 4cqi #14263f22;
+}
+.sid-t4-back-title { margin: 0; font-size: 3.4cqi; font-weight: 800; color: #14263f; }
+.sid-t4-back-points {
+  margin: 1.5cqi 0 0; padding-left: 4cqi; display: grid; gap: 1.2cqi;
+  font-size: 2.5cqi; line-height: 1.45; color: #444;
+}
+.sid-t4-back-side {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;
+}
+.sid-t4-back-dates { display: grid; gap: 1.2cqi; }
+.sid-t4-back-dates > div { display: flex; gap: 1.5cqi; align-items: baseline; }
+.sid-t4-back-dates span { flex: 0 0 26%; font-size: 3cqi; font-weight: 800; color: #14263f; white-space: nowrap; }
+.sid-t4-back-dates strong { font-size: 2.8cqi; color: #333; font-weight: 500; white-space: nowrap; }
+.sid-t4-back-note { margin: 2cqi 0 0; font-size: 2.6cqi; line-height: 1.45; color: #333; }
+.sid-t4-back-contact {
+  margin-top: 2cqi; display: grid; gap: 1cqi;
+  font-size: 2.7cqi; font-weight: 700; color: #14263f;
+}
+.sid-t4-back-contact span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* =========================================================
-   TEMPLATE 5 — School Cream (landscape)
-   Cream bg, mauve bands, gold pill, photo+barcode,
+   TEMPLATE 5 — School Cream (PORTRAIT 54 x 85.6mm)
+   Cream bg, mauve bands, gold pill, photo + barcode,
    Name / ID / Email / Address rows; terms back side.
-========================================================= */
+======================================================== */
 
 .sid-t5 { background: #fffef3; display: flex; flex-direction: column; }
 
 .sid-t5-band { position: absolute; left: 0; right: 0; background: #c795c2; z-index: 1; }
-.sid-t5-band-top { top: 0; height: 9%; }
-.sid-t5-band-bottom { bottom: 0; height: 9%; }
+.sid-t5-band-top { top: 0; height: 6.5%; }
+.sid-t5-band-bottom { bottom: 0; height: 6.5%; }
 
 .sid-t5-school {
   position: relative; z-index: 2;
-  margin: 11% 0 0; padding: 0 4cqi;
-  font-size: 7.2cqi; font-weight: 800; color: #17324b;
+  margin: 9% 0 0; padding: 0 4cqi;
+  font-size: 6.6cqi; font-weight: 800; color: #17324b;
   text-align: center; line-height: 1.1;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
-.sid-t5-front {
+.sid-t5-school-sub {
   position: relative; z-index: 2;
-  flex: 1; display: flex; gap: 4cqi;
-  padding: 2.5cqi 4cqi 3cqi;
-  min-height: 0;
+  margin: 1cqi 0 0; text-align: center;
+  font-size: 2.9cqi; letter-spacing: 0.32em; color: #8a6d8f; font-weight: 700;
 }
 
-.sid-t5-left { width: 30%; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; }
+.sid-t5-pill {
+  position: relative; z-index: 2;
+  background: #e4c65b; color: #17324b;
+  font-size: 5.2cqi; font-weight: 800; line-height: 1.3;
+  border-radius: 4cqi;
+  padding: 1.4cqi 3cqi;
+  margin: 2.5cqi 10cqi 0;
+  text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
 .sid-t5-photo {
-  flex: 1; min-height: 0; overflow: hidden;
+  position: relative; z-index: 2;
+  width: 44%; aspect-ratio: 1.05; border-radius: 1.5cqi; overflow: hidden;
   background: #8fa3b0;
+  margin: 3.5cqi auto 0;
+  border: 1cqi solid #17324b;
   display: flex; align-items: center; justify-content: center;
 }
 .sid-t5-photo img { width: 100%; height: 100%; object-fit: cover; }
 .sid-t5-photo span { font-size: 14cqi; font-weight: 700; color: #fff; }
 
-.sid-t5-bars { height: 7cqi; margin-top: 1.6cqi; flex-shrink: 0; }
-
-.sid-t5-right { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
-.sid-t5-pill {
-  background: #e4c65b; color: #17324b;
-  font-size: 6.4cqi; font-weight: 800; line-height: 1.25;
-  border-radius: 5cqi 0 0 5cqi;
-  padding: 1cqi 2cqi 1cqi 7cqi;
-  margin: 0 -4cqi 2cqi 0;
+.sid-t5-name {
+  position: relative; z-index: 2;
+  margin: 2.5cqi 6cqi 0; text-align: center;
+  font-size: 5.2cqi; font-weight: 800; color: #17324b; line-height: 1.15;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.sid-t5-rows { margin: 0; display: grid; gap: 1.8cqi; }
+.sid-t5-rows { position: relative; z-index: 2; margin: 3cqi 8cqi 0; display: grid; gap: 1.7cqi; }
 .sid-t5-rows > div { display: flex; gap: 1.5cqi; align-items: baseline; min-width: 0; }
-.sid-t5-rows dt { flex: 0 0 24%; font-size: 3.9cqi; font-weight: 800; color: #17324b; white-space: nowrap; }
+.sid-t5-rows dt { flex: 0 0 24%; font-size: 3.4cqi; font-weight: 800; color: #17324b; white-space: nowrap; }
 .sid-t5-rows dd {
   margin: 0; flex: 1; min-width: 0;
-  font-size: 3.5cqi; color: #1f2937;
+  font-size: 3.3cqi; color: #1f2937;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.sid-t5-addr dd { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.sid-t5-addr dd {
+  white-space: normal; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.sid-t5-bars { position: relative; z-index: 2; height: 7.5cqi; margin: 3cqi 14cqi 0; }
+.sid-t5-bars-id {
+  position: relative; z-index: 2;
+  margin: 1.2cqi 0 0; text-align: center;
+  font-size: 2.9cqi; letter-spacing: 0.3em; color: #17324b; font-weight: 700;
+}
 
 .sid-t5-back {
   position: relative; z-index: 2;
-  flex: 1; display: flex; gap: 5cqi;
-  padding: 12% 5cqi 12%;
+  flex: 1; display: flex; flex-direction: column;
+  padding: 9% 8cqi 9%;
   min-height: 0;
 }
-.sid-t5-terms { flex: 1.1; min-width: 0; }
-.sid-t5-terms-title { margin: 0; font-size: 4.6cqi; font-weight: 800; color: #17324b; }
-.sid-t5-terms ul { margin: 2.5cqi 0 0; padding-left: 5cqi; display: grid; gap: 2cqi; }
-.sid-t5-terms li { font-size: 3.1cqi; line-height: 1.45; color: #1f2937; }
-
-.sid-t5-valid { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.sid-t5-valid .sid-t5-bars { height: 9cqi; margin-top: 0; }
-.sid-t5-valid-rows { margin: 2cqi 0 0; display: grid; gap: 1.4cqi; }
+.sid-t5-terms-title { margin: 0; font-size: 5cqi; font-weight: 800; color: #17324b; text-align: center; }
+.sid-t5-terms ul { margin: 3cqi 0 0; padding-left: 5cqi; display: grid; gap: 2cqi; }
+.sid-t5-terms li { font-size: 3.2cqi; line-height: 1.5; color: #1f2937; }
+.sid-t5-valid-rows { margin: 3cqi 0 0; display: grid; gap: 1.4cqi; }
 .sid-t5-valid-rows > div { display: flex; gap: 1.5cqi; align-items: baseline; }
-.sid-t5-valid-rows dt { flex: 0 0 34%; font-size: 3.5cqi; font-weight: 800; color: #17324b; white-space: nowrap; }
-.sid-t5-valid-rows dd { margin: 0; font-size: 3.4cqi; color: #1f2937; white-space: nowrap; }
-.sid-t5-return { margin: 2.5cqi 0 0; font-size: 3.4cqi; line-height: 1.5; color: #1f2937; }
+.sid-t5-valid-rows dt { flex: 0 0 32%; font-size: 3.4cqi; font-weight: 800; color: #17324b; white-space: nowrap; }
+.sid-t5-valid-rows dd { margin: 0; font-size: 3.3cqi; color: #1f2937; white-space: nowrap; }
+.sid-t5-return { margin: 2.5cqi 0 0; font-size: 3.3cqi; line-height: 1.5; color: #1f2937; text-align: center; }
 .sid-t5-contact { margin-top: auto; padding-top: 2cqi; display: grid; gap: 1.6cqi; }
-.sid-t5-contact > div { display: flex; align-items: center; gap: 2cqi; font-size: 3.3cqi; color: #1f2937; min-width: 0; }
+.sid-t5-contact > div { display: flex; align-items: center; justify-content: center; gap: 2cqi; font-size: 3.2cqi; font-weight: 700; color: #17324b; min-width: 0; }
 .sid-t5-contact > div > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sid-t5-ico {
-  width: 5.5cqi; height: 5.5cqi; flex-shrink: 0;
-  border: 0.5cqi solid #17324b; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #17324b;
-}
-
-.sid-t5-deco {
-  position: absolute; left: 0; right: 52%; bottom: 17%; height: 7%;
-  background: #c795c2; z-index: 1;
-}
-.sid-t5-deco-slash {
-  position: absolute; right: -3cqi; top: -45%;
-  width: 6cqi; height: 190%;
-  background: #e4c65b;
-  transform: skewX(-12deg);
-}
 
 /* =========================================================
    Gallery preview tweaks (no pointer interaction inside)
@@ -402,3 +616,98 @@
 
 .sid-preview { pointer-events: none; user-select: none; }
 .sid-preview .sid { box-shadow: 0 6px 18px #0f172a26; }
+
+/* =========================================================
+   ID CARD PRINT (A4 portrait, exact physical card sizes)
+   Portrait  (templates 2/3/5): 54mm x 85.6mm
+   Landscape (templates 1/4)  : 85.6mm x 54mm
+   NOTE: @page size/margin is set per print job by
+   src/print/printUtils.js (setPageOrientation) so ID
+   (portrait) and certificate (landscape) jobs never fight.
+   These classes own element sizing, grid and page breaks.
+========================================================= */
+
+.id-card-print-root {
+  background: #ffffff;
+  color: #111827;
+}
+
+.id-card-a4-page {
+  width: 210mm;
+  height: 297mm;
+  padding: 10mm;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 8mm;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
+  break-inside: avoid;
+}
+
+.id-card-a4-page:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.id-card-print-item {
+  width: 54mm;
+  height: 85.6mm;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.id-card-print-item .sid {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+}
+
+/* Landscape print card (templates 1 + 4): exact 85.6mm x 54mm */
+.id-card-print-item-landscape {
+  width: 85.6mm;
+  height: 54mm;
+}
+
+.id-card-print-single {
+  width: 210mm;
+  height: 297mm;
+  padding: 10mm;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10mm;
+  flex-wrap: wrap;
+  overflow: hidden;
+  break-after: auto;
+  page-break-after: auto;
+}
+
+/* Print-only normalizations: colors must print, app UI must not */
+@media print {
+  .id-card-print-root,
+  .id-card-print-root *,
+  .id-card-a4-page,
+  .id-card-print-item {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .id-card-print-item .sid,
+  .id-card-print-single .sid {
+    box-shadow: none !important;
+  }
+  /* Belt-and-braces: never print modal chrome / controls */
+  .id-controls {
+    display: none !important;
+  }
+}

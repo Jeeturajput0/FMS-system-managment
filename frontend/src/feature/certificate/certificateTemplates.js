@@ -51,16 +51,16 @@ export const certificateTemplateName = (id) =>
 
 const DESCRIPTIONS = {
   frontend:
-    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], showcasing exceptional dedication, strong technical understanding and consistent performance throughout the training program, and is hereby recognized for this remarkable achievement.",
+    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], with dedication and consistent performance throughout the program.",
   backend:
-    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], demonstrating strong server-side development skills, database management expertise and consistent performance throughout the training program.",
-  data: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], demonstrating strong analytical thinking, practical problem-solving skills and consistent performance throughout the training program.",
+    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], with strong technical skills and consistent performance throughout the program.",
+  data: "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], with strong analytical skills and consistent performance throughout the program.",
   design:
-    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], showcasing exceptional creativity, strong design fundamentals and consistent performance throughout the training program.",
+    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], with creativity and consistent performance throughout the program.",
   marketing:
-    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], demonstrating strong marketing insight, practical campaign skills and consistent performance throughout the training program.",
+    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], with strong practical skills and consistent performance throughout the program.",
   general:
-    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], showcasing dedication and consistent performance throughout the training program.",
+    "This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE], with dedication and consistent performance throughout the program.",
 };
 
 export const fillDescription = (template, map = {}) =>

@@ -1,28 +1,26 @@
 import CertificateView from "../feature/certificate/CertificateView";
 
 /**
- * Certificate print pages (A4 landscape) — Tailwind only, no CSS file.
- * One certificate per page — never two on a page, never split.
- * `last:break-after-auto` prevents a trailing blank page.
- * The wrapper is exactly 297mm wide, so the aspect-[297/210]
- * certificate inside is exactly 297mm x 210mm.
+ * Certificate print pages (A4 landscape) — .certificate-* CSS.
+ * ONE certificate per A4 landscape page — never two on a page,
+ * never split. Last page never forces a trailing blank page.
+ * Each page wrapper is exactly 297mm x 210mm, so the
+ * aspect-[297/210] certificate inside is exactly A4 landscape.
  */
 export function CertPrintPages({ items = [] }) {
   const list = items.filter(Boolean);
   if (!list.length) return null;
   return (
-    <>
+    <div className="certificate-print-root">
       {list.map((item, i) => (
         <div
           key={item.certificateNumber || i}
-          className="flex h-[210mm] w-[297mm] items-center justify-center overflow-hidden break-after-page break-inside-avoid bg-white last:break-after-auto"
+          className="certificate-print-page"
         >
-          <div className="h-[210mm] w-[297mm] shrink-0 break-inside-avoid">
-            <CertificateView {...item} />
-          </div>
+          <CertificateView {...item} />
         </div>
       ))}
-    </>
+    </div>
   );
 }
 

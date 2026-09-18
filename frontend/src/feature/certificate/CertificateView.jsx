@@ -2,6 +2,7 @@ import React from "react";
 import { QRCodeSVG } from "qrcode.react";
 import logo from "../../../assist/logo.png";
 import { formatLongDate } from "./certificateTemplates";
+import "./Certificate.css";
 
 /** Bold the student + course names inside the plain description string. */
 const highlight = (text = "", names = []) => {
@@ -30,11 +31,35 @@ const highlight = (text = "", names = []) => {
 };
 
 /**
- * Pure dynamic AI SCHOLARS completion certificate — Tailwind only, no CSS file.
- * Sizing uses cqw (container-query width) units so the SAME component is exact
- * at any container width: in print the wrapper is 297mm wide, therefore
- *   aspect-[297/210]  =>  exactly 297mm x 210mm (A4 landscape).
+ * Shrink type slightly when content is long so NOTHING is ever
+ * clipped: no truncate, no line-clamp on critical text.
+ */
+const nameSizeFor = (name = "") => {
+  const len = String(name).length;
+  if (len > 42) return "2.5cqw";
+  if (len > 28) return "3.0cqw";
+  return "3.6cqw";
+};
+
+const descSizeFor = (text = "") => {
+  const len = String(text).length;
+  if (len > 520) return "1.8cqw";
+  if (len > 380) return "2.0cqw";
+  return "2.25cqw";
+};
+
+/**
+ * Pure dynamic AI SCHOLARS completion certificate.
+ * Sizing uses cqw (container-query width) units so the SAME component
+ * is exact at any container width: in print the wrapper is 297mm wide,
+ * therefore aspect 297/210 => exactly 297mm x 210mm (A4 landscape).
  * On screen it scales down proportionally inside the preview modal.
+ *
+ * Layout guarantees:
+ * - logo, certificate ID, ISO badge, headings, student name,
+ *   FULL description (wraps, shrinks, never clipped),
+ *   course/dates, both signatures, QR, border and decorations
+ *   are all visible — nothing overflows the gold border.
  */
 export default function CertificateView({
   certificateNumber = "",
@@ -50,7 +75,7 @@ export default function CertificateView({
     <div
       role="img"
       aria-label={`Certificate of completion for ${studentName}`}
-      className="relative aspect-[297/210] w-full overflow-hidden bg-white text-center text-[#111827] shadow-[0_16px_40px_#0f172a2e] [@container-type:inline-size] [font-family:Georgia,'Times_New_Roman',serif] [background:repeating-radial-gradient(ellipse_120%_90%_at_50%_120%,#00000008_0_2px,transparent_2px_9px),repeating-radial-gradient(ellipse_120%_90%_at_50%_-20%,#00000006_0_2px,transparent_2px_9px),#ffffff]"
+      className="certificate-template relative aspect-[297/210] w-full overflow-hidden bg-white text-center text-[#111827] shadow-[0_16px_40px_#0f172a2e] [font-family:Georgia,'Times_New_Roman',serif] [background:repeating-radial-gradient(ellipse_120%_90%_at_50%_120%,#00000008_0_2px,transparent_2px_9px),repeating-radial-gradient(ellipse_120%_90%_at_50%_-20%,#00000006_0_2px,transparent_2px_9px),#ffffff]"
     >
       {/* thin gold inner border */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-[4.5%_3.5%] border-[0.45cqw] border-[#c9a227] [outline:0.18cqw_solid_#c9a227] [outline-offset:0.9cqw]" />
@@ -85,12 +110,20 @@ export default function CertificateView({
         OF COMPLETION
       </h2>
       <p className="mb-0 mt-[1.2cqw] text-[2.2cqw] italic text-[#6b7280]">proudly presented to</p>
-      <p className="mx-auto mt-[0.8cqw] inline-block min-w-[44%] max-w-[80%] truncate border-b-[0.3cqw] border-black px-[2cqw] pb-[1cqw] font-sans text-[3.6cqw] font-bold text-black">
+
+      {/* student name — wraps to 2 lines max, shrinks when long, never cut */}
+      <p
+        className="certificate-student-name mx-auto mt-[0.8cqw] inline-block min-w-[44%] max-w-[84%] border-b-[0.3cqw] border-black px-[2cqw] pb-[1cqw] font-sans font-bold text-black"
+        style={{ fontSize: nameSizeFor(studentName) }}
+      >
         {studentName || "—"}
       </p>
 
-      {/* dynamic description */}
-      <p className="mx-auto mb-0 mt-[2cqw] line-clamp-4 max-w-[82%] font-sans text-[2.25cqw] leading-[1.65] text-[#1f2937]">
+      {/* dynamic description — wraps naturally, shrinks when long, never clipped */}
+      <p
+        className="certificate-description mx-auto mb-0 mt-[2cqw] max-w-[82%] font-sans leading-[1.65] text-[#1f2937]"
+        style={{ fontSize: descSizeFor(description) }}
+      >
         {highlight(description, [studentName, courseName])}
       </p>
 

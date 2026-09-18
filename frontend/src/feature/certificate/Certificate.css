@@ -1,0 +1,102 @@
+/* =========================================================
+   CERTIFICATE (A4 LANDSCAPE 297mm x 210mm)
+   Screen preview + print sizing live here — kept separate
+   from the ID-card CSS on purpose (never mix the two).
+
+   PHYSICAL SIZE (fixed): landscape 297mm x 210mm
+   (aspect-ratio: 297 / 210). Screen stages scale with
+   width:min(100%,1123px); print uses exact mm.
+
+   NOTE: @page size/margin is set per print job by
+   src/print/printUtils.js (setPageOrientation) so ID
+   (portrait) and certificate (landscape) jobs never fight.
+   These classes own element sizing, breaks and colors.
+========================================================= */
+
+.certificate-preview {
+  width: min(100%, 1123px);
+  aspect-ratio: 297 / 210;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+.certificate-preview .certificate-template {
+  width: 100%;
+  height: 100%;
+}
+
+.certificate-template {
+  container-type: inline-size;
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.certificate-template * {
+  box-sizing: border-box;
+}
+
+/* Student name: centered, wraps to 2 lines, breaks long words */
+.certificate-student-name {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+/* Description: centered, wraps naturally, stays inside border */
+.certificate-description {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
+}
+
+/* =========================================================
+   CERTIFICATE PRINT (A4 landscape, one cert per page)
+========================================================= */
+
+.certificate-print-root {
+  background: #ffffff;
+}
+
+.certificate-print-page {
+  width: 297mm;
+  height: 210mm;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* The last certificate must NOT create an extra blank page */
+.certificate-print-page:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.certificate-print-page .certificate-template {
+  width: 297mm;
+  height: 210mm;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+@media print {
+  .certificate-print-root,
+  .certificate-print-root *,
+  .certificate-print-page {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .certificate-print-page .certificate-template {
+    box-shadow: none !important;
+  }
+}

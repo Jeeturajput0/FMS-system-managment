@@ -6,11 +6,9 @@ import StudentIdTemplate5 from "./StudentIdTemplate5";
 
 /* =========================================================
    TEMPLATE REGISTRY
-   To add Template 6 later, only add:
-     StudentIdTemplate6.jsx
-   and:
-     "template-6": StudentIdTemplate6
-   (+ its meta entry below)
+   Portrait templates : 54mm x 85.6mm (aspect 54 / 85.6)
+   Landscape templates: 85.6mm x 54mm (aspect 85.6 / 54)
+   Template 1 + 4 = landscape; 2 + 3 + 5 = portrait.
 ======================================================== */
 
 export const TEMPLATE_COMPONENTS = {
@@ -28,7 +26,12 @@ export const TEMPLATE_META = [
     description: "White · blue geometric professional theme",
     orientation: "Landscape",
   },
-  
+  {
+    id: "template-2",
+    name: "Maroon Gold",
+    description: "Maroon · gold premium theme with sheet",
+    orientation: "Portrait",
+  },
   {
     id: "template-3",
     name: "Corporate Cyan",
@@ -39,20 +42,22 @@ export const TEMPLATE_META = [
     id: "template-4",
     name: "Minimal Beige",
     description: "Beige · navy clean minimal theme",
-    orientation: "Portrait",
+    orientation: "Landscape",
   },
   {
     id: "template-5",
     name: "School Cream",
     description: "Cream · mauve school theme with barcode",
-    orientation: "Landscape",
+    orientation: "Portrait",
   },
 ];
 
 export const DEFAULT_TEMPLATE = "template-1";
 
-/** Portrait ID templates print at 54mm x 85.6mm; the rest at 85.6mm x 54mm. */
-export const PORTRAIT_TEMPLATES = ["template-3", "template-4"];
+/** Landscape templates print at 85.6mm x 54mm; portrait at 54mm x 85.6mm. */
+export const PORTRAIT_TEMPLATES = ["template-2", "template-3", "template-5"];
+
+export const LANDSCAPE_TEMPLATES = ["template-1", "template-4"];
 
 export const isPortraitTemplate = (id) => PORTRAIT_TEMPLATES.includes(id);
 

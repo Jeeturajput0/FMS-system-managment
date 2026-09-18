@@ -46,8 +46,16 @@ export function setPageOrientation(orientation = "portrait") {
   tag.textContent = `
 @page { size: ${size}; margin: 0; }
 @media print {
+  html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  #print-root, #print-root *,
+  .id-card-print-root, .id-card-print-root *,
+  .certificate-print-root, .certificate-print-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   .sid { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
   .student-id-card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+  .certificate-template { box-shadow: none !important; }
 }`;
 }
 
@@ -132,6 +140,17 @@ export async function runPrintJob(orientation = "portrait") {
   if (!hasContent) return false;
   hideAppForPrint();
   setPageOrientation(orientation);
+  // Let webfonts settle (never block printing if this fails).
+  try {
+    if (document.fonts?.ready) {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 2500)),
+      ]);
+    }
+  } catch {
+    /* ignore */
+  }
   await waitForImages(root);
   await nextFrame();
   await nextFrame();
