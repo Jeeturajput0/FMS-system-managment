@@ -166,12 +166,14 @@ export const useStudentIdCard = () => {
   /**
    * Continue from the template gallery:
    * the ONE selected template is applied to ALL students.
+   * (Gallery mode preserve rehta hai taaki preview se
+   * "Change Template" par wapas aa sakein.)
    */
   const confirmTemplate = () => {
     if (!selectedTemplate) return false;
     if (templateModal.mode === "bulk") {
       if (!pendingBulk.length && !pendingLoading) return false;
-      setTemplateModal({ open: false, mode: null });
+      setTemplateModal({ open: false, mode: "bulk" });
       setBulk({
         open: true,
         students: pendingBulk,
@@ -182,7 +184,7 @@ export const useStudentIdCard = () => {
       return true;
     }
     if (!pendingSingle && !pendingLoading) return false;
-    setTemplateModal({ open: false, mode: null });
+    setTemplateModal({ open: false, mode: "single" });
     setIdCard({
       open: true,
       student: pendingSingle,
@@ -191,6 +193,18 @@ export const useStudentIdCard = () => {
       template: selectedTemplate,
     });
     return true;
+  };
+
+  /**
+   * Preview se wapas template gallery ("Change Template").
+   * Fetched student data (pendingSingle / pendingBulk) reuse hota hai —
+   * dobara API call nahi hota.
+   */
+  const backToTemplates = () => {
+    const mode = templateModal.mode || (bulk.open ? "bulk" : "single");
+    setIdCard((cur) => ({ ...cur, open: false }));
+    setBulk((cur) => ({ ...cur, open: false }));
+    setTemplateModal({ open: true, mode });
   };
 
   return {
@@ -214,6 +228,7 @@ export const useStudentIdCard = () => {
     requestIdCard,
     requestBulkCards,
     confirmTemplate,
+    backToTemplates,
     pendingLoading,
   };
 };

@@ -35,7 +35,7 @@ export const CourseDetail = () => {
   const [activeTab, setActiveTab] = useState("Modules");
 
   const [expandedModules, setExpandedModules] = useState([]);
-  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate, backToTemplates } = useStudentIdCard();
 
   /* =========================================================
      VIEW DETECTION
@@ -915,7 +915,7 @@ export const CourseDetail = () => {
         </div>
       )}
 
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}

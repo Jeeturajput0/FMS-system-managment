@@ -166,7 +166,7 @@ export const StudentDirectory = () => {
     clearSelection, bulk, openBulkCards, closeBulkCards,
     selectedTemplate, setSelectedTemplate, templateModal,
     closeTemplateModal, requestIdCard, requestBulkCards,
-    confirmTemplate,
+    confirmTemplate, backToTemplates,
   } = useStudentIdCard();
   const pageSize = 20;
 
@@ -1400,8 +1400,8 @@ export const StudentDirectory = () => {
 
       <Pagination page={page} pageCount={Math.ceil(filteredStudents.length / pageSize)} onPageChange={setPage} totalItems={filteredStudents.length} pageSize={pageSize} />
 
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
-      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
+      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} onChangeTemplate={backToTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}

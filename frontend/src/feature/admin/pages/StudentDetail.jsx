@@ -468,7 +468,7 @@ export const StudentDetail = () => {
       </div>
 
       {idCardOpen && (
-        <StudentIdCardModal student={student} template={selectedTemplate} loading={false} error="" onClose={() => setIdCardOpen(false)} />
+        <StudentIdCardModal student={student} template={selectedTemplate} loading={false} error="" onClose={() => setIdCardOpen(false)} onChangeTemplate={() => { setIdCardOpen(false); setTemplateOpen(true); }} />
       )}
 
       <StudentIdTemplateModal

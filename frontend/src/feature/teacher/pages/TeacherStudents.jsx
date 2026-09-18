@@ -32,7 +32,7 @@ const TeacherStudents = () => {
     selectedIds, toggleSelect, isSelected, toggleSelectAll,
     clearSelection, bulk, requestBulkCards, closeBulkCards,
     selectedTemplate, setSelectedTemplate, templateModal,
-    closeTemplateModal, confirmTemplate,
+    closeTemplateModal, confirmTemplate, backToTemplates,
   } = useStudentIdCard();
 
   useEffect(() => {
@@ -683,8 +683,8 @@ const TeacherStudents = () => {
           </div>
         </div>
       )}
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
-      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
+      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} onChangeTemplate={backToTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}

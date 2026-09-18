@@ -3,12 +3,15 @@ import { isPortraitTemplate } from "../components/student-id/templates";
 import { chunkPairs } from "./printChunk";
 
 /**
- * ID-card print pages — sab kuch A4 size me.
- * - Single student: FRONT poore A4 page-1 par, BACK poore A4 page-2 par.
- *   Portrait template -> A4 portrait, landscape template -> A4 landscape.
- * - Bulk: har A4 sheet par multiple cards (cutting sheet), page orientation
- *   template ke hisaab se. Har card break-inside:avoid ke saath.
- * - Last page kabhi blank extra page nahi banata.
+ * ID-card print pages — A4 paper sirf sheet hai, card hamesha apne
+ * ASLI size me rehta hai (kabhi full-A4 stretch nahi).
+ * - Single student: FRONT exact size me A4 portrait page-1 ke center me,
+ *   BACK exact size me A4 portrait page-2 ke center me.
+ *   Portrait card 54mm x 85.6mm, landscape card 85.6mm x 54mm.
+ * - Bulk: har A4 portrait sheet par multiple exact-size cards (cutting
+ *   sheet), 4 pairs per page; zyada cards par apne-aap naya A4 page.
+ * - Card kabhi page me kat-ta nahi (break-inside:avoid); aakhri page ke
+ *   baad blank page nahi aata.
  */
 
 const PrintCard = ({ student, side, template }) => (
@@ -21,25 +24,20 @@ const PrintCard = ({ student, side, template }) => (
   </div>
 );
 
-/** One student — FRONT fills full A4 page 1, BACK fills full A4 page 2. */
+/**
+ * One student — FRONT + BACK dono EK HI A4 portrait page par (ONE PAGE ONLY),
+ * exact physical size me (portrait 54mm x 85.6mm / landscape 85.6mm x 54mm),
+ * page ke center me. Card stretch/rotate/crop nahi hota; A4 sirf sheet hai.
+ * Sirf ek page div hai, isliye extra/blank page kabhi nahi banta.
+ * `print-id-card` class batati hai ki active document ID card hai.
+ */
 export function SingleIdPrintPage({ student, template }) {
   if (!student) return null;
-  const landscape = !isPortraitTemplate(template);
-  const pageClass = `id-card-a4-page${landscape ? " id-card-a4-landscape" : ""}`;
-  const cardClass = `id-card-print-full ${
-    landscape ? "id-card-print-full-landscape" : "id-card-print-full-portrait"
-  }`;
   return (
-    <div className="id-card-print-root">
-      <div className={pageClass}>
-        <div className={cardClass}>
-          <StudentIdCardView student={student} side="front" template={template} />
-        </div>
-      </div>
-      <div className={pageClass}>
-        <div className={cardClass}>
-          <StudentIdCardView student={student} side="back" template={template} />
-        </div>
+    <div className="id-card-print-root print-id-card" id="id-card-print-root">
+      <div className="id-card-a4-single">
+        <PrintCard student={student} side="front" template={template} />
+        <PrintCard student={student} side="back" template={template} />
       </div>
     </div>
   );
@@ -47,20 +45,20 @@ export function SingleIdPrintPage({ student, template }) {
 
 /**
  * Bulk print: pairs = [{ student, template }].
- * Prints FRONT + BACK for every student.
- * Page orientation template se: landscape template -> landscape page.
+ * Prints FRONT + BACK for every student at exact physical size on
+ * A4 portrait sheets (4 pairs per sheet). Page orientation hamesha
+ * portrait — A4 sirf sheet hai.
  */
 export function BulkIdPrintPages({ pairs = [] }) {
   const clean = pairs.filter((p) => p?.student);
-  const landscape = clean.length > 0 && !isPortraitTemplate(clean[0].template);
-  const pages = chunkPairs(clean, landscape ? 4 : 4);
+  const pages = chunkPairs(clean, 4);
   if (!pages.length) return null;
   return (
-    <div className="id-card-print-root">
+    <div className="id-card-print-root print-id-card">
       {pages.map((pagePairs, pageIndex) => (
         <div
           key={pageIndex}
-          className={`id-card-a4-page${landscape ? " id-card-a4-landscape" : ""}`}
+          className="id-card-a4-page"
         >
           {pagePairs.map(({ student, template }, i) => (
             <span

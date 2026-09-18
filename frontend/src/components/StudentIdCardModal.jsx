@@ -274,11 +274,12 @@ export default function StudentIdCardModal({
   loading,
   error,
   onClose,
+  onChangeTemplate,
 }) {
-  // Print orientation ALWAYS follows the selected template:
-  // portrait template -> portrait page, landscape template -> landscape page.
-  const orientation = isPortraitTemplate(template) ? "portrait" : "landscape";
-  const { printing, handlePrint } = usePrint(orientation);
+  // Print hamesha A4 portrait (spec) — A4 sirf sheet hai, card apne asli size me.
+  const { printing, handlePrint } = usePrint("portrait");
+  // Preview me ek samay ek side — [ Front ] [ Back ] toggle.
+  const [side, setSide] = useState("front");
 
   const list = Array.isArray(students) ? students.filter(Boolean) : [];
   const isBulk = list.length > 1;
@@ -355,8 +356,25 @@ export default function StudentIdCardModal({
           activeStudent && (
             <>
 
-              {/* FRONT + BACK — hamesha dono, bada preview.
-                  Template apne asli size me: portrait->portrait, landscape->landscape. */}
+              {/* FRONT / BACK toggle — ek samay ek side, poora card, template ke asli size me.
+                  Portrait template portrait me, landscape template landscape me. */}
+
+              <div className="id-controls flex justify-center gap-2 px-5 pt-5 sm:px-7">
+                {(["front", "back"]).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSide(s)}
+                    className={`rounded-lg px-4 py-2 text-xs font-black uppercase tracking-wider ${
+                      side === s
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {s === "front" ? "Front" : "Back"}
+                  </button>
+                ))}
+              </div>
 
               {/* =========================
                   CARD PREVIEW — bada, template ke asli size me
@@ -400,27 +418,17 @@ export default function StudentIdCardModal({
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-start justify-center gap-8">
-                      <div className="flex min-w-0 flex-col items-center gap-2">
-                        <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">FRONT — {dimsFor(template)}</span>
-                        <div className={stageClassFor(template)}>
-                          <StudentIdCardView
-                            student={activeStudent}
-                            side="front"
-                            template={template}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 flex-col items-center gap-2">
-                        <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">BACK — {dimsFor(template)}</span>
-                        <div className={stageClassFor(template)}>
-                          <StudentIdCardView
-                            student={activeStudent}
-                            side="back"
-                            template={template}
-                          />
-                        </div>
-                      </div>
+                  <div className="flex min-w-0 flex-col items-center gap-2">
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
+                      {side === "front" ? "FRONT" : "BACK"} — {dimsFor(template)}
+                    </span>
+                    <div className={stageClassFor(template)}>
+                      <StudentIdCardView
+                        student={activeStudent}
+                        side={side}
+                        template={template}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -431,6 +439,16 @@ export default function StudentIdCardModal({
               ========================= */}
 
               <div className="id-controls flex justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-7">
+
+                {onChangeTemplate && (
+                  <button
+                    type="button"
+                    onClick={onChangeTemplate}
+                    className="mr-auto rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    Change Template
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -484,9 +502,10 @@ export function StudentIdCardBulkModal({
   loading,
   error,
   onClose,
+  onChangeTemplate,
 }) {
-  const bulkOrientation = isPortraitTemplate(template) ? "portrait" : "landscape";
-  const { printing, handlePrint } = usePrint(bulkOrientation);
+  // Bulk print bhi hamesha A4 portrait sheets par (spec).
+  const { printing, handlePrint } = usePrint("portrait");
   const ready = !loading && !error && students.length > 0;
   return (
     <div
@@ -631,6 +650,16 @@ export function StudentIdCardBulkModal({
             ========================= */}
 
             <div className="id-controls sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:px-7">
+
+              {onChangeTemplate && (
+                <button
+                  type="button"
+                  onClick={onChangeTemplate}
+                  className="mr-auto rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Change Template
+                </button>
+              )}
 
               <button
                 type="button"

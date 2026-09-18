@@ -11,7 +11,7 @@ export function CertPrintPages({ items = [] }) {
   const list = items.filter(Boolean);
   if (!list.length) return null;
   return (
-    <div className="certificate-print-root">
+    <div className="certificate-print-root print-certificate">
       {list.map((item, i) => (
         <div
           key={item.certificateNumber || i}

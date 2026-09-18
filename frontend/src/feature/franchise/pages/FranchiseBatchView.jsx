@@ -23,7 +23,7 @@ const FranchiseBatchView = () => {
   const [batch, setBatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate, backToTemplates } = useStudentIdCard();
 
   useEffect(() => {
     let active = true;
@@ -152,7 +152,7 @@ const FranchiseBatchView = () => {
           </div>
         ) : <p className="rounded-xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">No students assigned to this batch.</p>}
       </div>
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}

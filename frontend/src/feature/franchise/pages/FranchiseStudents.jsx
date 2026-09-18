@@ -84,7 +84,7 @@ export const FranchiseStudents = () => {
     selectedIds, toggleSelect, isSelected, toggleSelectAll,
     clearSelection, bulk, requestBulkCards, closeBulkCards,
     selectedTemplate, setSelectedTemplate, templateModal,
-    closeTemplateModal, confirmTemplate,
+    closeTemplateModal, confirmTemplate, backToTemplates,
   } = useStudentIdCard();
   const pageSize = 20;
 
@@ -694,8 +694,8 @@ export const FranchiseStudents = () => {
           </span>
         </div>
       )}
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
-      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
+      {bulk.open && <StudentIdCardBulkModal {...bulk} onClose={closeBulkCards} onChangeTemplate={backToTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}

@@ -692,41 +692,30 @@
 }
 
 /* =========================================================
-   SINGLE-STUDENT FULL A4 PRINT
-   FRONT poore A4 page-1 par, BACK poore A4 page-2 par.
-   Portrait template -> A4 portrait page; landscape -> A4 landscape.
-   Card apna aspect-ratio rakhte hue page bhar me failta hai.
+   SINGLE-STUDENT A4 PRINT (spec: A4 sirf sheet hai)
+   FRONT exact size me page-1 ke center me, BACK page-2 ke center me.
+   Card 54mm x 85.6mm (portrait) ya 85.6mm x 54mm (landscape) —
+   kabhi stretch / rotate / crop nahi hota.
    ========================================================= */
 
-.id-card-print-full {
-  width: 100%;
-  height: 100%;
+.id-card-a4-single {
+  width: 210mm;
+  height: 297mm;
+  padding: 10mm;
+  background: #ffffff;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
   break-inside: avoid;
-  page-break-inside: avoid;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
 }
 
-/* Portrait card: page ki poori height, ratio 54/85.6 */
-.id-card-print-full-portrait {
-  height: 100%;
-  aspect-ratio: 54 / 85.6;
-}
-
-/* Landscape card: page ki poori width, ratio 85.6/54 */
-.id-card-print-full-landscape {
-  width: 100%;
-  aspect-ratio: 85.6 / 54;
-}
-
-.id-card-print-full .sid {
-  width: 100%;
-  height: 100%;
-  box-shadow: none;
+.id-card-a4-single:last-child {
+  break-after: auto;
+  page-break-after: auto;
 }
 
 /* Print-only normalizations: colors must print, app UI must not */
@@ -739,7 +728,7 @@
     print-color-adjust: exact;
   }
   .id-card-print-item .sid,
-  .id-card-print-full .sid {
+  .id-card-a4-single .sid {
     box-shadow: none !important;
   }
   /* Belt-and-braces: never print modal chrome / controls */

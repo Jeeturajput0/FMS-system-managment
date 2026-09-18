@@ -26,7 +26,7 @@ const FranchiseBatchStudents = () => {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
   const [showAddStudents, setShowAddStudents] = useState(false);
-  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate, backToTemplates } = useStudentIdCard();
   const {
     selectedIds: idSelectedIds,
     toggleSelect: toggleIdSelect,
@@ -41,6 +41,7 @@ const FranchiseBatchStudents = () => {
     templateModal: bulkTemplateModal,
     closeTemplateModal: closeBulkTemplateModal,
     confirmTemplate: confirmBulkTemplate,
+    backToTemplates: backToBulkTemplates,
   } = useStudentIdCard();
 
   const loadBatch = async () => {
@@ -517,8 +518,8 @@ const FranchiseBatchStudents = () => {
           </table>
         </div>
       </div>
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
-      {idBulk.open && <StudentIdCardBulkModal {...idBulk} onClose={closeIdBulkCards} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
+      {idBulk.open && <StudentIdCardBulkModal {...idBulk} onClose={closeIdBulkCards} onChangeTemplate={backToBulkTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}

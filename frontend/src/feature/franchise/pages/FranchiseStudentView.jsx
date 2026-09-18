@@ -10,7 +10,7 @@ const FranchiseStudentView = () => {
   const { id } = useParams();
   const [student, setStudent] = useState(null);
   const [error, setError] = useState("");
-  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate } = useStudentIdCard();
+  const { idCard, requestIdCard, closeIdCard, selectedTemplate, setSelectedTemplate, templateModal, closeTemplateModal, confirmTemplate, backToTemplates } = useStudentIdCard();
 
   useEffect(() => {
     apiFetch(`/api/students/${id}`)
@@ -49,7 +49,7 @@ const FranchiseStudentView = () => {
           <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-semibold text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-bold text-slate-900">{value}</p></div>
         ))}
       </div>
-      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} />}
+      {idCard.open && <StudentIdCardModal {...idCard} onClose={closeIdCard} onChangeTemplate={backToTemplates} />}
       <StudentIdTemplateModal
         open={templateModal.open}
         selectedTemplate={selectedTemplate}
