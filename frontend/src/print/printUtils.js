@@ -5,8 +5,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Tailwind handles all sizes/layout (mm arbitrary values + print: variant).
  * This module only does what Tailwind cannot:
  *   1. @page orientation per print job (dynamic <style> tag).
+ *      NOTE: @page is set here (exactly ONE rule per job) instead of static
+ *      CSS so ID-card (portrait) and certificate (landscape) rules can NEVER
+ *      fight each other — static @page in two CSS files would cascade into
+ *      one global winner and break the other document. Effective rule per
+ *      job is exactly: `@page { size: A4 portrait|landscape; margin: 0; }`.
  *   2. Hide the app (#root) during print via inline styles.
- *   3. Wait for images, then window.print(), then restore everything.
+ *   3. Mark the active document on <body data-print-doc="id-card|certificate">
+ *      so print CSS can hide the OTHER document tree if both happen to be
+ *      mounted (`.print-id-card` / `.print-certificate` scoping).
+ *   4. Wait for images, then window.print(), then restore everything.
  *
  * Printable documents are ALWAYS mounted inside #print-root
  * (via <PrintPortal>, `hidden print:block`), so window.print()
@@ -85,7 +93,7 @@ export function waitForImages(container, timeout = 10000) {
 const APP_ROOT_ID = "root";
 const prevInlineStyles = new Map();
 
-function hideAppForPrint() {
+function hideAppForPrint(docType = "") {
   const app = document.getElementById(APP_ROOT_ID);
   if (app) {
     prevInlineStyles.set(app, app.style.display);
@@ -97,6 +105,12 @@ function hideAppForPrint() {
   document.body.style.background = "#fff";
   document.body.style.webkitPrintColorAdjust = "exact";
   document.body.style.printColorAdjust = "exact";
+  // Active document mark — CSS isi se doosre document tree ko chhupata hai.
+  if (docType) {
+    document.body.dataset.printDoc = docType;
+  } else {
+    delete document.body.dataset.printDoc;
+  }
 }
 
 function restoreAppAfterPrint() {
@@ -107,6 +121,7 @@ function restoreAppAfterPrint() {
   if (prevInlineStyles.has(document.body)) {
     document.body.style.cssText = prevInlineStyles.get(document.body);
   }
+  delete document.body.dataset.printDoc;
   prevInlineStyles.clear();
 }
 
@@ -133,12 +148,12 @@ function installAfterPrintHandler() {
  * Reliable print: prepare -> wait images -> print dialog.
  * Returns false if the print tree is missing (so callers can warn).
  */
-export async function runPrintJob(orientation = "portrait") {
+export async function runPrintJob(orientation = "portrait", docType = "") {
   installAfterPrintHandler();
   const root = ensurePrintRoot();
   const hasContent = root && root.childElementCount > 0;
   if (!hasContent) return false;
-  hideAppForPrint();
+  hideAppForPrint(docType);
   setPageOrientation(orientation);
   // Let webfonts settle (never block printing if this fails).
   try {
@@ -160,12 +175,13 @@ export async function runPrintJob(orientation = "portrait") {
 
 /**
  * Button-friendly hook:
- *   const { printing, handlePrint } = usePrint("portrait");
+ *   const { printing, handlePrint } = usePrint("portrait", "id-card");
+ *   const { printing, handlePrint } = usePrint("landscape", "certificate");
  *   <button disabled={printing} onClick={handlePrint}>
  *     {printing ? "Preparing print..." : "Print"}
  *   </button>
  */
-export function usePrint(orientation = "portrait") {
+export function usePrint(orientation = "portrait", docType = "") {
   const [printing, setPrinting] = useState(false);
   const timer = useRef(null);
 
@@ -180,7 +196,7 @@ export function usePrint(orientation = "portrait") {
     if (printing) return false;
     setPrinting(true);
     try {
-      const started = await runPrintJob(orientation);
+      const started = await runPrintJob(orientation, docType);
       if (!started) {
         restoreAppAfterPrint();
         setPrinting(false);
@@ -198,7 +214,7 @@ export function usePrint(orientation = "portrait") {
       setPrinting(false);
       return false;
     }
-  }, [orientation, printing]);
+  }, [orientation, docType, printing]);
 
   return { printing, handlePrint };
 }

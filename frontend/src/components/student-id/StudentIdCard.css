@@ -705,8 +705,10 @@
   background: #ffffff;
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8mm;
   overflow: hidden;
   break-after: page;
   page-break-after: always;
@@ -733,6 +735,15 @@
   }
   /* Belt-and-braces: never print modal chrome / controls */
   .id-controls {
+    display: none !important;
+  }
+  /* Active-document scoping: certificate job chal raha ho to ID tree print na ho.
+     (printUtils har job me <body data-print-doc> set karta hai.) */
+  body[data-print-doc="certificate"] .id-card-print-root {
+    display: none !important;
+  }
+  /* Screen-only elements — print me hamesha hidden */
+  .no-print {
     display: none !important;
   }
 }

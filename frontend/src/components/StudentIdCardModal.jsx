@@ -277,7 +277,7 @@ export default function StudentIdCardModal({
   onChangeTemplate,
 }) {
   // Print hamesha A4 portrait (spec) — A4 sirf sheet hai, card apne asli size me.
-  const { printing, handlePrint } = usePrint("portrait");
+  const { printing, handlePrint } = usePrint("portrait", "id-card");
   // Preview me ek samay ek side — [ Front ] [ Back ] toggle.
   const [side, setSide] = useState("front");
 
@@ -359,7 +359,7 @@ export default function StudentIdCardModal({
               {/* FRONT / BACK toggle — ek samay ek side, poora card, template ke asli size me.
                   Portrait template portrait me, landscape template landscape me. */}
 
-              <div className="id-controls flex justify-center gap-2 px-5 pt-5 sm:px-7">
+              <div className="id-controls no-print flex justify-center gap-2 px-5 pt-5 sm:px-7">
                 {(["front", "back"]).map((s) => (
                   <button
                     key={s}
@@ -438,7 +438,7 @@ export default function StudentIdCardModal({
                   FOOTER BUTTONS
               ========================= */}
 
-              <div className="id-controls flex justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-7">
+              <div className="id-controls no-print flex justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-7">
 
                 {onChangeTemplate && (
                   <button
@@ -505,7 +505,7 @@ export function StudentIdCardBulkModal({
   onChangeTemplate,
 }) {
   // Bulk print bhi hamesha A4 portrait sheets par (spec).
-  const { printing, handlePrint } = usePrint("portrait");
+  const { printing, handlePrint } = usePrint("portrait", "id-card");
   const ready = !loading && !error && students.length > 0;
   return (
     <div
@@ -649,7 +649,7 @@ export function StudentIdCardBulkModal({
                 BULK FOOTER
             ========================= */}
 
-            <div className="id-controls sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:px-7">
+            <div className="id-controls no-print sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:px-7">
 
               {onChangeTemplate && (
                 <button

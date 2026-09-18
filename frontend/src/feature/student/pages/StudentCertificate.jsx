@@ -29,7 +29,7 @@ const StudentCertificate = () => {
 
   // Certificate hamesha LANDSCAPE (A4 297x210mm) me dikhega aur print hoga.
   const superAdmin = isSuperAdmin();
-  const { printing, handlePrint } = usePrint("landscape");
+  const { printing, handlePrint } = usePrint("landscape", "certificate");
 
   const isStudent = location.pathname.startsWith("/student/");
 
@@ -231,7 +231,7 @@ const StudentCertificate = () => {
 
             {/* ================= PRINT ================= */}
 
-            <div className="flex flex-col items-center justify-between gap-2 px-1 py-2 sm:flex-row">
+            <div className="no-print flex flex-col items-center justify-between gap-2 px-1 py-2 sm:flex-row">
               <p className="text-[11px] font-semibold text-slate-400">
                 {superAdmin
                   ? "Print par sirf certificate A4 landscape me print hoga."

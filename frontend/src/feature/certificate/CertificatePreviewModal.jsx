@@ -35,7 +35,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
   const [notice, setNotice] = useState("");
   const superAdmin = isSuperAdmin();
   // Certificate hamesha A4 landscape me print hoga.
-  const { printing, handlePrint } = usePrint("landscape");
+  const { printing, handlePrint } = usePrint("landscape", "certificate");
 
   const handleCertificatePrint = async () => {
     const ok = await handlePrint();
@@ -227,7 +227,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
             )}
 
             {/* footer */}
-            <div className=" flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+            <div className="no-print flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
               <p className="text-[11px] font-semibold text-slate-400">
                 {allowPrint
                   ? "Only the certificate will be printed (landscape)."

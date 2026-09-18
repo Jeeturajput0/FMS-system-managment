@@ -17,7 +17,7 @@ export default function CertificateBulkModal({ studentIds = [], open, onClose })
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const superAdmin = isSuperAdmin();
-  const { printing, handlePrint } = usePrint("landscape");
+  const { printing, handlePrint } = usePrint("landscape", "certificate");
 
   useEffect(() => {
     if (!open) return;
@@ -124,7 +124,7 @@ export default function CertificateBulkModal({ studentIds = [], open, onClose })
           </div>
         )}
 
-        <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:px-7">
+        <div className="no-print flex justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:px-7">
           <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600">
             Close
           </button>

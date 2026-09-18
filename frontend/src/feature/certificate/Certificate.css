@@ -99,4 +99,9 @@
   .certificate-print-page .certificate-template {
     box-shadow: none !important;
   }
+  /* Active-document scoping: ID-card job chal raha ho to certificate tree print na ho.
+     (printUtils har job me <body data-print-doc> set karta hai.) */
+  body[data-print-doc="id-card"] .certificate-print-root {
+    display: none !important;
+  }
 }
