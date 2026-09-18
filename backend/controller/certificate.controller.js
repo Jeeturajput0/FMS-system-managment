@@ -154,8 +154,8 @@ const buildCertificatePayload = (student, eligibility, certificate, req) => {
   const startDate = certificate?.startDate || student.joiningDate || student.enrollmentDate || student.createdAt || null;
   const completionDate =
     certificate?.completionDate || addDuration(startDate, course.duration) || null;
-  const description =
-    certificate?.description ||
+  // HAMESHA fresh description banao — stored purana/galat description kabhi reuse mat karo.
+  const baseTemplate =
     course.certificateDescription ||
     DESCRIPTION_TEMPLATES[templateGroupOf(course)] ||
     DESCRIPTION_TEMPLATES.general;
@@ -168,7 +168,7 @@ const buildCertificatePayload = (student, eligibility, certificate, req) => {
   };
   return {
     template,
-    description: fillDescription(description, values),
+    description: fillDescription(baseTemplate, values),
     dates: { startDate, completionDate },
     verifyPath: certificate ? `/verify-certificate/${certificate.certificateNumber}` : null,
     canPrint: req?.user?.role === "SUPER_ADMIN",
@@ -237,6 +237,18 @@ export const getCertificate = async (req, res) => {
     }
 
     const dynamic = buildCertificatePayload(student, eligibility, certificate, req);
+    // Stored description purana ho to DB me bhi correct kar do (view hamesha sahi aayega).
+    if (certificate && certificate.description !== dynamic.description) {
+      try {
+        await Certificate.updateOne(
+          { _id: certificate._id },
+          { $set: { description: dynamic.description } },
+        );
+        certificate = { ...certificate, description: dynamic.description };
+      } catch {
+        /* ignore — response me fresh description waise bhi ja raha hai */
+      }
+    }
     return res.json({ success: true, data: { student, eligibility, certificate, ...dynamic } });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to load certificate", error: error.message });
@@ -307,9 +319,33 @@ export const setCompletionDate = async (req, res) => {
       certificate = await createCertificateRecord(student, eligibility, student.courseId, req, { completionDate: parsed });
       await Student.updateOne({ _id: student._id }, { $set: { certificateEligible: true, certificateIssued: true, certificateId: certificate._id } });
     } else {
+      // Completion date ke sath description bhi fresh karo taaki view/print sahi aaye.
+      const course = student.courseId || {};
+      const group = templateGroupOf(course);
+      const baseTpl =
+        course.certificateDescription ||
+        DESCRIPTION_TEMPLATES[group] ||
+        DESCRIPTION_TEMPLATES.general;
+      const startForDesc =
+        certificate.startDate || student.joiningDate || student.enrollmentDate || new Date();
+      const freshDesc = fillDescription(baseTpl, {
+        "[STUDENT_NAME]": certificate.studentName || student.name || "",
+        "[COURSE_NAME]": certificate.courseTitle || course.title || "",
+        "[START_DATE]": formatLongDate(startForDesc),
+        "[COMPLETION_DATE]": formatLongDate(parsed),
+        "[CERTIFICATE_ID]": certificate.certificateNumber || "",
+      });
       certificate = await Certificate.findByIdAndUpdate(
         certificate._id,
-        { $set: { completionDate: parsed, ...(certificate.startDate ? {} : { startDate: student.joiningDate || student.enrollmentDate || new Date() }) } },
+        {
+          $set: {
+            completionDate: parsed,
+            description: freshDesc,
+            studentName: student.name || certificate.studentName,
+            courseTitle: course.title || certificate.courseTitle,
+            ...(certificate.startDate ? {} : { startDate: startForDesc }),
+          },
+        },
         { new: true },
       ).lean();
     }

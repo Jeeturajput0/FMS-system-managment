@@ -22,12 +22,17 @@ const PrintCard = ({ student, side, template }) => (
   </div>
 );
 
-/** One student (FRONT + BACK) centered on an A4 portrait page. */
+/** One student (FRONT + BACK) — bada print, template ke orientation me. */
 export function SingleIdPrintPage({ student, template }) {
   if (!student) return null;
+  const landscape = !isPortraitTemplate(template);
   return (
     <div className="id-card-print-root">
-      <div className="id-card-print-single">
+      <div
+        className={`id-card-print-single${
+          landscape ? " id-card-print-single-landscape" : ""
+        }`}
+      >
         <PrintCard student={student} side="front" template={template} />
         <PrintCard student={student} side="back" template={template} />
       </div>
@@ -37,15 +42,21 @@ export function SingleIdPrintPage({ student, template }) {
 
 /**
  * Bulk print: pairs = [{ student, template }].
- * Prints FRONT + BACK for every student on A4 portrait grid pages.
+ * Prints FRONT + BACK for every student.
+ * Page orientation template se: landscape template -> landscape page.
  */
 export function BulkIdPrintPages({ pairs = [] }) {
-  const pages = chunkPairs(pairs.filter((p) => p?.student), 4);
+  const clean = pairs.filter((p) => p?.student);
+  const landscape = clean.length > 0 && !isPortraitTemplate(clean[0].template);
+  const pages = chunkPairs(clean, landscape ? 4 : 4);
   if (!pages.length) return null;
   return (
     <div className="id-card-print-root">
       {pages.map((pagePairs, pageIndex) => (
-        <div key={pageIndex} className="id-card-a4-page">
+        <div
+          key={pageIndex}
+          className={`id-card-a4-page${landscape ? " id-card-a4-landscape" : ""}`}
+        >
           {pagePairs.map(({ student, template }, i) => (
             <span
               key={student._id || student.studentId || `${pageIndex}-${i}`}

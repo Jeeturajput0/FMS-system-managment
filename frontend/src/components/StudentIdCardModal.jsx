@@ -271,8 +271,10 @@ export default function StudentIdCardModal({
   error,
   onClose,
 }) {
-  const [view, setView] = useState("both"); // "front" | "back" | "both"
-  const { printing, handlePrint } = usePrint("portrait");
+  // Print orientation ALWAYS follows the selected template:
+  // portrait template -> portrait page, landscape template -> landscape page.
+  const orientation = isPortraitTemplate(template) ? "portrait" : "landscape";
+  const { printing, handlePrint } = usePrint(orientation);
 
   const list = Array.isArray(students) ? students.filter(Boolean) : [];
   const isBulk = list.length > 1;
@@ -349,33 +351,11 @@ export default function StudentIdCardModal({
           activeStudent && (
             <>
 
-              {/* =========================
-                  FRONT / BACK / BOTH BUTTONS
-              ========================= */}
-
-              {!isBulk && (
-                <div className="id-controls flex justify-center gap-2 px-5 pt-5">
-
-                  {(["front", "back", "both"]).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setView(v)}
-                      className={`rounded-lg px-4 py-2 text-xs font-black uppercase ${
-                        view === v
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {v}
-                    </button>
-                  ))}
-
-                </div>
-              )}
+              {/* FRONT + BACK — hamesha dono, bada preview.
+                  Template apne asli size me: portrait->portrait, landscape->landscape. */}
 
               {/* =========================
-                  CARD PREVIEW — complete 54 x 85.6mm cards
+                  CARD PREVIEW — bada, template ke asli size me
               ========================= */}
 
               <div className="id-card-stage p-5 sm:p-8">
@@ -416,11 +396,10 @@ export default function StudentIdCardModal({
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-start justify-center gap-6">
-                    {(view === "front" || view === "both") && (
+                  <div className="flex flex-wrap items-start justify-center gap-8">
                       <div className="id-card-front">
                         <span className="id-card-side-label">FRONT — {dimsFor(template)}</span>
-                        <div className={stageClassFor(template)}>
+                        <div className={`${stageClassFor(template)} id-card-preview-big`}>
                           <StudentIdCardView
                             student={activeStudent}
                             side="front"
@@ -428,11 +407,9 @@ export default function StudentIdCardModal({
                           />
                         </div>
                       </div>
-                    )}
-                    {(view === "back" || view === "both") && (
                       <div className="id-card-back">
                         <span className="id-card-side-label">BACK — {dimsFor(template)}</span>
-                        <div className={stageClassFor(template)}>
+                        <div className={`${stageClassFor(template)} id-card-preview-big`}>
                           <StudentIdCardView
                             student={activeStudent}
                             side="back"
@@ -440,7 +417,6 @@ export default function StudentIdCardModal({
                           />
                         </div>
                       </div>
-                    )}
                   </div>
                 )}
 
@@ -505,7 +481,8 @@ export function StudentIdCardBulkModal({
   error,
   onClose,
 }) {
-  const { printing, handlePrint } = usePrint("portrait");
+  const bulkOrientation = isPortraitTemplate(template) ? "portrait" : "landscape";
+  const { printing, handlePrint } = usePrint(bulkOrientation);
   const ready = !loading && !error && students.length > 0;
   return (
     <div

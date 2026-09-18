@@ -39,7 +39,7 @@
 
 .id-card-preview,
 .id-card-template {
-  width: min(100%, 300px);
+  width: min(100%, 360px);
   aspect-ratio: 54 / 85.6;
   margin-left: auto;
   margin-right: auto;
@@ -55,8 +55,16 @@
 /* Landscape stages (templates 1 + 4): 85.6 x 54mm ratio */
 .id-card-preview-landscape,
 .id-card-template-landscape {
-  width: min(100%, 480px);
+  width: min(100%, 620px);
   aspect-ratio: 85.6 / 54;
+}
+
+/* Bada single preview: modal me card sabse bada dikhe */
+.id-card-preview-big.id-card-preview {
+  width: min(100%, 380px);
+}
+.id-card-preview-big.id-card-preview-landscape {
+  width: min(100%, 640px);
 }
 
 .id-card-preview-landscape .sid,
@@ -654,6 +662,12 @@
   page-break-after: auto;
 }
 
+/* Bulk landscape page: landscape templates ke liye A4 landscape */
+.id-card-a4-landscape {
+  width: 297mm;
+  height: 210mm;
+}
+
 .id-card-print-item {
   width: 54mm;
   height: 85.6mm;
@@ -691,6 +705,23 @@
   overflow: hidden;
   break-after: auto;
   page-break-after: auto;
+}
+
+/* Single student bada print: portrait cards ~1.6x (86mm x 137mm) */
+.id-card-print-single .id-card-print-item {
+  width: 86mm;
+  height: 137mm;
+}
+.id-card-print-single .id-card-print-item-landscape {
+  width: 137mm;
+  height: 86mm;
+}
+
+/* Landscape template ka single print: A4 landscape page par bada */
+.id-card-print-single-landscape {
+  width: 297mm;
+  height: 210mm;
+  flex-direction: row;
 }
 
 /* Print-only normalizations: colors must print, app UI must not */

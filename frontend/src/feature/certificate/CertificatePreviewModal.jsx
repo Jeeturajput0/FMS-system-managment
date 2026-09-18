@@ -34,7 +34,18 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const superAdmin = isSuperAdmin();
+  // Certificate hamesha A4 landscape me print hoga.
   const { printing, handlePrint } = usePrint("landscape");
+
+  const handleCertificatePrint = async () => {
+    const ok = await handlePrint();
+    if (ok) {
+      setNotice("Success! Certificate print ke liye bhej diya gaya (landscape).");
+      setError("");
+    } else {
+      setError("Print start nahi ho paya — dobara try karein.");
+    }
+  };
 
   const load = async () => {
     if (!studentId) return;
@@ -234,7 +245,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
                 {allowPrint && (
                   <button
                     type="button"
-                    onClick={handlePrint}
+                    onClick={handleCertificatePrint}
                     disabled={printing}
                     className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
                   >

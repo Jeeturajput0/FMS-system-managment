@@ -71,6 +71,13 @@ export default function CertificateView({
   description = "",
   verifyUrl = "",
 }) {
+  // Safety: agar backend se placeholder wala text aa jaye to frontend par hi sahi values bhar do.
+  const safeDescription = String(description || "")
+    .replaceAll("[STUDENT_NAME]", studentName || "")
+    .replaceAll("[COURSE_NAME]", courseName || "")
+    .replaceAll("[START_DATE]", formatLongDate(startDate))
+    .replaceAll("[COMPLETION_DATE]", formatLongDate(completionDate))
+    .replaceAll("[CERTIFICATE_ID]", certificateNumber || "");
   return (
     <div
       role="img"
@@ -122,9 +129,19 @@ export default function CertificateView({
       {/* dynamic description — wraps naturally, shrinks when long, never clipped */}
       <p
         className="certificate-description mx-auto mb-0 mt-[2cqw] max-w-[82%] font-sans leading-[1.65] text-[#1f2937]"
-        style={{ fontSize: descSizeFor(description) }}
+        style={{ fontSize: descSizeFor(safeDescription) }}
       >
-        {highlight(description, [studentName, courseName])}
+        {highlight(safeDescription, [studentName, courseName])}
+      </p>
+
+      {/* course + session line — taaki content kabhi galat/adhura na lage */}
+      <p className="mx-auto mb-0 mt-[1.4cqw] max-w-[82%] font-sans text-[2cqw] font-bold tracking-[0.04em] text-black">
+        {courseName || "—"}
+        {startDate || completionDate ? (
+          <span className="block text-[1.7cqw] font-semibold text-[#4b5563]">
+            {formatLongDate(startDate)} — {formatLongDate(completionDate)}
+          </span>
+        ) : null}
       </p>
 
       {/* footer: signatures + QR */}
