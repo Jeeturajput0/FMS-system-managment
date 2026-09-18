@@ -330,7 +330,10 @@ function App() {
         <Route path="/courses/:id" element={<Navigate to="/log" replace />} />
 
         {/* Public certificate verification (no login required) */}
-        <Route path="/verify-certificate/:certificateId" element={<CertificateVerification />} />
+        <Route
+          path="/verify-certificate/:certificateId"
+          element={<CertificateVerification />}
+        />
 
         {/* Admin Login */}
         <Route path="/login/admin" element={<LoginPage />} />
@@ -429,10 +432,7 @@ function App() {
               OTHER ADMIN PAGES
           ================================================== */}
 
-          <Route
-            path="certificates"
-            element={<CertificateManagement />}
-          />
+          <Route path="certificates" element={<CertificateManagement />} />
 
           <Route path="notifications" element={<AdminNotificationsPage />} />
 
@@ -622,10 +622,7 @@ function App() {
           ================================================== */}
 
           <Route path="teachers" element={<FranchiseTeachers />} />
-<Route
-  path="/franchise/teachers/add"
-  element={<AddTeacherPage />}
-/>
+          <Route path="/franchise/teachers/add" element={<AddTeacherPage />} />
 
           <Route path="teachers/:id" element={<FranchiseTeacherView />} />
 
