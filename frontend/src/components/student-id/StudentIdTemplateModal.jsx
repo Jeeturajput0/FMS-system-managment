@@ -102,11 +102,15 @@ export default function StudentIdTemplateModal({
                   <Check size={16} strokeWidth={3} />
                 </span>
 
-                {/* Complete full-card preview (sample data only) */}
+                {/* Complete full-card preview (sample data only) — Tailwind stage,
+                    har template apne asli orientation/size me:
+                    portrait (2/3/5) 54×85.6mm, landscape (1/4) 85.6×54mm */}
                 <div
-                  className={`sid-gallery-item ${
-                    isPortraitTemplate(meta.id) ? "" : "sid-gallery-item-landscape"
-                  }`}
+                  className={
+                    isPortraitTemplate(meta.id)
+                      ? "pointer-events-none mx-auto aspect-[54/85.6] w-full max-w-[280px] select-none [&_.sid]:h-full [&_.sid]:w-full [&_.sid]:shadow-[0_6px_18px_#0f172a26]"
+                      : "pointer-events-none mx-auto aspect-[85.6/54] w-full max-w-full select-none [&_.sid]:h-full [&_.sid]:w-full [&_.sid]:shadow-[0_6px_18px_#0f172a26]"
+                  }
                 >
                   <PreviewComponent student={SAMPLE_STUDENT} side={side} />
                 </div>

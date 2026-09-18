@@ -158,7 +158,7 @@ export default function CertificatePreviewModal({ studentId, open, onClose }) {
             {/* certificate (screen preview: full 297/210, scaled, scrolls on small screens) */}
             <div className="overflow-x-auto bg-[#eef2f6] p-5 sm:p-8">
               {certificate ? (
-                <div className="certificate-preview" style={{ minWidth: 560 }}>
+                <div className="mx-auto aspect-[297/210] w-full max-w-[900px] min-w-[560px] [&_.certificate-template]:h-full [&_.certificate-template]:w-full">
                   <CertificateView
                     certificateNumber={certificate.certificateNumber}
                     studentName={certificate.studentName || student?.name}

@@ -62,9 +62,13 @@ const courseName = (student) =>
   student?.course ||
   "—";
 
-/* Portrait stage: 54 x 85.6mm ratio · Landscape stage: 85.6 x 54mm ratio */
+/* Portrait stage: 54 x 85.6mm ratio · Landscape stage: 85.6 x 54mm ratio.
+   Pure Tailwind — har template apne ASLI size/orientation me dikhta hai:
+   portrait template (2/3/5) portrait me, landscape template (1/4) landscape me. */
 const stageClassFor = (template) =>
-  `id-card-preview${isPortraitTemplate(template) ? "" : " id-card-preview-landscape"}`;
+  isPortraitTemplate(template)
+    ? "mx-auto aspect-[54/85.6] w-full max-w-[380px] [&_.sid]:h-full [&_.sid]:w-full"
+    : "mx-auto aspect-[85.6/54] w-full max-w-[640px] [&_.sid]:h-full [&_.sid]:w-full";
 
 const dimsFor = (template) =>
   isPortraitTemplate(template) ? "54 × 85.6mm" : "85.6 × 54mm";
@@ -358,21 +362,21 @@ export default function StudentIdCardModal({
                   CARD PREVIEW — bada, template ke asli size me
               ========================= */}
 
-              <div className="id-card-stage p-5 sm:p-8">
+              <div className="bg-[#e8f0f5] p-5 sm:p-8">
 
                 {isBulk ? (
-                  <div className="id-bulk-grid">
+                  <div className="grid grid-cols-1 justify-items-center gap-7 min-[900px]:grid-cols-2">
                     {list.map((item, index) => (
                       <div
-                        className="id-bulk-item"
+                        className="w-full max-w-[560px]"
                         key={item._id || item.studentId || index}
                       >
-                        <p className="id-bulk-name id-controls">
+                        <p className="id-controls mb-2 text-center text-xs font-extrabold text-slate-700">
                           {index + 1}. {item.name} · {item.studentId || ""}
                         </p>
-                        <div className="id-bulk-pair">
-                          <div className="id-card-front">
-                            <span className="id-card-side-label id-controls">FRONT</span>
+                        <div className="grid gap-3.5">
+                          <div className="flex min-w-0 flex-col items-center gap-2">
+                            <span className="id-controls text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">FRONT</span>
                             <div className={stageClassFor(template)}>
                               <StudentIdCardView
                                 student={item}
@@ -381,8 +385,8 @@ export default function StudentIdCardModal({
                               />
                             </div>
                           </div>
-                          <div className="id-card-back">
-                            <span className="id-card-side-label id-controls">BACK</span>
+                          <div className="flex min-w-0 flex-col items-center gap-2">
+                            <span className="id-controls text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">BACK</span>
                             <div className={stageClassFor(template)}>
                               <StudentIdCardView
                                 student={item}
@@ -397,9 +401,9 @@ export default function StudentIdCardModal({
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-start justify-center gap-8">
-                      <div className="id-card-front">
-                        <span className="id-card-side-label">FRONT — {dimsFor(template)}</span>
-                        <div className={`${stageClassFor(template)} id-card-preview-big`}>
+                      <div className="flex min-w-0 flex-col items-center gap-2">
+                        <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">FRONT — {dimsFor(template)}</span>
+                        <div className={stageClassFor(template)}>
                           <StudentIdCardView
                             student={activeStudent}
                             side="front"
@@ -407,9 +411,9 @@ export default function StudentIdCardModal({
                           />
                         </div>
                       </div>
-                      <div className="id-card-back">
-                        <span className="id-card-side-label">BACK — {dimsFor(template)}</span>
-                        <div className={`${stageClassFor(template)} id-card-preview-big`}>
+                      <div className="flex min-w-0 flex-col items-center gap-2">
+                        <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">BACK — {dimsFor(template)}</span>
+                        <div className={stageClassFor(template)}>
                           <StudentIdCardView
                             student={activeStudent}
                             side="back"
@@ -566,14 +570,14 @@ export function StudentIdCardBulkModal({
 
           <>
 
-            <div className="id-card-stage p-5 sm:p-8">
+            <div className="bg-[#e8f0f5] p-5 sm:p-8">
 
-              <div className="id-bulk-grid">
+              <div className="grid grid-cols-1 justify-items-center gap-7 min-[900px]:grid-cols-2">
 
                 {students.map((student, index) => (
 
                   <div
-                    className="id-bulk-item"
+                    className="w-full max-w-[560px]"
                     key={
                       student._id ||
                       student.studentId ||
@@ -581,16 +585,16 @@ export function StudentIdCardBulkModal({
                     }
                   >
 
-                    <p className="id-bulk-name id-controls">
+                    <p className="id-controls mb-2 text-center text-xs font-extrabold text-slate-700">
                       {index + 1}. {student.name} ·{" "}
                       {student.studentId || ""}
                     </p>
 
-                    <div className="id-bulk-pair">
+                    <div className="grid gap-3.5">
 
                       {/* FRONT */}
-                      <div className="id-card-front">
-                        <span className="id-card-side-label id-controls">FRONT</span>
+                      <div className="flex min-w-0 flex-col items-center gap-2">
+                        <span className="id-controls text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">FRONT</span>
                         <div className={stageClassFor(template)}>
                           <StudentIdCardView
                             student={student}
@@ -601,8 +605,8 @@ export function StudentIdCardBulkModal({
                       </div>
 
                       {/* BACK */}
-                      <div className="id-card-back">
-                        <span className="id-card-side-label id-controls">BACK</span>
+                      <div className="flex min-w-0 flex-col items-center gap-2">
+                        <span className="id-controls text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">BACK</span>
                         <div className={stageClassFor(template)}>
                           <StudentIdCardView
                             student={student}

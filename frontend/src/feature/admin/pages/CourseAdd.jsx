@@ -26,6 +26,8 @@ export const CourseAdd = () => {
     courseFee: 30000,
     registrationFee: 1000,
     certificateFee: 3000,
+    certificateTemplate: "",
+    certificateDescription: "",
     images: [],
   });
 
@@ -93,6 +95,10 @@ export const CourseAdd = () => {
         registrationFee: course.registrationFee || 0,
 
         certificateFee: course.certificateFee || 0,
+
+        certificateTemplate: course.certificateTemplate || "",
+
+        certificateDescription: course.certificateDescription || "",
 
         // New images select karne ke liye
         images: [],
@@ -199,6 +205,10 @@ export const CourseAdd = () => {
         "certificateFee",
         String(form.certificateFee)
       );
+
+      // Course-based certificate template (optional — empty = auto-detect by course name)
+      body.append("certificateTemplate", form.certificateTemplate || "");
+      body.append("certificateDescription", form.certificateDescription || "");
 
       // Images
       form.images.forEach((image) => {
@@ -549,6 +559,54 @@ export const CourseAdd = () => {
           </div>
 
           {/* IMAGES */}
+
+          {/* CERTIFICATE TEMPLATE (optional — empty = auto-detect by course name) */}
+
+          <div className="sm:col-span-2 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+
+            <label className="text-sm font-semibold text-slate-700">
+              Certificate Template
+            </label>
+
+            <select
+              value={form.certificateTemplate}
+              onChange={(e) =>
+                update("certificateTemplate", e.target.value)
+              }
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:border-orange-500"
+            >
+              <option value="">Auto-detect from course name</option>
+              <option value="template-1">Classic Blue (Frontend / General)</option>
+              <option value="template-2">Backend / Full-Stack</option>
+              <option value="template-3">Corporate Cyan (Data / Cloud)</option>
+              <option value="template-4">Minimal Beige (Design)</option>
+              <option value="template-5">School Cream (Marketing / Business)</option>
+              <option value="legacy">Legacy</option>
+            </select>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Certificates issued for this course use this template. Empty means automatic selection.
+            </p>
+
+            <label className="mt-4 block text-sm font-semibold text-slate-700">
+              Certificate Description Template
+            </label>
+
+            <textarea
+              rows="4"
+              value={form.certificateDescription}
+              onChange={(e) =>
+                update("certificateDescription", e.target.value)
+              }
+              placeholder="This is to certify that [STUDENT_NAME] has successfully completed the [COURSE_NAME] Course at AI Scholars from [START_DATE] to [COMPLETION_DATE]..."
+              className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:border-orange-500"
+            />
+
+            <p className="mt-1 text-xs text-slate-500">
+              Placeholders: [STUDENT_NAME] [COURSE_NAME] [START_DATE] [COMPLETION_DATE] [CERTIFICATE_ID]. Empty uses the default text.
+            </p>
+
+          </div>
 
           <div className="sm:col-span-2">
             <label className="text-sm font-semibold text-slate-700">Course Modules</label>
