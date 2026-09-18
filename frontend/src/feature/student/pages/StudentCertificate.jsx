@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
   Award,
-  Download,
+  Printer,
   Loader2,
   XCircle,
   CheckCircle2,
-  CalendarDays,
   GraduationCap,
   ShieldCheck,
   Clock3,
@@ -14,6 +13,11 @@ import {
 } from "lucide-react";
 import { useLocation, useParams } from "react-router-dom";
 import { apiFetch } from "../../../utils/api";
+import CertificateView from "../../certificate/CertificateView";
+import { isSuperAdmin } from "../../certificate/certificateTemplates";
+import PrintPortal from "../../../print/PrintPortal";
+import { SingleCertPrintPage } from "../../../print/CertPrintPages";
+import { usePrint } from "../../../print/printUtils";
 
 const StudentCertificate = () => {
   const { id } = useParams();
@@ -22,6 +26,10 @@ const StudentCertificate = () => {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Certificate hamesha LANDSCAPE (A4 297x210mm) me dikhega aur print hoga.
+  const superAdmin = isSuperAdmin();
+  const { printing, handlePrint } = usePrint("landscape");
 
   const isStudent = location.pathname.startsWith("/student/");
 
@@ -105,12 +113,40 @@ const StudentCertificate = () => {
     eligibility = {},
     certificate,
     student,
+    description = "",
+    dates = {},
+    verifyPath = "",
   } = data;
 
   const courseTitle =
     student?.courseId?.title ||
     certificate?.courseTitle ||
     "Course Certificate";
+
+  // QR / verification link — scan karne par public verification page khulta hai.
+  const verifyUrl = certificate
+    ? `${window.location.origin}${verifyPath || `/verify-certificate/${certificate.certificateNumber}`}`
+    : "";
+
+  const printItem = certificate
+    ? {
+        certificateNumber: certificate.certificateNumber,
+        studentName: certificate.studentName || student?.name,
+        courseName: certificate.courseTitle || courseTitle,
+        startDate: dates?.startDate,
+        completionDate: dates?.completionDate,
+        issueDate: certificate.issueDate,
+        description,
+        verifyUrl,
+      }
+    : null;
+
+  const handleCertificatePrint = async () => {
+    const ok = await handlePrint();
+    if (!ok) {
+      setError("Print start nahi ho paya — dobara try karein.");
+    }
+  };
 
   /* ================= CERTIFICATE AVAILABLE ================= */
 
@@ -165,126 +201,76 @@ const StudentCertificate = () => {
 
       {certificate ? (
         <>
-          {/* ================= CERTIFICATE PREVIEW ================= */}
+          {/* ================= CERTIFICATE PREVIEW (LANDSCAPE A4) ================= */}
 
           <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:p-3">
-            <div className="certificate-print relative overflow-hidden rounded-xl border border-orange-200 bg-gradient-to-br from-white via-orange-50/30 to-white p-1.5">
-              {/* Inner Border */}
-              <div className="relative overflow-hidden rounded-lg border border-orange-300 px-4 py-5 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
-                {/* Decorative corners */}
-                <div className="absolute left-0 top-0 h-16 w-16 rounded-br-full bg-orange-100/70" />
-                <div className="absolute bottom-0 right-0 h-20 w-20 rounded-tl-full bg-amber-100/60" />
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 pb-2 pt-1">
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700">
+                Landscape · A4 297×210mm
+              </span>
+              <span className="font-mono text-[11px] font-bold text-slate-400">
+                ID: {certificate.certificateNumber}
+              </span>
+            </div>
 
-                {/* ================= TOP ================= */}
-
-                <div className="relative text-center">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border-2 border-orange-200 bg-white shadow-sm sm:h-14 sm:w-14">
-                    <Award className="h-6 w-6 text-orange-500 sm:h-7 sm:w-7" />
-                  </div>
-
-                  <p className="mt-2 text-[9px] font-black uppercase tracking-[0.25em] text-orange-600 sm:text-[10px]">
-                    AI Scholars Certification
-                  </p>
-
-                  <div className="mx-auto mt-2 h-px max-w-[180px] bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
-
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-                    Certificate
-                    <span className="block text-orange-500">
-                      of Completion
-                    </span>
-                  </h2>
-
-                  <p className="mt-2 text-xs text-slate-500">
-                    This certificate is proudly presented to
-                  </p>
-
-                  {/* Student Name */}
-                  <h3 className="mt-1.5 break-words text-2xl font-black text-slate-900 sm:text-3xl">
-                    {student?.name || certificate.studentName}
-                  </h3>
-
-                  <div className="mx-auto mt-1.5 h-0.5 w-16 rounded-full bg-orange-500" />
-
-                  <p className="mx-auto mt-3 max-w-2xl text-xs leading-5 text-slate-600 sm:text-sm">
-                    For successfully completing the{" "}
-                    <strong className="font-black text-slate-900">
-                      {certificate.courseTitle}
-                    </strong>{" "}
-                    course and fulfilling the required learning
-                    and attendance requirements.
-                  </p>
-                </div>
-
-                {/* ================= CERTIFICATE INFORMATION ================= */}
-
-                <div className="relative mt-5 grid gap-2 border-t border-orange-100 pt-4 sm:grid-cols-3">
-                  <CertificateInfo
-                    icon={ShieldCheck}
-                    label="Certificate No."
-                    value={certificate.certificateNumber}
-                  />
-
-                  <CertificateInfo
-                    icon={CalendarDays}
-                    label="Issue Date"
-                    value={
-                      certificate.issueDate
-                        ? new Date(
-                            certificate.issueDate
-                          ).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-"
-                    }
-                  />
-
-                  <CertificateInfo
-                    icon={CheckCircle2}
-                    label="Attendance"
-                    value={`${certificate.attendance ?? 0}%`}
-                  />
-                </div>
-
-                {/* ================= FOOTER ================= */}
-
-                <div className="relative mt-5 flex flex-col items-center justify-between gap-3 border-t border-orange-100 pt-4 sm:flex-row">
-                  <div className="text-center sm:text-left">
-                    <p className="text-[9px] font-bold text-slate-400">
-                      CERTIFICATE OF ACHIEVEMENT
-                    </p>
-
-                    <p className="mt-0.5 text-[9px] text-slate-500">
-                      Issued by AI Scholars
-                    </p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="mx-auto mb-1 h-6 w-24 border-b border-slate-400" />
-
-                    <p className="text-[9px] font-bold text-slate-500">
-                      Authorized Signature
-                    </p>
-                  </div>
-                </div>
+            {/* Landscape certificate — screen par poora dikhega, print par full A4 page */}
+            <div className="overflow-x-auto rounded-xl bg-[#eef2f6] p-3 sm:p-5">
+              <div className="mx-auto aspect-[297/210] w-full max-w-[1000px] min-w-[560px] [&_.certificate-template]:h-full [&_.certificate-template]:w-full">
+                <CertificateView
+                  certificateNumber={certificate.certificateNumber}
+                  studentName={certificate.studentName || student?.name}
+                  courseName={certificate.courseTitle || courseTitle}
+                  startDate={dates?.startDate}
+                  completionDate={dates?.completionDate}
+                  issueDate={certificate.issueDate}
+                  description={description}
+                  verifyUrl={verifyUrl}
+                />
               </div>
             </div>
 
-            {/* ================= DOWNLOAD ================= */}
+            {/* ================= PRINT ================= */}
 
-            <div className="flex justify-center pt-2">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-xs font-black text-white shadow-sm shadow-orange-200 transition hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
-              >
-                <Download size={14} />
-                Download Certificate
-              </button>
+            <div className="flex flex-col items-center justify-between gap-2 px-1 py-2 sm:flex-row">
+              <p className="text-[11px] font-semibold text-slate-400">
+                {superAdmin
+                  ? "Print par sirf certificate A4 landscape me print hoga."
+                  : "Certificate print sirf Super Admin kar sakta hai."}
+                {verifyUrl && (
+                  <a
+                    href={verifyPath || `/verify-certificate/${certificate.certificateNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-1 font-bold text-blue-600 hover:underline"
+                  >
+                    Verify certificate
+                  </a>
+                )}
+              </p>
+              {superAdmin && (
+                <button
+                  type="button"
+                  onClick={handleCertificatePrint}
+                  disabled={printing}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {printing ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Printer size={14} />
+                  )}
+                  {printing ? "Preparing print..." : "Print Certificate (A4 Landscape)"}
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Dedicated print tree (A4 landscape full page) — screen par hidden */}
+          {printItem && (
+            <PrintPortal>
+              <SingleCertPrintPage item={printItem} />
+            </PrintPortal>
+          )}
 
           {/* ================= CERTIFICATE STATS ================= */}
 
@@ -420,71 +406,7 @@ const StudentCertificate = () => {
         </div>
       )}
 
-      {/* ================= PRINT CSS ================= */}
-
-      <style>{`
-        @media print {
-          body {
-            background: white !important;
-          }
-
-          body * {
-            visibility: hidden;
-          }
-
-          .certificate-print,
-          .certificate-print * {
-            visibility: visible;
-          }
-
-          .certificate-print {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 15px;
-            border: none !important;
-            box-shadow: none !important;
-          }
-
-          button {
-            display: none !important;
-          }
-
-          @page {
-            size: A4 landscape;
-            margin: 8mm;
-          }
-        }
-      `}</style>
     </section>
-  );
-};
-
-/* =========================================================
-   CERTIFICATE INFO
-========================================================= */
-
-const CertificateInfo = ({
-  icon: Icon,
-  label,
-  value,
-}) => {
-  return (
-    <div className="rounded-xl border border-orange-100 bg-white/70 p-2.5 text-center">
-      <div className="mx-auto flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50">
-        <Icon className="h-3.5 w-3.5 text-orange-500" />
-      </div>
-
-      <p className="mt-1 text-[9px] font-black uppercase tracking-wide text-slate-400">
-        {label}
-      </p>
-
-      <p className="mt-0.5 break-words text-xs font-black text-slate-900">
-        {value || "-"}
-      </p>
-    </div>
   );
 };
 

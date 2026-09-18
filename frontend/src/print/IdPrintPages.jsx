@@ -3,13 +3,12 @@ import { isPortraitTemplate } from "../components/student-id/templates";
 import { chunkPairs } from "./printChunk";
 
 /**
- * ID-card print pages (A4 portrait) — Tailwind + .id-card-* CSS.
- * - Every card keeps its exact physical size:
- *   portrait 54mm x 85.6mm, landscape 85.6mm x 54mm.
- * - Front immediately followed by back, so each student's pair
- *   stays adjacent; each card has break-inside:avoid.
- * - 4 pairs (8 cards) per A4 page; overflow flows to next page.
- * - Last page never forces a trailing blank page.
+ * ID-card print pages — sab kuch A4 size me.
+ * - Single student: FRONT poore A4 page-1 par, BACK poore A4 page-2 par.
+ *   Portrait template -> A4 portrait, landscape template -> A4 landscape.
+ * - Bulk: har A4 sheet par multiple cards (cutting sheet), page orientation
+ *   template ke hisaab se. Har card break-inside:avoid ke saath.
+ * - Last page kabhi blank extra page nahi banata.
  */
 
 const PrintCard = ({ student, side, template }) => (
@@ -22,19 +21,25 @@ const PrintCard = ({ student, side, template }) => (
   </div>
 );
 
-/** One student (FRONT + BACK) — bada print, template ke orientation me. */
+/** One student — FRONT fills full A4 page 1, BACK fills full A4 page 2. */
 export function SingleIdPrintPage({ student, template }) {
   if (!student) return null;
   const landscape = !isPortraitTemplate(template);
+  const pageClass = `id-card-a4-page${landscape ? " id-card-a4-landscape" : ""}`;
+  const cardClass = `id-card-print-full ${
+    landscape ? "id-card-print-full-landscape" : "id-card-print-full-portrait"
+  }`;
   return (
     <div className="id-card-print-root">
-      <div
-        className={`id-card-print-single${
-          landscape ? " id-card-print-single-landscape" : ""
-        }`}
-      >
-        <PrintCard student={student} side="front" template={template} />
-        <PrintCard student={student} side="back" template={template} />
+      <div className={pageClass}>
+        <div className={cardClass}>
+          <StudentIdCardView student={student} side="front" template={template} />
+        </div>
+      </div>
+      <div className={pageClass}>
+        <div className={cardClass}>
+          <StudentIdCardView student={student} side="back" template={template} />
+        </div>
       </div>
     </div>
   );

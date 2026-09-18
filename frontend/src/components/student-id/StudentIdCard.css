@@ -691,37 +691,42 @@
   height: 54mm;
 }
 
-.id-card-print-single {
-  width: 210mm;
-  height: 297mm;
-  padding: 10mm;
-  background: #ffffff;
-  box-sizing: border-box;
+/* =========================================================
+   SINGLE-STUDENT FULL A4 PRINT
+   FRONT poore A4 page-1 par, BACK poore A4 page-2 par.
+   Portrait template -> A4 portrait page; landscape -> A4 landscape.
+   Card apna aspect-ratio rakhte hue page bhar me failta hai.
+   ========================================================= */
+
+.id-card-print-full {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10mm;
-  flex-wrap: wrap;
-  overflow: hidden;
-  break-after: auto;
-  page-break-after: auto;
+  box-sizing: border-box;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-/* Single student bada print: portrait cards ~1.6x (86mm x 137mm) */
-.id-card-print-single .id-card-print-item {
-  width: 86mm;
-  height: 137mm;
-}
-.id-card-print-single .id-card-print-item-landscape {
-  width: 137mm;
-  height: 86mm;
+/* Portrait card: page ki poori height, ratio 54/85.6 */
+.id-card-print-full-portrait {
+  height: 100%;
+  aspect-ratio: 54 / 85.6;
 }
 
-/* Landscape template ka single print: A4 landscape page par bada */
-.id-card-print-single-landscape {
-  width: 297mm;
-  height: 210mm;
-  flex-direction: row;
+/* Landscape card: page ki poori width, ratio 85.6/54 */
+.id-card-print-full-landscape {
+  width: 100%;
+  aspect-ratio: 85.6 / 54;
+}
+
+.id-card-print-full .sid {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
 }
 
 /* Print-only normalizations: colors must print, app UI must not */
@@ -734,7 +739,7 @@
     print-color-adjust: exact;
   }
   .id-card-print-item .sid,
-  .id-card-print-single .sid {
+  .id-card-print-full .sid {
     box-shadow: none !important;
   }
   /* Belt-and-braces: never print modal chrome / controls */
